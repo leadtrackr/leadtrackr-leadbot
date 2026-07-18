@@ -1,12 +1,12 @@
 # LeadTrackr Website Widget — Design Spec (MVP)
 
-**Date:** 2026-07-18
-**Status:** Approved routes: A1 (vanilla TS + Shadow DOM), B2 (Cloudflare Worker endpoint), C1 (inline config), distribution via GitHub + jsDelivr.
+**Date:** 2026-07-18 (rev. 2)
+**Status:** Routes approved: A1 (vanilla TS + Shadow DOM), C1 (inline config), distribution via GitHub + jsDelivr. Lead delivery: **direct to the existing public LeadTrackr endpoint** (replaces the earlier Cloudflare Worker plan). Visual design in progress via Claude design session — **do not start building until Lester delivers the approved design.**
 **Owner:** Lester (YesWeTrack / LeadTrackr). MVP built standalone; later handed off to the LeadTrackr dev to integrate as a native lead source in app.leadtrackr.io.
 
 ## 1. Goal
 
-A lightweight lead-generation widget (functionally inspired by Futy.io, visually 100% LeadTrackr) that clients install with one script tag. It sits bottom-right, offers three contact channels, and sends every lead — enriched with attribution data — to LeadTrackr.
+A lightweight lead-generation widget (functionally inspired by Futy.io, visually 100% LeadTrackr) that clients install with one script tag. It sits bottom-right, offers three contact channels, and sends every lead — enriched with attribution data — to LeadTrackr using the **same payload contract and endpoint as the official LeadTrackr GTM tag** (`gtm-leadtrackr-tag`).
 
 Explicit non-goals (MVP): WhatsApp channel, chat/bot conversations, video, appointment booking, A/B testing, hosted config UI, multi-language beyond NL defaults.
 
@@ -14,36 +14,32 @@ Explicit non-goals (MVP): WhatsApp channel, chat/bot conversations, video, appoi
 
 ```
 client website
-  <script src="https://cdn.jsdelivr.net/gh/<org>/leadtrackr-widget@1/dist/lt-widget.min.js"
-          data-key="SITE_KEY" async></script>
+  <script src="https://cdn.jsdelivr.net/gh/leadtrackr/leadtrackr-widget@1/dist/lt-widget.min.js"
+          data-project-id="PROJECT_ID" async></script>
         │
         ▼
   single IIFE bundle (~10–15 KB gzip, no dependencies)
         ├── UI layer: Shadow DOM root, launcher → panel → channel views
-        ├── attribution module: URL params → localStorage (first/last touch)
-        ├── dataLayer module: pushes ltw_* events
-        └── transport: POST lead JSON → Cloudflare Worker
-                                            │
-                                            ▼
-                              worker validates + forwards to
-                              configurable webhook (env var).
-                              Later: dev repoints it to the
-                              app.leadtrackr.io lead-source API.
+        ├── attribution module: ported 1:1 from the GTM tag
+        │     (lt_channelflow cookie + click-ID capture, see §6)
+        ├── dataLayer module: marketer-grade ltw events incl. PII (§8)
+        └── transport: POST → https://app.leadtrackr.io/api/leads/createLead
 ```
 
-- **Shadow DOM** (`mode: 'open'`) gives iframe-grade CSS isolation both ways without an iframe; `tel:` links, dataLayer and attribution all work natively because the widget lives in the page DOM.
-- **No framework, no dependencies.** One bundle, one optional lazy-loaded font file.
+- **No middleware.** The endpoint is public and token-free (auth = `projectId`), identical to how the GTM tag delivers leads. CORS is already permissive server-side (the GTM SDK does the same cross-origin `fetch` with `Content-Type: application/json` from any client site).
+- **Shadow DOM** (`mode: 'open'`) gives iframe-grade CSS isolation both ways without an iframe; `tel:` links, dataLayer and cookies work natively because the widget lives in the page DOM.
+- **Compatibility by construction:** the widget reuses the exact cookie (`lt_channelflow`) and payload shape of the GTM tag. A site running both the widget and the GTM tag shares one journey history with no conflicts (the append logic is duplicate-safe).
 
 ## 3. Distribution & versioning (jsDelivr)
 
-- Public GitHub repo `leadtrackr-widget` (jsDelivr requires public repos — no secrets in this repo, ever; the Worker deploys separately via wrangler with env secrets).
+- Public GitHub repo under the existing **`leadtrackr` org** (the GTM tag already ships from `cdn.jsdelivr.net/gh/leadtrackr/gtm-leadtrackr-tag@main/…`), e.g. `leadtrackr/leadtrackr-widget`.
 - `dist/lt-widget.min.js` is committed on release and tagged (`v1.0.0`, `v1.1.0`, …). A GitHub Action builds and tags to prevent stale-dist mistakes.
-- Client embed pins the **major** version: `.../leadtrackr-widget@1/dist/lt-widget.min.js`. jsDelivr resolves `@1` to the latest `v1.x` tag; updates propagate automatically (cache up to 12 h; can be forced via jsDelivr's purge tool). Exact-version pinning (`@1.2.0`) remains available per client if ever needed.
-- **Known trade-off, accepted for MVP:** the embed URL clients install is semi-permanent. If we later move to `widget.leadtrackr.io` (own domain on Cloudflare, instant purge, no third-party CDN), installed snippets must be updated. Mitigation: keep the MVP install base small; the production migration is part of the dev handoff.
+- Client embed pins the **major** version: `…/leadtrackr-widget@1/dist/lt-widget.min.js`. jsDelivr resolves `@1` to the latest `v1.x` tag; updates propagate automatically (cache up to 12 h; can be forced via jsDelivr's purge tool). Tag-pinning beats the GTM tag's current `@main` approach (branch refs cache 12 h with no rollback control).
+- **Known trade-off, accepted for MVP:** the embed URL clients install is semi-permanent. A later move to `widget.leadtrackr.io` requires installed snippets to change. Mitigation: keep the MVP install base small; production migration is part of the dev handoff.
 
 ## 4. Widget UI
 
-States (visual design produced separately via a Claude design session, based on LeadTrackr tokens: Cairo, `#52B483`, `#020A24`, 8/12/16 px radii, soft layered shadows):
+States (visual design being produced by Lester via Claude design; the tokens below are the starting point, final design file overrules):
 
 1. **Launcher** — pill/round button bottom-right, subtle pulse; optional dismissible teaser bubble.
 2. **Channel panel** (±340 px) — header (logo/avatar + title + subtitle), three channel buttons, "Powered by LeadTrackr" footer.
@@ -55,11 +51,11 @@ States (visual design produced separately via a Claude design session, based on 
 
 Accessibility: 44 px touch targets, visible focus states, WCAG AA contrast, `aria-expanded`/`aria-label` on launcher, Escape closes panel, focus trap inside open panel.
 
-Font strategy: widget renders with system font stack by default; the Cairo woff2 subset is lazy-loaded **on first open** (never on page load) and applied inside the shadow root only.
+Font strategy: system font stack by default; Cairo woff2 subset lazy-loaded **on first open** (never on page load), applied inside the shadow root only.
 
 ## 5. Configuration (inline, C1)
 
-Auto-init from the script tag (`data-key`) plus optional global before script load:
+Auto-init from the script tag (`data-project-id`) plus optional global before script load:
 
 ```html
 <script>
@@ -68,81 +64,151 @@ window.ltWidgetConfig = {
   companyName: "Voorbeeld B.V.",
   logo: "https://example.com/logo.png",        // optional avatar/logo URL
   channels: ["call", "callback", "form"],       // order = display order
-  color: "#52B483",                             // primary override
   position: "right",                            // "right" | "left"
   offset: { bottom: 20, side: 20 },             // px
   teaser: "Vragen? Wij helpen je direct.",      // null = no teaser
+
+  // Theme — every color overridable; defaults = LeadTrackr brand
+  theme: {
+    primary: "#52B483",        // buttons, icons, accents
+    primaryHover: "#3E8762",
+    launcherBg: "#52B483",
+    launcherIcon: "#FFFFFF",
+    headerBg: "#FFFFFF",       // or e.g. "#020A24" for dark header
+    headerText: "#020A24",
+    panelBg: "#FFFFFF",
+    text: "#1F2937",
+    textMuted: "#4B5563",
+    border: "#E5E7EB",
+    error: "#FF6A6A",
+    radius: 12                  // px, panel/card rounding
+  },
+
+  formNames: {                                  // formData.formName per channel
+    callback: "Widget — Terugbelverzoek",
+    form: "Widget — Contactformulier"
+  },
   texts: { /* per-key overrides of all NL default strings */ },
-  endpoint: null                                 // override Worker URL (testing)
+  endpoint: null                                 // override for testing only
 };
 </script>
-<script src="https://cdn.jsdelivr.net/gh/<org>/leadtrackr-widget@1/dist/lt-widget.min.js"
-        data-key="SITE_KEY" async></script>
+<script src="https://cdn.jsdelivr.net/gh/leadtrackr/leadtrackr-widget@1/dist/lt-widget.min.js"
+        data-project-id="PROJECT_ID" async></script>
 ```
 
-The config schema is the contract: when LeadTrackr later hosts config per site key (C2), the fetched JSON uses this exact shape — drop-in replacement, no widget changes.
+Theme values are applied as CSS custom properties on the shadow root, so a client (or later the LeadTrackr config UI) can restyle the widget without touching CSS. The config schema is the contract: hosted config per project (C2, post-MVP) serves this exact JSON shape.
 
-## 6. Attribution module
+## 6. Attribution module — ported from the GTM tag
 
-Captured on every pageview, before any interaction:
+Source of truth: `gtm-leadtrackr-tag/template.tpl`. The widget re-implements this logic 1:1 in plain JS (no GTM sandbox), so data is identical whether a lead arrives via widget or GTM tag.
 
-- **Click IDs & UTM:** `gclid`, `fbclid`, plus `utm_source/medium/campaign/term/content` from the URL.
-- **First touch:** stored in `localStorage["ltw_attr_first"]` only if absent (params + landing page + referrer + timestamp).
-- **Last touch:** `localStorage["ltw_attr_last"]` overwritten whenever new campaign params (any UTM or click ID) appear.
-- **Session:** landing page of current session in `sessionStorage`; current page URL and referrer read live at submit time.
-- Retention: entries older than 90 days are ignored and overwritten.
-- localStorage unavailable (Safari private mode etc.) → degrade silently to current-pageview data only.
+**6a. Channel flow (every pageview, on widget boot):**
 
-## 7. Lead payload & Worker API
+- Cookie `lt_channelflow`, max-age **395 days**, `path=/`, domain auto — same cookie as the GTM tag.
+- Determine current channel:
+  1. Any UTM param present (`utm_source/medium/campaign/content/term`) → use UTMs.
+  2. Else referrer host matches known search engines (google, bing, yahoo, duckduckgo, baidu) → `{ source: <engine domain>, medium: "organic" }`.
+  3. Else external referrer → `{ source: <referrer host>, medium: "referral" }`.
+  4. Else → `{ source: "direct", medium: "none" }`.
+- If the cookie already has entries and the URL carries **no new** UTM params → keep the last channel (no re-classification mid-session).
+- Append `{ timestamp, channel }` only if different from the last entry (JSON-compare), then rewrite the cookie.
 
-`POST {endpoint}/lead` — `Content-Type: application/json`:
+**6b. Click IDs & identifiers (at lead submit):**
+
+| Field | Logic (identical to GTM tag) |
+|---|---|
+| `gclid` | URL param → fallback: `_gcl_aw` cookie, `split('.')[2]` |
+| `wbraid` | URL param → fallback: `_gcl_gb` cookie, `split('.')[2]` |
+| `fbc` | `_fbc` cookie; if `fbclid` in URL and cookie missing/stale → construct `fb.<subdomainIndex>.<timestamp>.<encodedFbclid>` |
+| `fbp` | `_fbp` cookie as-is |
+| `cid` | GA4 client ID — widget equivalent of `readAnalyticsStorage`: parse `_ga` cookie (`GA1.1.A.B` → `A.B`) |
+
+Cookies unavailable/blocked → fields degrade to `''`, exactly like the GTM tag; the lead still sends (validation requires userData **or** attributionData to be non-empty, and widget leads always carry userData).
+
+## 7. Lead payload & endpoint — same contract as the GTM tag
+
+`POST https://app.leadtrackr.io/api/leads/createLead` — `Content-Type: application/json`, no token:
 
 ```json
 {
-  "siteKey": "abc123",
-  "channel": "callback",
-  "fields": { "name": "", "phone": "", "email": "", "message": "" },
-  "attribution": {
-    "page": "https://klant.nl/dienst?x=1",
-    "landingPage": "https://klant.nl/?gclid=…",
-    "referrer": "https://www.google.com/",
-    "utm": { "source": "", "medium": "", "campaign": "", "term": "", "content": "" },
-    "gclid": "", "fbclid": "",
-    "firstTouch": { "…": "same shape, plus timestamp" },
-    "lastTouch": { "…": "same shape, plus timestamp" },
-    "device": "mobile", "userAgent": "…", "timestamp": "2026-07-18T12:00:00Z"
+  "projectId": "PROJECT_ID",
+  "formData": {
+    "formName": "Widget — Terugbelverzoek",
+    "uniqueEventId": "<generated per submit, dedup-safe>",
+    "formFields": {
+      "message": "…",
+      "page_url": "https://klant.nl/dienst",
+      "page_title": "Dienst — Klant B.V."
+    }
   },
-  "widgetVersion": "1.0.0",
-  "website": ""
+  "userData": {
+    "firstName": "Jan",
+    "lastName": "Jansen",
+    "phone": "+31612345678",
+    "email": "jan@bedrijf.nl"
+  },
+  "channelFlow": [
+    { "timestamp": 1752840000000, "channel": { "source": "google", "medium": "cpc", "campaign": "…", "content": "", "term": "" } }
+  ],
+  "attributionData": {
+    "fbc": "fb.1.1752840000000.AbCd…",
+    "fbp": "fb.1.1752830000000.1234567890",
+    "gclid": "Cj0KCQ…",
+    "wbraid": "",
+    "cid": "1234567890.1719000000"
+  }
 }
 ```
 
-`website` is the honeypot field (hidden input; non-empty → Worker returns 200 but drops the lead).
+Notes:
 
-Worker responsibilities (repo `worker/`, deployed with wrangler, not served via jsDelivr):
+- **Only contract-known top-level keys** (`projectId`, `formData`, `userData`, `channelFlow`, `attributionData`). Extra context (message, page URL/title) travels inside `formData.formFields`, which the contract defines as free-form key/value.
+- The single "Naam" input is split into `firstName` (first word) / `lastName` (rest); only-one-word names go entirely into `firstName`.
+- Phone numbers are normalized to **E.164** (`06…` → `+316…`) before payload and dataLayer — required for Enhanced Conversions matching anyway.
+- `uniqueEventId`: generated per submission (`ltw-<timestamp>-<random>`), mirrors the tag's dedup option.
+- Spam protection is client-side only for MVP: hidden honeypot field (if filled → widget silently drops, no request) plus a minimum time-to-submit check (< 2 s after open → drop). Server-side protection is inherently LeadTrackr's domain — the endpoint has the same public exposure via the GTM tag today.
+- Success UI shows as soon as the endpoint responds OK; on failure the widget shows a retry state and pushes no lead event.
 
-- CORS: allow POST from any origin (site-key validation is the gate for MVP); echo `Access-Control-Allow-Origin` from request origin.
-- Validate: known `siteKey` (env-configured map for MVP), required field per channel (`phone` for callback; `email` or `phone` for form), honeypot empty, payload < 32 KB.
-- Rate limit: simple per-IP limit via Cloudflare rate-limiting rules (no KV/DO complexity in MVP).
-- Forward: POST the full payload to `LEAD_WEBHOOK_URL` (env). MVP destination = anything (n8n/Make/Slack/email); handoff = dev swaps this for the internal LeadTrackr lead-source endpoint, or replaces the Worker entirely — the payload contract is what survives.
-- Respond `{ "ok": true }` fast; widget shows success as soon as the Worker accepts.
+## 8. dataLayer events — marketer-grade, PII included by design
 
-## 8. dataLayer events
+Purpose: clients' marketers must be able to build Enhanced Conversions (Google Ads/GA4) and Meta Advanced Matching straight from these pushes, without custom JS. PII is therefore **deliberately included**, in Google's `user_provided_data` schema — the same shape the LeadTrackr GTM tag accepts as input, and the same shape GTM's built-in "User-Provided Data" variable reads. Consent responsibility sits with the site owner, identical to any form-submit tracking.
 
-Pushed to `window.dataLayer` (created if absent):
+| Event | When |
+|---|---|
+| `leadtrackr_widget_open` | panel opened |
+| `leadtrackr_widget_channel_click` | channel chosen (`channel` param) |
+| `leadtrackr_widget_call_click` | tel: link clicked (`phone_number` = business number) |
+| `leadtrackr_widget_lead_submitted` | endpoint accepted the lead |
 
-| Event | When | Params |
-|---|---|---|
-| `ltw_open` | panel opened | `widget_version` |
-| `ltw_channel_click` | channel chosen | `channel` |
-| `ltw_call_click` | tel: link clicked | `phone` |
-| `ltw_lead_submitted` | Worker accepted lead | `channel` |
+The lead push:
 
-No PII in dataLayer events.
+```js
+window.dataLayer.push({
+  event: "leadtrackr_widget_lead_submitted",
+  leadtrackr: {
+    channel: "callback",                       // callback | form
+    form_name: "Widget — Terugbelverzoek",
+    project_id: "PROJECT_ID",
+    widget_version: "1.0.0",
+    attribution: {                             // current-touch snapshot
+      source: "google", medium: "cpc", campaign: "zomer-actie",
+      gclid: "Cj0KCQ…", wbraid: "", fbclid: "",
+      ga_client_id: "1234567890.1719000000"
+    }
+  },
+  user_provided_data: {                        // Google EC schema — plug-and-play
+    email: "jan@bedrijf.nl",
+    phone_number: "+31612345678",
+    address: [{ first_name: "Jan", last_name: "Jansen" }]
+  }
+});
+```
+
+Marketer workflows this enables out of the box: GTM trigger on `leadtrackr_widget_lead_submitted` → GA4 event with user-provided data (Enhanced Conversions), Google Ads conversion with EC, Meta pixel Lead with Advanced Matching, and even feeding the LeadTrackr GTM tag itself (`user_provided_data` maps 1:1 to its User-Provided Data Object input). `dataLayer` is created if absent, events also fire when GTM isn't installed.
 
 ## 9. Performance budget
 
-- Bundle ≤ 15 KB gzip, single file, zero dependencies; loads `async`, executes after `DOMContentLoaded` idle (`requestIdleCallback` with fallback).
+- Bundle ≤ 15 KB gzip, single file, zero dependencies; loads `async`, initializes on `requestIdleCallback` (fallback `DOMContentLoaded + setTimeout`).
 - No layout shift: widget is `position: fixed`, injected after page content.
 - No font/network requests on page load beyond the script itself; Cairo + first-open only.
 - Target Lighthouse impact: ~0 on LCP/CLS, TBT < 10 ms.
@@ -151,10 +217,10 @@ No PII in dataLayer events.
 
 ```
 leadtrackr-widget/
-  src/            # widget TypeScript (ui/, attribution.ts, datalayer.ts, transport.ts, config.ts)
-  worker/         # Cloudflare Worker (wrangler.toml, src/index.ts)
+  src/            # widget TypeScript (ui/, attribution.ts, channelflow.ts,
+                  #   datalayer.ts, transport.ts, config.ts)
   dist/           # committed release build (jsDelivr serves this)
-  demo/           # local test page that fakes a client site
+  demo/           # local test page that fakes a client site (incl. UTM/gclid links)
   docs/superpowers/specs/
 ```
 
@@ -162,21 +228,22 @@ Build: esbuild → IIFE, minified, `LT_WIDGET_VERSION` injected. `npm run dev` s
 
 ## 11. Testing
 
-- Unit: attribution capture/persistence rules, config merge, payload assembly (vitest).
-- Integration: demo page + mocked Worker; assert dataLayer pushes and POST payloads per channel.
-- Manual matrix: Safari private mode (no localStorage), mobile bottom sheet, CSS-hostile host page (aggressive `* { }` resets) to prove Shadow DOM isolation.
+- Unit (vitest): channel classification rules (UTM/organic/referral/direct), channel-flow append/dedup logic, click-ID fallback chains (`_gcl_aw`, `_fbc` construction, `_ga` parsing), name splitting, E.164 normalization, payload assembly.
+- **Parity test:** fixture pages where both the GTM tag and the widget run; assert both produce byte-identical `lt_channelflow` cookies and equivalent payloads.
+- Integration: demo page + mocked endpoint; assert dataLayer pushes (incl. `user_provided_data` shape) and POST payloads per channel.
+- Manual matrix: cookies blocked (Safari ITP/private mode), mobile bottom sheet, CSS-hostile host page (aggressive `* { }` resets), site with GTM absent (dataLayer still created).
 
 ## 12. Phasing
 
-1. **Fase 0** — UI design via Claude design session (prompt delivered separately); Lester picks direction.
-2. **Fase 1** — widget UI: Shadow DOM, all states, config, chosen design.
-3. **Fase 2** — attribution + dataLayer.
-4. **Fase 3** — Worker + transport + spam protection.
+1. **Fase 0** — UI design via Claude design session (**in progress, Lester**); build waits for the delivered design.
+2. **Fase 1** — widget UI: Shadow DOM, all states, config incl. theme, from the delivered design.
+3. **Fase 2** — attribution port (channel flow + click IDs) + dataLayer events + parity test against the GTM tag.
+4. **Fase 3** — transport to `createLead`, honeypot/time-check, retry state.
 5. **Fase 4** — release pipeline (build → tag → jsDelivr), install docs (direct + via GTM), first test site.
-6. **Handoff** — dev integrates as native LeadTrackr lead source: hosted config (C2), internal endpoint, `widget.leadtrackr.io`.
+6. **Handoff** — dev integrates as native LeadTrackr lead source: hosted config per project (C2), widget management UI, optional `widget.leadtrackr.io`.
 
 ## 13. Open points
 
-- GitHub org/account that will own the public repo (affects the jsDelivr URL clients install).
-- Final visual direction (light vs. dark-accent) — decided after the Claude design session.
-- MVP webhook destination for leads (n8n/Make/Slack/email) — any is fine, contract is fixed.
+- Final visual design — delivered by Lester from the Claude design session (light vs. dark-accent, channel visualisation).
+- Confirm with the LeadTrackr dev that `createLead` ignores unknown `formFields` keys gracefully (expected — free-form contract) and whether a lead ID is returned (nice-to-have for the dataLayer push).
+- Repo name under the `leadtrackr` GitHub org (`leadtrackr-widget` proposed).

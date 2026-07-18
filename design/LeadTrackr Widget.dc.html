@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EDEFF3;font-family:'Cairo',system-ui,sans-serif;color:#1F2937}
+a{color:#3E8762}a:hover{color:#52B483}
+input,textarea,button{font-family:inherit}
+::placeholder{color:#9CA3AF}
+@keyframes lt-pulse{0%{box-shadow:0 0 0 0 rgba(82,180,131,.45)}70%{box-shadow:0 0 0 14px rgba(82,180,131,0)}100%{box-shadow:0 0 0 0 rgba(82,180,131,0)}}
+@keyframes lt-pulse-navy{0%{box-shadow:0 0 0 0 rgba(2,10,36,.35)}70%{box-shadow:0 0 0 14px rgba(2,10,36,0)}100%{box-shadow:0 0 0 0 rgba(2,10,36,0)}}
+@keyframes lt-pop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+@keyframes lt-fade-up{0%{transform:translateY(8px);opacity:0}100%{transform:translateY(0);opacity:1}}
+</style>
+</helmet>
+
+<section style="display:flex;gap:56px;flex-wrap:wrap;align-items:flex-start;padding:48px;border-bottom:1px solid #DDE1E8">
+
+  <!-- ============ OPTION 2A — PERSOONLIJK ============ -->
+  <div id="2a" style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="background:#020A24;color:#fff;font:700 13px/1 'Cairo';padding:6px 12px;border-radius:999px">2a</span>
+      <h2 style="margin:0;font:700 22px/1.2 'Cairo';color:#020A24;letter-spacing:-0.01em">Persoonlijk — medewerker centraal, licht kleurenschema</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,420px);gap:24px">
+
+      <!-- 2A · Launcher + teaser -->
+      <div style="border-radius:16px;background:#F8F9FB;border:1px solid #E5E7EB;position:relative;height:340px;overflow:hidden">
+        <div style="position:absolute;top:16px;left:16px;font:600 11px/1 'Cairo';letter-spacing:.08em;text-transform:uppercase;color:#6B7280">1 · Launcher + persoonlijke teaser</div>
+        <div style="position:absolute;top:44px;left:16px;display:flex;flex-direction:column;gap:8px;opacity:.5">
+          <div style="width:140px;height:10px;border-radius:4px;background:#E5E7EB"></div>
+          <div style="width:96px;height:10px;border-radius:4px;background:#E5E7EB"></div>
+        </div>
+        <div style="position:absolute;right:20px;bottom:20px;display:flex;flex-direction:column;align-items:flex-end;gap:14px">
+          <div style="animation:lt-fade-up .4s ease-out both">
+            <div style="position:relative;max-width:260px;background:#fff;border:1px solid #E5E7EB;border-radius:14px 14px 4px 14px;padding:13px 36px 13px 16px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.06)">
+              <p style="margin:0 0 3px;font:700 13.5px/1.3 'Cairo';color:#020A24">{{ agentName }} <span style="font-weight:400;color:#6B7280">{{ tFrom }} {{ companyName }}</span></p>
+              <p style="margin:0;font:400 14px/1.5 'Cairo';color:#1F2937">{{ greeting }}</p>
+              <button aria-label="Sluiten" style="position:absolute;top:8px;right:8px;width:24px;height:24px;border:none;background:transparent;border-radius:999px;color:#9CA3AF;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease-out" style-hover="background:#F3F4F6;color:#1F2937">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+          </div>
+          <button aria-label="Neem contact op" style="width:62px;height:62px;border-radius:999px;border:3px solid #52B483;padding:0;background:#fff;cursor:pointer;position:relative;box-shadow:0 4px 12px rgba(82,180,131,.35);animation:lt-pulse 2.6s ease-out infinite;transition:all .2s ease-out" style-hover="transform:translateY(-1px)" style-focus="outline:2px solid #020A24;outline-offset:3px">
+            <img src="uploads/Untitled%20design.png" alt="" style="width:100%;height:100%;border-radius:999px;object-fit:cover;display:block">
+            <span style="position:absolute;right:-2px;bottom:-2px;width:22px;height:22px;border-radius:999px;background:#52B483;border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2A · Channel panel -->
+      <div style="border-radius:16px;background:#F8F9FB;border:1px solid #E5E7EB;padding:44px 30px 30px;position:relative;display:flex;justify-content:center;align-items:flex-start">
+        <div style="position:absolute;top:16px;left:16px;font:600 11px/1 'Cairo';letter-spacing:.08em;text-transform:uppercase;color:#6B7280">2 · Kanalen — persoonlijke uitnodiging</div>
+        <div style="width:340px;background:#fff;border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.12);overflow:hidden">
+          <div style="padding:20px 18px 4px;position:relative">
+            <button aria-label="Sluiten" style="position:absolute;top:12px;right:12px;width:28px;height:28px;border:none;background:transparent;border-radius:999px;color:#9CA3AF;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease-out" style-hover="background:#F3F4F6;color:#1F2937">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <div style="position:relative;flex-shrink:0">
+                <img src="uploads/Untitled%20design.png" alt="{{ agentName }}" style="width:56px;height:56px;border-radius:999px;object-fit:cover;display:block">
+                <span style="position:absolute;right:1px;bottom:1px;width:12px;height:12px;border-radius:999px;background:#52B483;border:2px solid #fff;animation:lt-pulse 2.6s ease-out infinite"></span>
+              </div>
+              <div style="min-width:0">
+                <p style="margin:0;font:700 16px/1.3 'Cairo';color:#020A24">{{ agentName }} <span style="font-weight:400;color:#6B7280">{{ tFrom }} {{ companyName }}</span></p>
+                <p style="margin:0;font:400 12.5px/1.4 'Cairo';color:#3E8762;font-weight:600">{{ tOnline }}</p>
+              </div>
+            </div>
+            <div style="background:#F3F4F6;border-radius:4px 14px 14px 14px;padding:12px 16px;margin-left:8px">
+              <p style="margin:0;font:400 14.5px/1.5 'Cairo';color:#1F2937">{{ greeting }}</p>
+            </div>
+          </div>
+          <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+            <sc-if value="{{ showMessage }}" hint-placeholder-val="{{ true }}">
+              <a href="#2a" style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;border:1px solid #E5E7EB;border-radius:12px;background:#fff;text-decoration:none;transition:all .2s ease-out;box-sizing:border-box" style-hover="border-color:#52B483;background:#EDF8F2" style-focus="outline:2px solid #52B483;outline-offset:2px">
+                <span style="width:40px;height:40px;border-radius:10px;background:#EDF8F2;color:#3E8762;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>
+                <span style="min-width:0;flex:1"><span style="display:block;font:700 15px/1.3 'Cairo';color:#020A24">{{ tMsgTitle }}</span><span style="display:block;font:400 13px/1.3 'Cairo';color:#6B7280">{{ tMsgSub }}</span></span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </a>
+            </sc-if>
+            <sc-if value="{{ showPhone }}" hint-placeholder-val="{{ true }}">
+              <a href="{{ telHref }}" style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;border:1px solid #E5E7EB;border-radius:12px;background:#fff;text-decoration:none;transition:all .2s ease-out;box-sizing:border-box" style-hover="border-color:#52B483;background:#EDF8F2" style-focus="outline:2px solid #52B483;outline-offset:2px">
+                <span style="width:40px;height:40px;border-radius:10px;background:#EDF8F2;color:#3E8762;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></span>
+                <span style="min-width:0;flex:1"><span style="display:block;font:700 15px/1.3 'Cairo';color:#020A24">{{ callLabel }}</span><span style="display:block;font:400 13px/1.3 'Cairo';color:#6B7280">{{ phoneNumber }}</span></span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </a>
+            </sc-if>
+            <sc-if value="{{ showWhatsApp }}" hint-placeholder-val="{{ true }}">
+              <a href="{{ waHref }}" style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;border:1px solid #E5E7EB;border-radius:12px;background:#fff;text-decoration:none;transition:all .2s ease-out;box-sizing:border-box" style-hover="border-color:#52B483;background:#EDF8F2" style-focus="outline:2px solid #52B483;outline-offset:2px">
+                <span style="width:40px;height:40px;border-radius:10px;background:#EDF8F2;color:#3E8762;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413"></path></svg></span>
+                <span style="min-width:0;flex:1"><span style="display:block;font:700 15px/1.3 'Cairo';color:#020A24">{{ tWaTitle }}</span><span style="display:block;font:400 13px/1.3 'Cairo';color:#6B7280">{{ tWaSub }}</span></span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </a>
+            </sc-if>
+          </div>
+          <div style="display:flex;justify-content:center;align-items:center;padding:2px 16px 12px">
+            <span style="font:400 11px/1 'Cairo';color:#9CA3AF">Better leads start with&nbsp;</span><a href="https://leadtrackr.io" target="_blank" rel="noopener" style="font:700 11px/1 'Cairo';color:#6B7280;text-decoration:none;transition:color .2s ease-out" style-hover="color:#3E8762">LeadTrackr.io</a><span style="font:400 11px/1 'Cairo'">&nbsp;🚀</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2A · WhatsApp compose -->
+      <div style="border-radius:16px;background:#F8F9FB;border:1px solid #E5E7EB;padding:44px 30px 30px;position:relative;display:flex;justify-content:center;align-items:flex-start">
+        <div style="position:absolute;top:16px;left:16px;font:600 11px/1 'Cairo';letter-spacing:.08em;text-transform:uppercase;color:#6B7280">3 · WhatsApp — telefoonvraag met landcode, daarna opent WhatsApp (lead is dan al opgeslagen)</div>
+        <div style="width:340px;background:#fff;border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.12);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:#075E54">
+            <button aria-label="Terug" style="width:32px;height:32px;border:none;background:transparent;border-radius:8px;color:rgba(255,255,255,.85);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s ease-out" style-hover="background:rgba(255,255,255,.12);color:#fff">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <img src="uploads/Untitled%20design.png" alt="{{ agentName }}" style="width:38px;height:38px;border-radius:999px;object-fit:cover;flex-shrink:0">
+            <div style="min-width:0;flex:1">
+              <p style="margin:0;font:700 14.5px/1.25 'Cairo';color:#fff">{{ agentName }}</p>
+              <p style="margin:0;font:400 11.5px/1.3 'Cairo';color:rgba(255,255,255,.75)">{{ tOnline }}</p>
+            </div>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,.85)"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413"></path></svg>
+          </div>
+          <div style="background:#ECE5DD;padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="align-self:flex-start;max-width:84%;background:#fff;border-radius:0 10px 10px 10px;padding:8px 12px;box-shadow:0 1px 1px rgba(0,0,0,.08)">
+              <p style="margin:0;font:400 14px/1.5 'Cairo';color:#1F2937">{{ greeting }}</p>
+              <p style="margin:2px 0 0;font:400 10.5px/1 'Cairo';color:#9CA3AF;text-align:right">12:04</p>
+            </div>
+            <sc-if value="{{ showWaPhone }}" hint-placeholder-val="{{ true }}">
+              <div style="align-self:flex-end;max-width:84%;background:#DCF8C6;border-radius:10px 0 10px 10px;padding:8px 12px;box-shadow:0 1px 1px rgba(0,0,0,.08);animation:lt-fade-up .4s ease-out both">
+                <p style="margin:0;font:400 14px/1.5 'Cairo';color:#1F2937">{{ tWaTyped }}</p>
+                <p style="margin:2px 0 0;font:400 10.5px/1 'Cairo';color:#9CA3AF;text-align:right;display:flex;justify-content:flex-end;align-items:center;gap:3px">12:05
+                  <svg width="14" height="10" viewBox="0 0 18 12" fill="none" stroke="#53BDEB" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 6 4.5 9.5 11 3"></polyline><polyline points="7 6 10.5 9.5 17 3"></polyline></svg>
+                </p>
+              </div>
+              <div style="align-self:flex-start;max-width:84%;background:#fff;border-radius:0 10px 10px 10px;padding:8px 12px;box-shadow:0 1px 1px rgba(0,0,0,.08);animation:lt-fade-up .4s ease-out .45s both">
+                <p style="margin:0;font:400 14px/1.5 'Cairo';color:#1F2937">{{ tWaPhoneQ }}</p>
+                <p style="margin:2px 0 0;font:400 10.5px/1 'Cairo';color:#9CA3AF;text-align:right">12:05</p>
+              </div>
+            </sc-if>
+          </div>
+          <sc-if value="{{ showWaDirect }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:8px;align-items:center;padding:10px;background:#F0F2F5">
+              <input value="{{ tWaTyped }}" aria-label="WhatsApp-bericht" style="flex:1;min-width:0;height:44px;border:none;border-radius:999px;padding:0 16px;background:#fff;font-size:14.5px;color:#1F2937;outline:none" style-focus="box-shadow:0 0 0 2px #25D366">
+              <a href="{{ waHref }}" aria-label="Versturen via WhatsApp" style="width:44px;height:44px;border-radius:999px;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;text-decoration:none;transition:all .2s ease-out" style-hover="background:#1EBE5A;transform:translateY(-1px)" style-focus="outline:2px solid #075E54;outline-offset:2px">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              </a>
+            </div>
+          </sc-if>
+          <sc-if value="{{ showWaPhone }}" hint-placeholder-val="{{ true }}">
+            <div style="position:relative;background:#F0F2F5;animation:lt-fade-up .4s ease-out .9s both">
+              <div style="margin:10px 10px 0;background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(2,10,36,.18);overflow:hidden">
+                <input placeholder="{{ tWaSearch }}" style="width:100%;box-sizing:border-box;height:38px;padding:0 12px;border:none;border-bottom:1px solid #F3F4F6;font-size:13px;color:#1F2937;outline:none;background:#fff">
+                <div style="display:flex;flex-direction:column;padding:4px 0">
+                  <button style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:none;background:#F0F2F5;cursor:pointer;font:600 13px/1 'Cairo';color:#1F2937;text-align:left">🇳🇱 <span style="flex:1">Nederland</span> <span style="color:#6B7280;font-weight:400">+31</span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </button>
+                  <button style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:none;background:transparent;cursor:pointer;font:400 13px/1 'Cairo';color:#1F2937;text-align:left" style-hover="background:#F7F8FA">🇧🇪 <span style="flex:1">België</span> <span style="color:#6B7280">+32</span></button>
+                  <button style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:none;background:transparent;cursor:pointer;font:400 13px/1 'Cairo';color:#1F2937;text-align:left" style-hover="background:#F7F8FA">🇩🇪 <span style="flex:1">Deutschland</span> <span style="color:#6B7280">+49</span></button>
+                  <button style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:none;background:transparent;cursor:pointer;font:400 13px/1 'Cairo';color:#1F2937;text-align:left" style-hover="background:#F7F8FA">🇬🇧 <span style="flex:1">United Kingdom</span> <span style="color:#6B7280">+44</span></button>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;padding:10px">
+                <div style="flex:1;min-width:0;display:flex;align-items:center;height:44px;background:#fff;border-radius:999px;overflow:hidden">
+                  <button aria-label="Landcode kiezen" style="display:flex;align-items:center;gap:5px;height:100%;padding:0 10px 0 14px;border:none;background:transparent;cursor:pointer;font:600 14.5px/1 'Cairo';color:#1F2937;flex-shrink:0" style-hover="background:#F7F8FA">🇳🇱 +31
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </button>
+                  <span style="width:1px;height:22px;background:#E5E7EB;flex-shrink:0"></span>
+                  <input value="{{ tWaTypedPhone }}" type="tel" aria-label="{{ tWaPhoneLabel }}" style="flex:1;min-width:0;height:100%;border:none;padding:0 14px 0 10px;background:transparent;font-size:14.5px;color:#1F2937;outline:none">
+                </div>
+                <a href="{{ waHref }}" aria-label="Versturen via WhatsApp" style="width:44px;height:44px;border-radius:999px;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;text-decoration:none;transition:all .2s ease-out" style-hover="background:#1EBE5A;transform:translateY(-1px)" style-focus="outline:2px solid #075E54;outline-offset:2px">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </a>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+
+      <!-- 2A · Berichtformulier -->
+      <div style="border-radius:16px;background:#F8F9FB;border:1px solid #E5E7EB;padding:44px 30px 30px;position:relative;display:flex;justify-content:center;align-items:flex-start">
+        <div style="position:absolute;top:16px;left:16px;font:600 11px/1 'Cairo';letter-spacing:.08em;text-transform:uppercase;color:#6B7280">4 · Bericht sturen</div>
+        <div style="width:340px;background:#fff;border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.12);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:8px;padding:12px 18px;border-bottom:1px solid #F3F4F6">
+            <button aria-label="Terug" style="width:32px;height:32px;border:none;background:transparent;border-radius:8px;color:#6B7280;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease-out" style-hover="background:#F3F4F6;color:#020A24">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <img src="uploads/Untitled%20design.png" alt="" style="width:30px;height:30px;border-radius:999px;object-fit:cover">
+            <p style="margin:0;font:700 15px/1.2 'Cairo';color:#020A24">{{ tFormTitle }}</p>
+          </div>
+          <div style="padding:18px;display:flex;flex-direction:column;gap:12px">
+            <div>
+              <label for="p-name" style="display:block;font:600 13px/1 'Cairo';color:#1F2937;margin-bottom:6px">{{ tNameLabel }}</label>
+              <input id="p-name" type="text" placeholder="{{ tNamePh }}" style="width:100%;box-sizing:border-box;height:46px;padding:0 14px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:15px;color:#1F2937;outline:none;background:#fff;transition:border-color .2s ease-out" style-focus="border-color:#52B483;box-shadow:0 0 0 1px #52B483">
+            </div>
+            <div>
+              <label for="p-email" style="display:block;font:600 13px/1 'Cairo';color:#1F2937;margin-bottom:6px">{{ tEmailLabel }}</label>
+              <input id="p-email" type="email" placeholder="{{ tEmailPh }}" style="width:100%;box-sizing:border-box;height:46px;padding:0 14px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:15px;color:#1F2937;outline:none;background:#fff;transition:border-color .2s ease-out" style-focus="border-color:#52B483;box-shadow:0 0 0 1px #52B483">
+            </div>
+            <div>
+              <label for="p-msg" style="display:block;font:600 13px/1 'Cairo';color:#1F2937;margin-bottom:6px">{{ tMsgLabel }}</label>
+              <textarea id="p-msg" rows="3" placeholder="{{ tMsgPh }}" style="width:100%;box-sizing:border-box;padding:11px 14px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:15px;line-height:1.5;color:#1F2937;outline:none;background:#fff;resize:none;transition:border-color .2s ease-out" style-focus="border-color:#52B483;box-shadow:0 0 0 1px #52B483"></textarea>
+            </div>
+            <button style="width:100%;height:48px;border:none;border-radius:8px;background:#52B483;color:#fff;font:700 15px/1 'Cairo';cursor:pointer;transition:all .2s ease-out" style-hover="background:#3E8762;transform:translateY(-1px);box-shadow:0 4px 12px rgba(82,180,131,.3)" style-focus="outline:2px solid #020A24;outline-offset:2px">{{ tSubmit }}</button>
+          </div>
+          <div style="display:flex;justify-content:center;align-items:center;padding:0 16px 12px">
+            <span style="font:400 11px/1 'Cairo';color:#9CA3AF">Better leads start with&nbsp;</span><a href="https://leadtrackr.io" target="_blank" rel="noopener" style="font:700 11px/1 'Cairo';color:#6B7280;text-decoration:none;transition:color .2s ease-out" style-hover="color:#3E8762">LeadTrackr.io</a><span style="font:400 11px/1 'Cairo'">&nbsp;🚀</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2A · Succes -->
+      <div style="border-radius:16px;background:#F8F9FB;border:1px solid #E5E7EB;padding:44px 30px 30px;position:relative;display:flex;justify-content:center;align-items:flex-start">
+        <div style="position:absolute;top:16px;left:16px;font:600 11px/1 'Cairo';letter-spacing:.08em;text-transform:uppercase;color:#6B7280">5 · Succes</div>
+        <div style="width:340px;background:#fff;border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.12);overflow:hidden">
+          <div style="padding:38px 28px 26px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px">
+            <div style="position:relative;margin-bottom:10px;animation:lt-pop .5s ease-out both">
+              <img src="uploads/Untitled%20design.png" alt="{{ agentName }}" style="width:68px;height:68px;border-radius:999px;object-fit:cover;display:block">
+              <span style="position:absolute;right:-4px;bottom:-4px;width:26px;height:26px;border-radius:999px;background:#52B483;border:2.5px solid #fff;display:flex;align-items:center;justify-content:center">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </span>
+            </div>
+            <p style="margin:0;font:700 18px/1.3 'Cairo';color:#020A24">{{ tSuccessTitle }}</p>
+            <p style="margin:0;font:400 14px/1.55 'Cairo';color:#4B5563">{{ tSuccessBody }}</p>
+            <a href="#2a" style="margin-top:12px;font:700 14px/1 'Cairo';color:#3E8762;text-decoration:none;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 8px" style-hover="color:#52B483">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+              {{ tBack }}
+            </a>
+          </div>
+          <div style="display:flex;justify-content:center;align-items:center;padding:0 16px 12px">
+            <span style="font:400 11px/1 'Cairo';color:#9CA3AF">Better leads start with&nbsp;</span><a href="https://leadtrackr.io" target="_blank" rel="noopener" style="font:700 11px/1 'Cairo';color:#6B7280;text-decoration:none;transition:color .2s ease-out" style-hover="color:#3E8762">LeadTrackr.io</a><span style="font:400 11px/1 'Cairo'">&nbsp;🚀</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2A · Mobiel -->
+      <div style="border-radius:16px;background:#F8F9FB;border:1px solid #E5E7EB;padding:44px 30px 30px;position:relative;display:flex;justify-content:center;grid-column:1 / -1">
+        <div style="position:absolute;top:16px;left:16px;font:600 11px/1 'Cairo';letter-spacing:.08em;text-transform:uppercase;color:#6B7280">6 · Mobiel — bottom sheet</div>
+        <div style="width:320px;height:640px;border-radius:40px;border:9px solid #0A1432;background:#fff;position:relative;overflow:hidden;box-shadow:0 20px 50px -12px rgba(2,10,36,.25)">
+          <div style="position:absolute;inset:0;background:#F8F9FB">
+            <div style="height:52px;background:#fff;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;padding:0 16px;gap:8px"><span style="width:22px;height:22px;border-radius:6px;background:#E5E7EB"></span><span style="width:70px;height:9px;border-radius:4px;background:#E5E7EB"></span></div>
+            <div style="padding:18px 16px;display:flex;flex-direction:column;gap:9px;opacity:.6"><span style="width:180px;height:12px;border-radius:4px;background:#E1E4E9"></span><span style="width:220px;height:9px;border-radius:4px;background:#E9ECF0"></span><span style="width:150px;height:9px;border-radius:4px;background:#E9ECF0"></span></div>
+          </div>
+          <div style="position:absolute;inset:0;background:rgba(2,10,36,.35)"></div>
+          <div style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -8px 30px rgba(2,10,36,.18)">
+            <div style="display:flex;justify-content:center;padding:8px 0 0"><span style="width:36px;height:4px;border-radius:999px;background:#E5E7EB"></span></div>
+            <div style="padding:10px 16px 0;position:relative">
+              <button aria-label="Sluiten" style="position:absolute;top:6px;right:12px;width:28px;height:28px;border:none;background:transparent;border-radius:999px;color:#9CA3AF;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+              <div style="display:flex;align-items:center;gap:11px;margin-bottom:12px">
+                <div style="position:relative;flex-shrink:0">
+                  <img src="uploads/Untitled%20design.png" alt="{{ agentName }}" style="width:48px;height:48px;border-radius:999px;object-fit:cover;display:block">
+                  <span style="position:absolute;right:0;bottom:0;width:11px;height:11px;border-radius:999px;background:#52B483;border:2px solid #fff"></span>
+                </div>
+                <div><p style="margin:0;font:700 15px/1.3 'Cairo';color:#020A24">{{ agentName }} <span style="font-weight:400;color:#6B7280">{{ tFrom }} {{ companyName }}</span></p><p style="margin:0;font:600 12px/1.4 'Cairo';color:#3E8762">{{ tOnline }}</p></div>
+              </div>
+              <div style="background:#F3F4F6;border-radius:4px 14px 14px 14px;padding:11px 14px;margin-left:6px">
+                <p style="margin:0;font:400 14px/1.5 'Cairo';color:#1F2937">{{ greeting }}</p>
+              </div>
+            </div>
+            <div style="padding:14px 16px;display:flex;flex-direction:column;gap:9px">
+              <sc-if value="{{ showMessage }}" hint-placeholder-val="{{ true }}">
+                <a href="#2a" style="display:flex;align-items:center;gap:12px;min-height:52px;padding:6px 12px;border:1px solid #E5E7EB;border-radius:12px;background:#fff;text-decoration:none;box-sizing:border-box">
+                  <span style="width:36px;height:36px;border-radius:9px;background:#EDF8F2;color:#3E8762;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>
+                  <span style="flex:1"><span style="display:block;font:700 14px/1.3 'Cairo';color:#020A24">{{ tMsgTitle }}</span><span style="display:block;font:400 12px/1.3 'Cairo';color:#6B7280">{{ tMsgSubShort }}</span></span>
+                </a>
+              </sc-if>
+              <sc-if value="{{ showPhone }}" hint-placeholder-val="{{ true }}">
+                <a href="{{ telHref }}" style="display:flex;align-items:center;gap:12px;min-height:52px;padding:6px 12px;border:1px solid #E5E7EB;border-radius:12px;background:#fff;text-decoration:none;box-sizing:border-box">
+                  <span style="width:36px;height:36px;border-radius:9px;background:#EDF8F2;color:#3E8762;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></span>
+                  <span style="flex:1"><span style="display:block;font:700 14px/1.3 'Cairo';color:#020A24">{{ callLabel }}</span><span style="display:block;font:400 12px/1.3 'Cairo';color:#6B7280">{{ phoneNumber }}</span></span>
+                </a>
+              </sc-if>
+              <sc-if value="{{ showWhatsApp }}" hint-placeholder-val="{{ true }}">
+                <a href="{{ waHref }}" style="display:flex;align-items:center;gap:12px;min-height:52px;padding:6px 12px;border:1px solid #E5E7EB;border-radius:12px;background:#fff;text-decoration:none;box-sizing:border-box">
+                  <span style="width:36px;height:36px;border-radius:9px;background:#EDF8F2;color:#3E8762;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413"></path></svg></span>
+                  <span style="flex:1"><span style="display:block;font:700 14px/1.3 'Cairo';color:#020A24">{{ tWaTitle }}</span><span style="display:block;font:400 12px/1.3 'Cairo';color:#6B7280">{{ tWaSubShort }}</span></span>
+                </a>
+              </sc-if>
+            </div>
+            <div style="display:flex;justify-content:center;align-items:center;padding:0 16px 16px">
+              <span style="font:400 11px/1 'Cairo';color:#9CA3AF">Better leads start with&nbsp;</span><a href="https://leadtrackr.io" target="_blank" rel="noopener" style="font:700 11px/1 'Cairo';color:#6B7280;text-decoration:none;transition:color .2s ease-out" style-hover="color:#3E8762">LeadTrackr.io</a><span style="font:400 11px/1 'Cairo'">&nbsp;🚀</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</section>
+
+<section style="display:flex;gap:56px;flex-wrap:wrap;align-items:flex-start;padding:48px;opacity:.55">
+
+  <!-- ============ OPTION 1A — LIGHT ============ -->
+  <div id="1a" style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="background:#020A24;color:#fff;font:700 13px/1 'Cairo';padding:6px 12px;border-radius:999px">1a</span>
+      <h2 style="margin:0;font:700 22px/1.2 'Cairo';color:#020A24;letter-spacing:-0.01em">Licht — wit paneel, groen accent</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,400px);gap:24px">
+
+      <!-- 1A · Launcher -->
+      <div style="border-radius:16px;background:#F8F9FB;border:1px solid #E5E7EB;position:relative;height:300px;overflow:hidden">
+        <div style="position:absolute;top:16px;left:16px;font:600 11px/1 'Cairo';letter-spacing:.08em;text-transform:uppercase;color:#6B7280">1 · Launcher + teaser</div>
+        <div style="position:absolute;top:44px;left:16px;display:flex;flex-direction:column;gap:8px;opacity:.5">
+          <div style="width:140px;height:10px;border-radius:4px;background:#E5E7EB"></div>
+          <div style="width:96px;height:10px;border-radius:4px;background:#E5E7EB"></div>
+        </div>
+        <div style="position:absolute;right:20px;bottom:20px;display:flex;flex-direction:column;align-items:flex-end;gap:12px">
+          <div style="position:relative;max-width:250px;background:#fff;border:1px solid #E5E7EB;border-radius:14px 14px 4px 14px;padding:14px 36px 14px 16px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.06);animation:lt-fade-up .4s ease-out both">
+            <p style="margin:0;font:600 14px/1.5 'Cairo';color:#020A24">Vragen? Wij helpen je direct.</p>
+            <button aria-label="Sluiten" style="position:absolute;top:8px;right:8px;width:24px;height:24px;border:none;background:transparent;border-radius:999px;color:#9CA3AF;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease-out" style-hover="background:#F3F4F6;color:#1F2937">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+          <button aria-label="Neem contact op" style="width:60px;height:60px;border-radius:999px;border:none;background:#52B483;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(82,180,131,.35);animation:lt-pulse 2.6s ease-out infinite;transition:all .2s ease-out" style-hover="background:#3E8762;transform:translateY(-1px)" style-focus="outline:2px solid #020A24;outline-offset:3px">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 1A · Channel panel -->
+      <div style="border-radius:16px;background:#F8F9FB;border:1px solid #E5E7EB;padding:44px 30px 30px;position:relative;display:flex;justify-content:center;align-items:flex-start">
+        <div style="position:absolute;top:16px;left:16px;font:600 11px/1 'Cairo';letter-spacing:.08em;text-transform:uppercase;color:#6B7280">2 · Kanalen</div>
+        <div style="width:340px;background:#fff;border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.12);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:12px;padding:18px 18px 16px;border-bottom:1px solid #F3F4F6;position:relative">
+            <div style="width:44px;height:44px;border-radius:999px;background:#EDF8F2;color:#2F654A;font:700 15px/1 'Cairo';display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ companyInitials }}</div>
+            <div style="min-width:0">
+              <p style="margin:0;font:700 16px/1.3 'Cairo';color:#020A24">Neem contact op</p>
+              <p style="margin:0;font:400 13px/1.4 'Cairo';color:#6B7280">We reageren meestal binnen een paar minuten</p>
+            </div>
+            <button aria-label="Sluiten" style="position:absolute;top:12px;right:12px;width:28px;height:28px;border:none;background:transparent;border-radius:999px;color:#9CA3AF;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease-out" style-hover="background:#F3F4F6;color:#1F2937">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+          <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+            <a href="tel:+31201234567" style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;border:1px solid #E5E7EB;border-radius:12px;background:#fff;text-decoration:none;transition:all .2s ease-out;box-sizing:border-box" style-hover="border-color:#52B483;background:#EDF8F2" style-focus="outline:2px solid #52B483;outline-offset:2px">
+              <span style="width:40px;height:40px;border-radius:10px;background:#EDF8F2;color:#3E8762;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></span>
+              <span style="min-width:0;flex:1"><span style="display:block;font:700 15px/1.3 'Cairo';color:#020A24">Bel ons direct</span><span style="display:block;font:400 13px/1.3 'Cairo';color:#6B7280">{{ phoneNumber }}</span></span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+            <a href="#1a" style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;border:1px solid #E5E7EB;border-radius:12px;background:#fff;text-decoration:none;transition:all .2s ease-out;box-sizing:border-box" style-hover="border-color:#52B483;background:#EDF8F2" style-focus="outline:2px solid #52B483;outline-offset:2px">
+              <span style="width:40px;height:40px;border-radius:10px;background:#EDF8F2;color:#3E8762;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 2 16 8 22 8"></polyline><line x1="23" y1="1" x2="16" y2="8"></line><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></span>
+              <span style="min-width:0;flex:1"><span style="display:block;font:700 15px/1.3 'Cairo';color:#020A24">Terugbelverzoek</span><span style="display:block;font:400 13px/1.3 'Cairo';color:#6B7280">Wij bellen jou terug</span></span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+            <a href="#1a" style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;border:1px solid #E5E7EB;border-radius:12px;background:#fff;text-decoration:none;transition:all .2s ease-out;box-sizing:border-box" style-hover="border-color:#52B483;background:#EDF8F2" style-focus="outline:2px solid #52B483;outline-offset:2px">
+              <span style="width:40px;height:40px;border-radius:10px;background:#EDF8F2;color:#3E8762;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>
+              <span style="min-width:0;flex:1"><span style="display:block;font:700 15px/1.3 'Cairo';color:#020A24">Stuur een bericht</span><span style="display:block;font:400 13px/1.3 'Cairo';color:#6B7280">We antwoorden per e-mail</span></span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+          </div>
+          <div style="display:flex;justify-content:center;align-items:center;gap:6px;padding:4px 16px 14px">
+            <span style="width:11px;height:11px;border-radius:3px;background:#52B483;display:inline-block"></span>
+            <span style="font:400 11.5px/1 'Cairo';color:#9CA3AF">by <strong style="font-weight:700;color:#6B7280">LeadTrackr.io</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1A · Callback form -->
+      <div style="border-radius:16px;background:#F8F9FB;border:1px solid #E5E7EB;padding:44px 30px 30px;position:relative;display:flex;justify-content:center;align-items:flex-start">
+        <div style="position:absolute;top:16px;left:16px;font:600 11px/1 'Cairo';letter-spacing:.08em;text-transform:uppercase;color:#6B7280">3 · Terugbelverzoek (met fout)</div>
+        <div style="width:340px;background:#fff;border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.12);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid #F3F4F6">
+            <button aria-label="Terug" style="width:32px;height:32px;border:none;background:transparent;border-radius:8px;color:#6B7280;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease-out" style-hover="background:#F3F4F6;color:#020A24">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <p style="margin:0;font:700 16px/1.2 'Cairo';color:#020A24">Terugbelverzoek</p>
+          </div>
+          <div style="padding:18px;display:flex;flex-direction:column;gap:14px">
+            <p style="margin:0;font:400 13.5px/1.5 'Cairo';color:#4B5563">Laat je nummer achter, dan bellen we je zo snel mogelijk terug.</p>
+            <div>
+              <label for="cb-name-a" style="display:block;font:600 13px/1 'Cairo';color:#1F2937;margin-bottom:6px">Naam <span style="font-weight:400;color:#9CA3AF">(optioneel)</span></label>
+              <input id="cb-name-a" type="text" placeholder="Je naam" style="width:100%;box-sizing:border-box;height:46px;padding:0 14px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:15px;color:#1F2937;outline:none;background:#fff;transition:border-color .2s ease-out" style-focus="border-color:#52B483;box-shadow:0 0 0 1px #52B483">
+            </div>
+            <div>
+              <label for="cb-phone-a" style="display:block;font:600 13px/1 'Cairo';color:#1F2937;margin-bottom:6px">Telefoonnummer</label>
+              <input id="cb-phone-a" type="tel" value="06 12" aria-invalid="true" style="width:100%;box-sizing:border-box;height:46px;padding:0 14px;border:1.5px solid #FF6A6A;border-radius:8px;font-size:15px;color:#1F2937;outline:none;background:#FFF7F7;box-shadow:0 0 0 1px #FF6A6A;transition:border-color .2s ease-out">
+              <p style="margin:6px 0 0;font:600 12.5px/1.4 'Cairo';color:#C23B3B;display:flex;align-items:center;gap:5px">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                Vul een geldig telefoonnummer in
+              </p>
+            </div>
+            <button style="width:100%;height:48px;border:none;border-radius:8px;background:#52B483;color:#fff;font:700 15px/1 'Cairo';cursor:pointer;transition:all .2s ease-out" style-hover="background:#3E8762;transform:translateY(-1px);box-shadow:0 4px 12px rgba(82,180,131,.3)" style-focus="outline:2px solid #020A24;outline-offset:2px">Bel mij terug</button>
+          </div>
+          <div style="display:flex;justify-content:center;align-items:center;gap:6px;padding:0 16px 14px">
+            <span style="width:11px;height:11px;border-radius:3px;background:#52B483;display:inline-block"></span>
+            <span style="font:400 11.5px/1 'Cairo';color:#9CA3AF">by <strong style="font-weight:700;color:#6B7280">LeadTrackr.io</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1A · Contact form -->
+      <div style="border-radius:16px;background:#F8F9FB;border:1px solid #E5E7EB;padding:44px 30px 30px;position:relative;display:flex;justify-content:center;align-items:flex-start">
+        <div style="position:absolute;top:16px;left:16px;font:600 11px/1 'Cairo';letter-spacing:.08em;text-transform:uppercase;color:#6B7280">4 · Bericht sturen</div>
+        <div style="width:340px;background:#fff;border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.12);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid #F3F4F6">
+            <button aria-label="Terug" style="width:32px;height:32px;border:none;background:transparent;border-radius:8px;color:#6B7280;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease-out" style-hover="background:#F3F4F6;color:#020A24">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <p style="margin:0;font:700 16px/1.2 'Cairo';color:#020A24">Stuur een bericht</p>
+          </div>
+          <div style="padding:18px;display:flex;flex-direction:column;gap:12px">
+            <div>
+              <label for="cf-name-a" style="display:block;font:600 13px/1 'Cairo';color:#1F2937;margin-bottom:6px">Naam</label>
+              <input id="cf-name-a" type="text" placeholder="Je naam" style="width:100%;box-sizing:border-box;height:46px;padding:0 14px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:15px;color:#1F2937;outline:none;background:#fff;transition:border-color .2s ease-out" style-focus="border-color:#52B483;box-shadow:0 0 0 1px #52B483">
+            </div>
+            <div>
+              <label for="cf-email-a" style="display:block;font:600 13px/1 'Cairo';color:#1F2937;margin-bottom:6px">E-mailadres</label>
+              <input id="cf-email-a" type="email" placeholder="naam@bedrijf.nl" style="width:100%;box-sizing:border-box;height:46px;padding:0 14px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:15px;color:#1F2937;outline:none;background:#fff;transition:border-color .2s ease-out" style-focus="border-color:#52B483;box-shadow:0 0 0 1px #52B483">
+            </div>
+            <div>
+              <label for="cf-phone-a" style="display:block;font:600 13px/1 'Cairo';color:#1F2937;margin-bottom:6px">Telefoonnummer <span style="font-weight:400;color:#9CA3AF">(optioneel)</span></label>
+              <input id="cf-phone-a" type="tel" placeholder="06 12345678" style="width:100%;box-sizing:border-box;height:46px;padding:0 14px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:15px;color:#1F2937;outline:none;background:#fff;transition:border-color .2s ease-out" style-focus="border-color:#52B483;box-shadow:0 0 0 1px #52B483">
+            </div>
+            <div>
+              <label for="cf-msg-a" style="display:block;font:600 13px/1 'Cairo';color:#1F2937;margin-bottom:6px">Bericht</label>
+              <textarea id="cf-msg-a" rows="3" placeholder="Waar kunnen we je mee helpen?" style="width:100%;box-sizing:border-box;padding:11px 14px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:15px;line-height:1.5;color:#1F2937;outline:none;background:#fff;resize:none;transition:border-color .2s ease-out" style-focus="border-color:#52B483;box-shadow:0 0 0 1px #52B483"></textarea>
+            </div>
+            <button style="width:100%;height:48px;border:none;border-radius:8px;background:#52B483;color:#fff;font:700 15px/1 'Cairo';cursor:pointer;transition:all .2s ease-out" style-hover="background:#3E8762;transform:translateY(-1px);box-shadow:0 4px 12px rgba(82,180,131,.3)" style-focus="outline:2px solid #020A24;outline-offset:2px">Verstuur bericht</button>
+          </div>
+          <div style="display:flex;justify-content:center;align-items:center;gap:6px;padding:0 16px 14px">
+            <span style="width:11px;height:11px;border-radius:3px;background:#52B483;display:inline-block"></span>
+            <span style="font:400 11.5px/1 'Cairo';color:#9CA3AF">by <strong style="font-weight:700;color:#6B7280">LeadTrackr.io</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1A · Success -->
+      <div style="border-radius:16px;background:#F8F9FB;border:1px solid #E5E7EB;padding:44px 30px 30px;position:relative;display:flex;justify-content:center;align-items:flex-start">
+        <div style="position:absolute;top:16px;left:16px;font:600 11px/1 'Cairo';letter-spacing:.08em;text-transform:uppercase;color:#6B7280">5 · Succes</div>
+        <div style="width:340px;background:#fff;border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.12);overflow:hidden">
+          <div style="padding:40px 28px 28px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px">
+            <div style="width:64px;height:64px;border-radius:999px;background:#EDF8F2;display:flex;align-items:center;justify-content:center;margin-bottom:8px;animation:lt-pop .5s ease-out both">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3E8762" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <p style="margin:0;font:700 18px/1.3 'Cairo';color:#020A24">Gelukt, je aanvraag is verstuurd</p>
+            <p style="margin:0;font:400 14px/1.55 'Cairo';color:#4B5563">We nemen zo snel mogelijk contact met je op.</p>
+            <a href="#1a" style="margin-top:14px;font:700 14px/1 'Cairo';color:#3E8762;text-decoration:none;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 8px" style-hover="color:#52B483">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+              Terug naar begin
+            </a>
+          </div>
+          <div style="display:flex;justify-content:center;align-items:center;gap:6px;padding:0 16px 14px">
+            <span style="width:11px;height:11px;border-radius:3px;background:#52B483;display:inline-block"></span>
+            <span style="font:400 11.5px/1 'Cairo';color:#9CA3AF">by <strong style="font-weight:700;color:#6B7280">LeadTrackr.io</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1A · Mobile -->
+      <div style="border-radius:16px;background:#F8F9FB;border:1px solid #E5E7EB;padding:44px 30px 30px;position:relative;display:flex;justify-content:center;align-items:flex-start">
+        <div style="position:absolute;top:16px;left:16px;font:600 11px/1 'Cairo';letter-spacing:.08em;text-transform:uppercase;color:#6B7280">6 · Mobiel — bottom sheet</div>
+        <div style="width:320px;height:640px;border-radius:40px;border:9px solid #0A1432;background:#fff;position:relative;overflow:hidden;box-shadow:0 20px 50px -12px rgba(2,10,36,.25)">
+          <div style="position:absolute;inset:0;background:#F8F9FB">
+            <div style="height:52px;background:#fff;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;padding:0 16px;gap:8px"><span style="width:22px;height:22px;border-radius:6px;background:#E5E7EB"></span><span style="width:70px;height:9px;border-radius:4px;background:#E5E7EB"></span></div>
+            <div style="padding:18px 16px;display:flex;flex-direction:column;gap:9px;opacity:.6"><span style="width:180px;height:12px;border-radius:4px;background:#E1E4E9"></span><span style="width:220px;height:9px;border-radius:4px;background:#E9ECF0"></span><span style="width:150px;height:9px;border-radius:4px;background:#E9ECF0"></span></div>
+          </div>
+          <div style="position:absolute;inset:0;background:rgba(2,10,36,.35)"></div>
+          <div style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -8px 30px rgba(2,10,36,.18)">
+            <div style="display:flex;justify-content:center;padding:8px 0 0"><span style="width:36px;height:4px;border-radius:999px;background:#E5E7EB"></span></div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 18px 14px;border-bottom:1px solid #F3F4F6;position:relative">
+              <div style="width:40px;height:40px;border-radius:999px;background:#EDF8F2;color:#2F654A;font:700 14px/1 'Cairo';display:flex;align-items:center;justify-content:center">{{ companyInitials }}</div>
+              <div><p style="margin:0;font:700 15px/1.3 'Cairo';color:#020A24">Neem contact op</p><p style="margin:0;font:400 12.5px/1.4 'Cairo';color:#6B7280">We reageren snel</p></div>
+              <button aria-label="Sluiten" style="position:absolute;top:10px;right:12px;width:28px;height:28px;border:none;background:transparent;border-radius:999px;color:#9CA3AF;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div style="padding:14px 16px;display:flex;flex-direction:column;gap:9px">
+              <a href="tel:+31201234567" style="display:flex;align-items:center;gap:12px;min-height:52px;padding:6px 12px;border:1px solid #E5E7EB;border-radius:12px;background:#fff;text-decoration:none;box-sizing:border-box">
+                <span style="width:36px;height:36px;border-radius:9px;background:#EDF8F2;color:#3E8762;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></span>
+                <span style="flex:1"><span style="display:block;font:700 14px/1.3 'Cairo';color:#020A24">Bel ons direct</span><span style="display:block;font:400 12px/1.3 'Cairo';color:#6B7280">{{ phoneNumber }}</span></span>
+              </a>
+              <a href="#1a" style="display:flex;align-items:center;gap:12px;min-height:52px;padding:6px 12px;border:1px solid #E5E7EB;border-radius:12px;background:#fff;text-decoration:none;box-sizing:border-box">
+                <span style="width:36px;height:36px;border-radius:9px;background:#EDF8F2;color:#3E8762;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 2 16 8 22 8"></polyline><line x1="23" y1="1" x2="16" y2="8"></line><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></span>
+                <span style="flex:1"><span style="display:block;font:700 14px/1.3 'Cairo';color:#020A24">Terugbelverzoek</span><span style="display:block;font:400 12px/1.3 'Cairo';color:#6B7280">Wij bellen jou terug</span></span>
+              </a>
+              <a href="#1a" style="display:flex;align-items:center;gap:12px;min-height:52px;padding:6px 12px;border:1px solid #E5E7EB;border-radius:12px;background:#fff;text-decoration:none;box-sizing:border-box">
+                <span style="width:36px;height:36px;border-radius:9px;background:#EDF8F2;color:#3E8762;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>
+                <span style="flex:1"><span style="display:block;font:700 14px/1.3 'Cairo';color:#020A24">Stuur een bericht</span><span style="display:block;font:400 12px/1.3 'Cairo';color:#6B7280">We antwoorden per e-mail</span></span>
+              </a>
+            </div>
+            <div style="display:flex;justify-content:center;align-items:center;gap:6px;padding:0 16px 16px">
+              <span style="width:11px;height:11px;border-radius:3px;background:#52B483;display:inline-block"></span>
+              <span style="font:400 11.5px/1 'Cairo';color:#9CA3AF">by <strong style="font-weight:700;color:#6B7280">LeadTrackr.io</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ OPTION 1B — DARK ACCENT ============ -->
+  <div id="1b" style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="background:#020A24;color:#fff;font:700 13px/1 'Cairo';padding:6px 12px;border-radius:999px">1b</span>
+      <h2 style="margin:0;font:700 22px/1.2 'Cairo';color:#020A24;letter-spacing:-0.01em">Donker accent — navy header, dashboard-look</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,400px);gap:24px">
+
+      <!-- 1B · Launcher -->
+      <div style="border-radius:16px;background:#F8F9FB;border:1px solid #E5E7EB;position:relative;height:300px;overflow:hidden">
+        <div style="position:absolute;top:16px;left:16px;font:600 11px/1 'Cairo';letter-spacing:.08em;text-transform:uppercase;color:#6B7280">1 · Launcher + teaser</div>
+        <div style="position:absolute;top:44px;left:16px;display:flex;flex-direction:column;gap:8px;opacity:.5">
+          <div style="width:140px;height:10px;border-radius:4px;background:#E5E7EB"></div>
+          <div style="width:96px;height:10px;border-radius:4px;background:#E5E7EB"></div>
+        </div>
+        <div style="position:absolute;right:20px;bottom:20px;display:flex;flex-direction:column;align-items:flex-end;gap:12px">
+          <div style="position:relative;max-width:250px;background:#020A24;border-radius:14px 14px 4px 14px;padding:14px 36px 14px 16px;box-shadow:0 4px 12px rgba(2,10,36,.25);animation:lt-fade-up .4s ease-out both;border-bottom:3px solid #52B483">
+            <p style="margin:0;font:600 14px/1.5 'Cairo';color:#fff">Vragen? Wij helpen je direct.</p>
+            <button aria-label="Sluiten" style="position:absolute;top:8px;right:8px;width:24px;height:24px;border:none;background:transparent;border-radius:999px;color:rgba(255,255,255,.6);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease-out" style-hover="background:rgba(255,255,255,.12);color:#fff">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+          <button aria-label="Neem contact op" style="width:60px;height:60px;border-radius:999px;border:none;background:#020A24;color:#52B483;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(2,10,36,.3);animation:lt-pulse 2.6s ease-out infinite;transition:all .2s ease-out" style-hover="background:#0A1432;transform:translateY(-1px)" style-focus="outline:2px solid #52B483;outline-offset:3px">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 1B · Channel panel -->
+      <div style="border-radius:16px;background:#F8F9FB;border:1px solid #E5E7EB;padding:44px 30px 30px;position:relative;display:flex;justify-content:center;align-items:flex-start">
+        <div style="position:absolute;top:16px;left:16px;font:600 11px/1 'Cairo';letter-spacing:.08em;text-transform:uppercase;color:#6B7280">2 · Kanalen</div>
+        <div style="width:340px;background:#fff;border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.12);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:12px;padding:18px 18px 16px;background:#020A24;border-bottom:3px solid #52B483;position:relative">
+            <div style="width:44px;height:44px;border-radius:999px;background:#142048;color:#52B483;font:700 15px/1 'Cairo';display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ companyInitials }}</div>
+            <div style="min-width:0">
+              <p style="margin:0;font:700 16px/1.3 'Cairo';color:#fff">Neem contact op</p>
+              <p style="margin:0;font:400 13px/1.4 'Cairo';color:rgba(255,255,255,.65)">We reageren meestal binnen een paar minuten</p>
+            </div>
+            <button aria-label="Sluiten" style="position:absolute;top:12px;right:12px;width:28px;height:28px;border:none;background:transparent;border-radius:999px;color:rgba(255,255,255,.55);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease-out" style-hover="background:rgba(255,255,255,.12);color:#fff">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+          <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+            <a href="tel:+31201234567" style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;border:1px solid #E5E7EB;border-radius:12px;background:#fff;text-decoration:none;transition:all .2s ease-out;box-sizing:border-box" style-hover="border-color:#020A24;background:#F9FAFB" style-focus="outline:2px solid #52B483;outline-offset:2px">
+              <span style="width:40px;height:40px;border-radius:10px;background:#020A24;color:#52B483;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></span>
+              <span style="min-width:0;flex:1"><span style="display:block;font:700 15px/1.3 'Cairo';color:#020A24">Bel ons direct</span><span style="display:block;font:400 13px/1.3 'Cairo';color:#6B7280">{{ phoneNumber }}</span></span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+            <a href="#1b" style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;border:1px solid #E5E7EB;border-radius:12px;background:#fff;text-decoration:none;transition:all .2s ease-out;box-sizing:border-box" style-hover="border-color:#020A24;background:#F9FAFB" style-focus="outline:2px solid #52B483;outline-offset:2px">
+              <span style="width:40px;height:40px;border-radius:10px;background:#020A24;color:#52B483;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 2 16 8 22 8"></polyline><line x1="23" y1="1" x2="16" y2="8"></line><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></span>
+              <span style="min-width:0;flex:1"><span style="display:block;font:700 15px/1.3 'Cairo';color:#020A24">Terugbelverzoek</span><span style="display:block;font:400 13px/1.3 'Cairo';color:#6B7280">Wij bellen jou terug</span></span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+            <a href="#1b" style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;border:1px solid #E5E7EB;border-radius:12px;background:#fff;text-decoration:none;transition:all .2s ease-out;box-sizing:border-box" style-hover="border-color:#020A24;background:#F9FAFB" style-focus="outline:2px solid #52B483;outline-offset:2px">
+              <span style="width:40px;height:40px;border-radius:10px;background:#020A24;color:#52B483;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>
+              <span style="min-width:0;flex:1"><span style="display:block;font:700 15px/1.3 'Cairo';color:#020A24">Stuur een bericht</span><span style="display:block;font:400 13px/1.3 'Cairo';color:#6B7280">We antwoorden per e-mail</span></span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+          </div>
+          <div style="display:flex;justify-content:center;align-items:center;gap:6px;padding:4px 16px 14px">
+            <span style="width:11px;height:11px;border-radius:3px;background:#52B483;display:inline-block"></span>
+            <span style="font:400 11.5px/1 'Cairo';color:#9CA3AF">by <strong style="font-weight:700;color:#6B7280">LeadTrackr.io</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1B · Callback form -->
+      <div style="border-radius:16px;background:#F8F9FB;border:1px solid #E5E7EB;padding:44px 30px 30px;position:relative;display:flex;justify-content:center;align-items:flex-start">
+        <div style="position:absolute;top:16px;left:16px;font:600 11px/1 'Cairo';letter-spacing:.08em;text-transform:uppercase;color:#6B7280">3 · Terugbelverzoek (met fout)</div>
+        <div style="width:340px;background:#fff;border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.12);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:8px;padding:14px 18px;background:#020A24;border-bottom:3px solid #52B483">
+            <button aria-label="Terug" style="width:32px;height:32px;border:none;background:transparent;border-radius:8px;color:rgba(255,255,255,.7);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease-out" style-hover="background:rgba(255,255,255,.12);color:#fff">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <p style="margin:0;font:700 16px/1.2 'Cairo';color:#fff">Terugbelverzoek</p>
+          </div>
+          <div style="padding:18px;display:flex;flex-direction:column;gap:14px">
+            <p style="margin:0;font:400 13.5px/1.5 'Cairo';color:#4B5563">Laat je nummer achter, dan bellen we je zo snel mogelijk terug.</p>
+            <div>
+              <label for="cb-name-b" style="display:block;font:600 13px/1 'Cairo';color:#1F2937;margin-bottom:6px">Naam <span style="font-weight:400;color:#9CA3AF">(optioneel)</span></label>
+              <input id="cb-name-b" type="text" placeholder="Je naam" style="width:100%;box-sizing:border-box;height:46px;padding:0 14px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:15px;color:#1F2937;outline:none;background:#fff;transition:border-color .2s ease-out" style-focus="border-color:#52B483;box-shadow:0 0 0 1px #52B483">
+            </div>
+            <div>
+              <label for="cb-phone-b" style="display:block;font:600 13px/1 'Cairo';color:#1F2937;margin-bottom:6px">Telefoonnummer</label>
+              <input id="cb-phone-b" type="tel" value="06 12" aria-invalid="true" style="width:100%;box-sizing:border-box;height:46px;padding:0 14px;border:1.5px solid #FF6A6A;border-radius:8px;font-size:15px;color:#1F2937;outline:none;background:#FFF7F7;box-shadow:0 0 0 1px #FF6A6A;transition:border-color .2s ease-out">
+              <p style="margin:6px 0 0;font:600 12.5px/1.4 'Cairo';color:#C23B3B;display:flex;align-items:center;gap:5px">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                Vul een geldig telefoonnummer in
+              </p>
+            </div>
+            <button style="width:100%;height:48px;border:none;border-radius:8px;background:#52B483;color:#fff;font:700 15px/1 'Cairo';cursor:pointer;transition:all .2s ease-out" style-hover="background:#3E8762;transform:translateY(-1px);box-shadow:0 4px 12px rgba(82,180,131,.3)" style-focus="outline:2px solid #020A24;outline-offset:2px">Bel mij terug</button>
+          </div>
+          <div style="display:flex;justify-content:center;align-items:center;gap:6px;padding:0 16px 14px">
+            <span style="width:11px;height:11px;border-radius:3px;background:#52B483;display:inline-block"></span>
+            <span style="font:400 11.5px/1 'Cairo';color:#9CA3AF">by <strong style="font-weight:700;color:#6B7280">LeadTrackr.io</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1B · Contact form -->
+      <div style="border-radius:16px;background:#F8F9FB;border:1px solid #E5E7EB;padding:44px 30px 30px;position:relative;display:flex;justify-content:center;align-items:flex-start">
+        <div style="position:absolute;top:16px;left:16px;font:600 11px/1 'Cairo';letter-spacing:.08em;text-transform:uppercase;color:#6B7280">4 · Bericht sturen</div>
+        <div style="width:340px;background:#fff;border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.12);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:8px;padding:14px 18px;background:#020A24;border-bottom:3px solid #52B483">
+            <button aria-label="Terug" style="width:32px;height:32px;border:none;background:transparent;border-radius:8px;color:rgba(255,255,255,.7);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease-out" style-hover="background:rgba(255,255,255,.12);color:#fff">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <p style="margin:0;font:700 16px/1.2 'Cairo';color:#fff">Stuur een bericht</p>
+          </div>
+          <div style="padding:18px;display:flex;flex-direction:column;gap:12px">
+            <div>
+              <label for="cf-name-b" style="display:block;font:600 13px/1 'Cairo';color:#1F2937;margin-bottom:6px">Naam</label>
+              <input id="cf-name-b" type="text" placeholder="Je naam" style="width:100%;box-sizing:border-box;height:46px;padding:0 14px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:15px;color:#1F2937;outline:none;background:#fff;transition:border-color .2s ease-out" style-focus="border-color:#52B483;box-shadow:0 0 0 1px #52B483">
+            </div>
+            <div>
+              <label for="cf-email-b" style="display:block;font:600 13px/1 'Cairo';color:#1F2937;margin-bottom:6px">E-mailadres</label>
+              <input id="cf-email-b" type="email" placeholder="naam@bedrijf.nl" style="width:100%;box-sizing:border-box;height:46px;padding:0 14px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:15px;color:#1F2937;outline:none;background:#fff;transition:border-color .2s ease-out" style-focus="border-color:#52B483;box-shadow:0 0 0 1px #52B483">
+            </div>
+            <div>
+              <label for="cf-phone-b" style="display:block;font:600 13px/1 'Cairo';color:#1F2937;margin-bottom:6px">Telefoonnummer <span style="font-weight:400;color:#9CA3AF">(optioneel)</span></label>
+              <input id="cf-phone-b" type="tel" placeholder="06 12345678" style="width:100%;box-sizing:border-box;height:46px;padding:0 14px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:15px;color:#1F2937;outline:none;background:#fff;transition:border-color .2s ease-out" style-focus="border-color:#52B483;box-shadow:0 0 0 1px #52B483">
+            </div>
+            <div>
+              <label for="cf-msg-b" style="display:block;font:600 13px/1 'Cairo';color:#1F2937;margin-bottom:6px">Bericht</label>
+              <textarea id="cf-msg-b" rows="3" placeholder="Waar kunnen we je mee helpen?" style="width:100%;box-sizing:border-box;padding:11px 14px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:15px;line-height:1.5;color:#1F2937;outline:none;background:#fff;resize:none;transition:border-color .2s ease-out" style-focus="border-color:#52B483;box-shadow:0 0 0 1px #52B483"></textarea>
+            </div>
+            <button style="width:100%;height:48px;border:none;border-radius:8px;background:#52B483;color:#fff;font:700 15px/1 'Cairo';cursor:pointer;transition:all .2s ease-out" style-hover="background:#3E8762;transform:translateY(-1px);box-shadow:0 4px 12px rgba(82,180,131,.3)" style-focus="outline:2px solid #020A24;outline-offset:2px">Verstuur bericht</button>
+          </div>
+          <div style="display:flex;justify-content:center;align-items:center;gap:6px;padding:0 16px 14px">
+            <span style="width:11px;height:11px;border-radius:3px;background:#52B483;display:inline-block"></span>
+            <span style="font:400 11.5px/1 'Cairo';color:#9CA3AF">by <strong style="font-weight:700;color:#6B7280">LeadTrackr.io</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1B · Success -->
+      <div style="border-radius:16px;background:#F8F9FB;border:1px solid #E5E7EB;padding:44px 30px 30px;position:relative;display:flex;justify-content:center;align-items:flex-start">
+        <div style="position:absolute;top:16px;left:16px;font:600 11px/1 'Cairo';letter-spacing:.08em;text-transform:uppercase;color:#6B7280">5 · Succes</div>
+        <div style="width:340px;background:#fff;border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.12);overflow:hidden">
+          <div style="height:8px;background:#020A24;border-bottom:3px solid #52B483"></div>
+          <div style="padding:36px 28px 28px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px">
+            <div style="width:64px;height:64px;border-radius:999px;background:#020A24;display:flex;align-items:center;justify-content:center;margin-bottom:8px;animation:lt-pop .5s ease-out both;box-shadow:0 20px 50px -12px rgba(82,180,131,.25)">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#52B483" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <p style="margin:0;font:700 18px/1.3 'Cairo';color:#020A24">Gelukt, je aanvraag is verstuurd</p>
+            <p style="margin:0;font:400 14px/1.55 'Cairo';color:#4B5563">We nemen zo snel mogelijk contact met je op.</p>
+            <a href="#1b" style="margin-top:14px;font:700 14px/1 'Cairo';color:#3E8762;text-decoration:none;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 8px" style-hover="color:#52B483">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+              Terug naar begin
+            </a>
+          </div>
+          <div style="display:flex;justify-content:center;align-items:center;gap:6px;padding:0 16px 14px">
+            <span style="width:11px;height:11px;border-radius:3px;background:#52B483;display:inline-block"></span>
+            <span style="font:400 11.5px/1 'Cairo';color:#9CA3AF">by <strong style="font-weight:700;color:#6B7280">LeadTrackr.io</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1B · Mobile -->
+      <div style="border-radius:16px;background:#F8F9FB;border:1px solid #E5E7EB;padding:44px 30px 30px;position:relative;display:flex;justify-content:center;align-items:flex-start">
+        <div style="position:absolute;top:16px;left:16px;font:600 11px/1 'Cairo';letter-spacing:.08em;text-transform:uppercase;color:#6B7280">6 · Mobiel — bottom sheet</div>
+        <div style="width:320px;height:640px;border-radius:40px;border:9px solid #0A1432;background:#fff;position:relative;overflow:hidden;box-shadow:0 20px 50px -12px rgba(2,10,36,.25)">
+          <div style="position:absolute;inset:0;background:#F8F9FB">
+            <div style="height:52px;background:#fff;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;padding:0 16px;gap:8px"><span style="width:22px;height:22px;border-radius:6px;background:#E5E7EB"></span><span style="width:70px;height:9px;border-radius:4px;background:#E5E7EB"></span></div>
+            <div style="padding:18px 16px;display:flex;flex-direction:column;gap:9px;opacity:.6"><span style="width:180px;height:12px;border-radius:4px;background:#E1E4E9"></span><span style="width:220px;height:9px;border-radius:4px;background:#E9ECF0"></span><span style="width:150px;height:9px;border-radius:4px;background:#E9ECF0"></span></div>
+          </div>
+          <div style="position:absolute;inset:0;background:rgba(2,10,36,.35)"></div>
+          <div style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -8px 30px rgba(2,10,36,.18);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;background:#020A24;border-bottom:3px solid #52B483;position:relative">
+              <div style="width:40px;height:40px;border-radius:999px;background:#142048;color:#52B483;font:700 14px/1 'Cairo';display:flex;align-items:center;justify-content:center">{{ companyInitials }}</div>
+              <div><p style="margin:0;font:700 15px/1.3 'Cairo';color:#fff">Neem contact op</p><p style="margin:0;font:400 12.5px/1.4 'Cairo';color:rgba(255,255,255,.65)">We reageren snel</p></div>
+              <button aria-label="Sluiten" style="position:absolute;top:12px;right:12px;width:28px;height:28px;border:none;background:transparent;border-radius:999px;color:rgba(255,255,255,.55);cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div style="padding:14px 16px;display:flex;flex-direction:column;gap:9px">
+              <a href="tel:+31201234567" style="display:flex;align-items:center;gap:12px;min-height:52px;padding:6px 12px;border:1px solid #E5E7EB;border-radius:12px;background:#fff;text-decoration:none;box-sizing:border-box">
+                <span style="width:36px;height:36px;border-radius:9px;background:#020A24;color:#52B483;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></span>
+                <span style="flex:1"><span style="display:block;font:700 14px/1.3 'Cairo';color:#020A24">Bel ons direct</span><span style="display:block;font:400 12px/1.3 'Cairo';color:#6B7280">{{ phoneNumber }}</span></span>
+              </a>
+              <a href="#1b" style="display:flex;align-items:center;gap:12px;min-height:52px;padding:6px 12px;border:1px solid #E5E7EB;border-radius:12px;background:#fff;text-decoration:none;box-sizing:border-box">
+                <span style="width:36px;height:36px;border-radius:9px;background:#020A24;color:#52B483;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 2 16 8 22 8"></polyline><line x1="23" y1="1" x2="16" y2="8"></line><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></span>
+                <span style="flex:1"><span style="display:block;font:700 14px/1.3 'Cairo';color:#020A24">Terugbelverzoek</span><span style="display:block;font:400 12px/1.3 'Cairo';color:#6B7280">Wij bellen jou terug</span></span>
+              </a>
+              <a href="#1b" style="display:flex;align-items:center;gap:12px;min-height:52px;padding:6px 12px;border:1px solid #E5E7EB;border-radius:12px;background:#fff;text-decoration:none;box-sizing:border-box">
+                <span style="width:36px;height:36px;border-radius:9px;background:#020A24;color:#52B483;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>
+                <span style="flex:1"><span style="display:block;font:700 14px/1.3 'Cairo';color:#020A24">Stuur een bericht</span><span style="display:block;font:400 12px/1.3 'Cairo';color:#6B7280">We antwoorden per e-mail</span></span>
+              </a>
+            </div>
+            <div style="display:flex;justify-content:center;align-items:center;gap:6px;padding:0 16px 16px">
+              <span style="width:11px;height:11px;border-radius:3px;background:#52B483;display:inline-block"></span>
+              <span style="font:400 11.5px/1 'Cairo';color:#9CA3AF">by <strong style="font-weight:700;color:#6B7280">LeadTrackr.io</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;language&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;nl&quot;,&quot;en&quot;],&quot;default&quot;:&quot;nl&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Widget&quot;},&quot;agentName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Ruben&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Medewerker&quot;},&quot;companyName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Jansen &amp; Co&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Medewerker&quot;},&quot;greeting&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Medewerker&quot;},&quot;phoneNumber&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;+31 20 123 4567&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Kanalen&quot;},&quot;whatsappNumber&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;+31 6 12345678&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Kanalen&quot;},&quot;showMessage&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Kanalen&quot;},&quot;showPhone&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Kanalen&quot;},&quot;showWhatsApp&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Kanalen&quot;},&quot;whatsappAskPhone&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Kanalen&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const name = this.props.companyName ?? "Jansen & Co";
+    const initials = name.split(/\s+/).filter(w => /[a-z0-9]/i.test(w[0])).map(w => w[0].toUpperCase()).slice(0, 2).join("") || "LT";
+    const phone = this.props.phoneNumber ?? "+31 20 123 4567";
+    const agent = this.props.agentName ?? "Ruben";
+    const en = (this.props.language ?? "nl") === "en";
+    const h = new Date().getHours();
+    const auto = en
+      ? (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") + ", how can I help you?"
+      : (h < 12 ? "Goedemorgen" : h < 18 ? "Goedemiddag" : "Goedenavond") + ", kan ik je ergens mee helpen?";
+    const waTyped = en ? "Hi! I have a question about your services." : "Hoi! Ik heb een vraag over jullie diensten.";
+
+    return {
+      companyInitials: initials,
+      companyName: name,
+      phoneNumber: phone,
+      agentName: agent,
+      greeting: this.props.greeting || auto,
+      callLabel: en ? "Call " + agent + " directly" : "Bel " + agent + " direct",
+      telHref: "tel:" + phone.replace(/[^+\d]/g, ""),
+      waHref: "https://wa.me/" + (this.props.whatsappNumber ?? "+31612345678").replace(/[^\d]/g, "") + "?text=" + encodeURIComponent(waTyped),
+      showMessage: this.props.showMessage ?? true,
+      showPhone: this.props.showPhone ?? true,
+      showWhatsApp: this.props.showWhatsApp ?? true,
+      showWaPhone: this.props.whatsappAskPhone ?? true,
+      tFrom: en ? "from" : "van",
+      tOnline: en ? "Online now" : "Nu online",
+      tMsgTitle: en ? "Send a message" : "Stuur een bericht",
+      tMsgSub: en ? "You'll get a reply by email" : "Je krijgt antwoord per e-mail",
+      tMsgSubShort: en ? "Reply by email" : "Antwoord per e-mail",
+      tWaTitle: en ? "Send a WhatsApp message" : "Stuur een WhatsApp-bericht",
+      tWaSub: en ? "Usually replies within 5 min" : "Meestal binnen 5 min antwoord",
+      tWaSubShort: en ? "Quick reply" : "Snel antwoord",
+      tNameLabel: en ? "Name" : "Naam",
+      tNamePh: en ? "Your name" : "Je naam",
+      tEmailLabel: en ? "Email address" : "E-mailadres",
+      tEmailPh: en ? "name@company.com" : "naam@bedrijf.nl",
+      tMsgLabel: en ? "Message" : "Bericht",
+      tMsgPh: en ? "What can " + agent + " help you with?" : "Waar kan " + agent + " je mee helpen?",
+      tSubmit: en ? "Send message" : "Verstuur bericht",
+      tFormTitle: en ? "Send " + agent + " a message" : "Stuur " + agent + " een bericht",
+      tSuccessTitle: en ? "Thanks, your message has been sent" : "Bedankt, je bericht is verstuurd",
+      tSuccessBody: en ? agent + " will get back to you as soon as possible." : agent + " neemt zo snel mogelijk contact met je op.",
+      tBack: en ? "Back to start" : "Terug naar begin",
+      tWaTyped: waTyped,
+      tWaPhoneLabel: en ? "Your phone number" : "Je telefoonnummer",
+      tWaPhoneQ: en ? "Great! What's your phone number, so we can reach you?" : "Top! Wat is je telefoonnummer, zodat we je kunnen bereiken?",
+      tWaTypedPhone: "6 12 34 56 78",
+      tWaSearch: en ? "Search country…" : "Zoek land…",
+      showWaDirect: !(this.props.whatsappAskPhone ?? true)
+    };
+  }
+}
+</script>
+</body>
+</html>

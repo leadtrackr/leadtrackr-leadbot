@@ -1,14 +1,14 @@
 # LeadTrackr Website Widget — Design Spec (MVP)
 
-**Date:** 2026-07-18 (rev. 2)
-**Status:** Routes approved: A1 (vanilla TS + Shadow DOM), C1 (inline config), distribution via GitHub + jsDelivr. Lead delivery: **direct to the existing public LeadTrackr endpoint** (replaces the earlier Cloudflare Worker plan). Visual design in progress via Claude design session — **do not start building until Lester delivers the approved design.**
+**Date:** 2026-07-18 (rev. 3)
+**Status:** Routes approved: A1 (vanilla TS + Shadow DOM), C1 (inline config), distribution via GitHub + jsDelivr. Lead delivery: **direct to the existing public LeadTrackr endpoint** (replaces the earlier Cloudflare Worker plan). **Visual design delivered: option 2A "Persoonlijk — medewerker centraal"** from the Claude design project (`design/LeadTrackr Widget.dc.html`, options 1A/1B are rejected alternatives kept at 55% opacity). Build approved.
 **Owner:** Lester (YesWeTrack / LeadTrackr). MVP built standalone; later handed off to the LeadTrackr dev to integrate as a native lead source in app.leadtrackr.io.
 
 ## 1. Goal
 
-A lightweight lead-generation widget (functionally inspired by Futy.io, visually 100% LeadTrackr) that clients install with one script tag. It sits bottom-right, offers three contact channels, and sends every lead — enriched with attribution data — to LeadTrackr using the **same payload contract and endpoint as the official LeadTrackr GTM tag** (`gtm-leadtrackr-tag`).
+A lightweight lead-generation widget (functionally inspired by Futy.io, visually 100% LeadTrackr) that clients install with one script tag. It sits bottom-right, offers three contact channels — **message form, direct call, WhatsApp** (per design 2A; the earlier callback channel was dropped in the design phase) — and sends every lead, enriched with attribution data, to LeadTrackr using the **same payload contract and endpoint as the official LeadTrackr GTM tag** (`gtm-leadtrackr-tag`).
 
-Explicit non-goals (MVP): WhatsApp channel, chat/bot conversations, video, appointment booking, A/B testing, hosted config UI, multi-language beyond NL defaults.
+Explicit non-goals (MVP): chat/bot conversations, video, appointment booking, A/B testing, hosted config UI, multi-language beyond NL defaults, callback-request channel.
 
 ## 2. Architecture
 
@@ -37,19 +37,25 @@ client website
 - Client embed pins the **major** version: `…/leadtrackr-widget@1/dist/lt-widget.min.js`. jsDelivr resolves `@1` to the latest `v1.x` tag; updates propagate automatically (cache up to 12 h; can be forced via jsDelivr's purge tool). Tag-pinning beats the GTM tag's current `@main` approach (branch refs cache 12 h with no rollback control).
 - **Known trade-off, accepted for MVP:** the embed URL clients install is semi-permanent. A later move to `widget.leadtrackr.io` requires installed snippets to change. Mitigation: keep the MVP install base small; production migration is part of the dev handoff.
 
-## 4. Widget UI
+## 4. Widget UI — design 2A "Persoonlijk" (source of truth: `design/LeadTrackr Widget.dc.html`)
 
-States (visual design being produced by Lester via Claude design; the tokens below are the starting point, final design file overrules):
+The design centers a real employee ("agent"): photo, name, company, online status, personal greeting. States:
 
-1. **Launcher** — pill/round button bottom-right, subtle pulse; optional dismissible teaser bubble.
-2. **Channel panel** (±340 px) — header (logo/avatar + title + subtitle), three channel buttons, "Powered by LeadTrackr" footer.
-3. **Call** — shows phone number; tapping fires dataLayer event and opens `tel:`.
-4. **Callback form** — name (optional) + phone (required), inline validation.
-5. **Contact form** — name, email, phone, message.
-6. **Success state** — checkmark, confirmation copy, back link.
-7. **Mobile** — panel renders as full-width bottom sheet; launcher unchanged.
+1. **Launcher** — 62 px round button: agent photo, 3 px `#52B483` border, white bg, green chat-bubble badge bottom-right, `lt-pulse` glow. Dismissible teaser bubble above it (white card, radius `14 14 4 14`): agent name + "van {company}", greeting, close ×.
+2. **Channel panel** (340 px, radius 16, shadow `0 1px 2px rgba(0,0,0,.04), 0 12px 32px rgba(0,0,0,.12)`) — header: 56 px avatar with pulsing online dot, "**{agent}** van {company}", green "Online" status; greeting in a gray `#F3F4F6` speech bubble (radius `4 14 14 14`). Then up to three channel buttons (min-height 56 px, 40 px icon tile `#EDF8F2`/`#3E8762`, title 700 15px `#020A24`, subtitle 13px `#6B7280`, chevron; hover: green border + `#EDF8F2` bg):
+   - **Stuur een bericht** → message form
+   - **Bel ons direct** → `tel:` (subtitle shows the phone number)
+   - **WhatsApp** → WhatsApp compose flow
+   Footer on every card: "Better leads start with **LeadTrackr.io** 🚀" (11px, gray).
+3. **WhatsApp compose** — WhatsApp-authentic look (header `#075E54` with back button + avatar + name/online, chat bg `#ECE5DD`, agent bubbles white, visitor bubble `#DCF8C6`, input bar `#F0F2F5`, send button `#25D366`). Flow: greeting bubble → visitor types message in rounded input → send: message appears as sent bubble (with double blue check), agent bubble asks for phone number → phone input with country-code picker (🇳🇱 +31 default; searchable dropdown 🇧🇪🇩🇪🇬🇧) → send: **lead is stored in LeadTrackr first**, then `wa.me/<number>?text=<typed message>` opens.
+4. **Message form** — header with back button + small avatar + title; fields: Naam, E-mailadres, Bericht (46 px inputs, 1.5 px `#E5E7EB` border, radius 8, focus `#52B483` border + 1 px ring); submit: 48 px full-width `#52B483`, hover `#3E8762` + lift + green shadow.
+5. **Error state** (pattern from design 1A card 3): invalid field gets `#FF6A6A` border + ring, `#FFF7F7` bg, error line in `#C23B3B` 600 12.5px with info icon (e.g. "Vul een geldig telefoonnummer in").
+6. **Success** — agent photo (68 px) with green check badge, `lt-pop` animation; title 700 18px, body 14px `#4B5563`, green back link.
+7. **Mobile** — bottom sheet (radius `20 20 0 0`, drag handle, page dimmed `rgba(2,10,36,.35)`), channel buttons 52 px, same content.
 
-Accessibility: 44 px touch targets, visible focus states, WCAG AA contrast, `aria-expanded`/`aria-label` on launcher, Escape closes panel, focus trap inside open panel.
+Animations from the design: `lt-pulse` (green glow ring), `lt-pop` (success badge), `lt-fade-up` (teaser/bubbles).
+
+Accessibility: 44 px touch targets, visible focus states (`outline: 2px solid` navy/green per design), WCAG AA contrast, `aria-expanded`/`aria-label` on launcher, Escape closes panel, focus trap inside open panel.
 
 Font strategy: system font stack by default; Cairo woff2 subset lazy-loaded **on first open** (never on page load), applied inside the shadow root only.
 
@@ -60,13 +66,17 @@ Auto-init from the script tag (`data-project-id`) plus optional global before sc
 ```html
 <script>
 window.ltWidgetConfig = {
-  phone: "+31 20 123 4567",
   companyName: "Voorbeeld B.V.",
-  logo: "https://example.com/logo.png",        // optional avatar/logo URL
-  channels: ["call", "callback", "form"],       // order = display order
+  agentName: "Nick",                            // employee shown in the widget
+  agentPhoto: "https://example.com/nick.jpg",   // round photo, launcher + panel
+  greeting: "Goedemiddag 👋 Waar kunnen we je mee helpen?",
+  phone: "+31 20 123 4567",                     // for the call channel
+  whatsapp: "+31612345678",                     // wa.me target; null = channel hidden
+  channels: ["message", "call", "whatsapp"],    // order = display order
   position: "right",                            // "right" | "left"
   offset: { bottom: 20, side: 20 },             // px
-  teaser: "Vragen? Wij helpen je direct.",      // null = no teaser
+  teaser: true,                                 // teaser bubble (agent + greeting); false = off
+  defaultCountry: "NL",                         // country-code picker default (WhatsApp flow)
 
   // Theme — every color overridable; defaults = LeadTrackr brand
   theme: {
@@ -85,8 +95,8 @@ window.ltWidgetConfig = {
   },
 
   formNames: {                                  // formData.formName per channel
-    callback: "Widget — Terugbelverzoek",
-    form: "Widget — Contactformulier"
+    message: "Widget — Bericht",
+    whatsapp: "Widget — WhatsApp"
   },
   texts: { /* per-key overrides of all NL default strings */ },
   endpoint: null                                 // override for testing only
@@ -133,7 +143,7 @@ Cookies unavailable/blocked → fields degrade to `''`, exactly like the GTM tag
 {
   "projectId": "PROJECT_ID",
   "formData": {
-    "formName": "Widget — Terugbelverzoek",
+    "formName": "Widget — Bericht",
     "uniqueEventId": "<generated per submit, dedup-safe>",
     "formFields": {
       "message": "…",
@@ -163,6 +173,7 @@ Cookies unavailable/blocked → fields degrade to `''`, exactly like the GTM tag
 Notes:
 
 - **Only contract-known top-level keys** (`projectId`, `formData`, `userData`, `channelFlow`, `attributionData`). Extra context (message, page URL/title) travels inside `formData.formFields`, which the contract defines as free-form key/value.
+- **Per channel:** *message* → `userData` name + email, `formFields.message` (no phone field in the design). *whatsapp* → `userData.phone` (visitor's number from the country-code flow), `formFields.message` = typed WhatsApp text; the lead POST completes **before** `wa.me` opens (design note: "lead is dan al opgeslagen"). *call* → no `createLead` POST in MVP, dataLayer event + `tel:` only.
 - The single "Naam" input is split into `firstName` (first word) / `lastName` (rest); only-one-word names go entirely into `firstName`.
 - Phone numbers are normalized to **E.164** (`06…` → `+316…`) before payload and dataLayer — required for Enhanced Conversions matching anyway.
 - `uniqueEventId`: generated per submission (`ltw-<timestamp>-<random>`), mirrors the tag's dedup option.
@@ -186,8 +197,8 @@ The lead push:
 window.dataLayer.push({
   event: "leadtrackr_widget_lead_submitted",
   leadtrackr: {
-    channel: "callback",                       // callback | form
-    form_name: "Widget — Terugbelverzoek",
+    channel: "message",                        // message | whatsapp
+    form_name: "Widget — Bericht",
     project_id: "PROJECT_ID",
     widget_version: "1.0.0",
     attribution: {                             // current-touch snapshot
@@ -235,8 +246,8 @@ Build: esbuild → IIFE, minified, `LT_WIDGET_VERSION` injected. `npm run dev` s
 
 ## 12. Phasing
 
-1. **Fase 0** — UI design via Claude design session (**in progress, Lester**); build waits for the delivered design.
-2. **Fase 1** — widget UI: Shadow DOM, all states, config incl. theme, from the delivered design.
+1. **Fase 0** — ✅ UI design delivered: option 2A (`design/LeadTrackr Widget.dc.html`).
+2. **Fase 1** — widget UI: Shadow DOM, all 2A states incl. WhatsApp flow, config incl. theme.
 3. **Fase 2** — attribution port (channel flow + click IDs) + dataLayer events + parity test against the GTM tag.
 4. **Fase 3** — transport to `createLead`, honeypot/time-check, retry state.
 5. **Fase 4** — release pipeline (build → tag → jsDelivr), install docs (direct + via GTM), first test site.
@@ -244,6 +255,6 @@ Build: esbuild → IIFE, minified, `LT_WIDGET_VERSION` injected. `npm run dev` s
 
 ## 13. Open points
 
-- Final visual design — delivered by Lester from the Claude design session (light vs. dark-accent, channel visualisation).
 - Confirm with the LeadTrackr dev that `createLead` ignores unknown `formFields` keys gracefully (expected — free-form contract) and whether a lead ID is returned (nice-to-have for the dataLayer push).
 - Repo name under the `leadtrackr` GitHub org (`leadtrackr-widget` proposed).
+- Whether a *call* click should also create a LeadTrackr lead (MVP: no — dataLayer + `tel:` only; LeadTrackr call tracking covers the actual call).

@@ -94,7 +94,7 @@ describe('mount + launcher + panel', () => {
     expect(q(root, '[data-action="channel-whatsapp"]')).toBeNull();
   });
 
-  it('phone click pushes a flat channel_click event', () => {
+  it('phone click pushes channel_click plus a phone conversion (no call tracking)', () => {
     const { root } = freshMount();
     click(root, 'open');
     const anchor = q(root, '[data-action="channel-phone"]')!;
@@ -104,6 +104,11 @@ describe('mount + launcher + panel', () => {
     expect(window.dataLayer).toContainEqual({
       event: 'leadtrackr_leadbot_channel_click',
       channel: 'phone',
+    });
+    expect(window.dataLayer).toContainEqual({
+      event: 'leadtrackr_leadbot_conversion',
+      channel: 'phone',
+      user_data: {},
     });
   });
 
@@ -157,6 +162,20 @@ describe('call tracking integration', () => {
     const { root } = freshMount({ callTracking: true, phone: null } as never);
     click(root, 'open');
     expect(q(root, '[data-action="channel-phone"]')).toBeNull();
+  });
+
+  it('suppresses the phone-click conversion when call tracking is on (real call is measured)', () => {
+    document.cookie = 'yeswetrack_9079013837_20250530075820=' + COOKIE_VALUE + ';path=/';
+    const { root } = freshMount({ callTracking: true } as never);
+    click(root, 'open');
+    const anchor = q(root, '[data-action="channel-phone"]')!;
+    anchor.addEventListener('click', (e) => e.preventDefault());
+    anchor.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    expect(window.dataLayer).toContainEqual({
+      event: 'leadtrackr_leadbot_channel_click',
+      channel: 'phone',
+    });
+    expect(window.dataLayer!.map((e) => e.event)).not.toContain('leadtrackr_leadbot_conversion');
   });
 
   it('ignores the cookie when the setting is off', () => {

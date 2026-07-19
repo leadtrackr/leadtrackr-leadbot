@@ -224,6 +224,9 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
         break;
       case 'channel-phone':
         pushChannelClick('phone');
+        // With call tracking the real call is measured — a click-conversion
+        // would double count. Without it, the click is the conversion signal.
+        if (!cfg.callTracking) pushConversion('phone', {});
         break; // native tel: navigation continues
       case 'channel-whatsapp':
         pushChannelClick('whatsapp');

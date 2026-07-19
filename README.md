@@ -91,7 +91,7 @@ window.dataLayer.push({
 });
 ```
 
-Kanaalnamen zijn overal identiek (config, code en dataLayer). Een klik op het bel-kanaal geeft een `channel_click` met `channel: "phone"`; er is dan geen conversie-event omdat het daadwerkelijke gesprek door LeadTrackr-calltracking wordt gemeten.
+Kanaalnamen zijn overal identiek (config, code en dataLayer). Een klik op het bel-kanaal geeft een `channel_click` met `channel: "phone"` plus een conversie-event met lege `user_data` — **behalve** wanneer `callTracking: true` aan staat: dan meet call tracking het daadwerkelijke gesprek en wordt de klik-conversie onderdrukt om dubbeltelling te voorkomen.
 
 ## Call tracking (dynamic number insertion)
 

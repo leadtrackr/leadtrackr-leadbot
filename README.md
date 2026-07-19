@@ -44,6 +44,7 @@ Alle opties op `window.ltLeadBotConfig` (vóór het script-tag zetten):
 | `offset` | `{ bottom: 20, side: 20 }` | Afstand tot de hoek in px |
 | `teaser` | `true` | Teaser-bubbel; dismiss onthouden per sessie |
 | `defaultCountry` | `"NL"` | Startland van de landcode-selector (WhatsApp-flow) |
+| `callTracking` | `false` | `true` = telefoonnummer komt uit de LeadTrackr call-tracking cookie (dynamic number insertion); zie hieronder |
 | `language` | auto | Forceer `"nl"` of `"en"`; default = `lang`-attribuut van de pagina, fallback `en` |
 | `responseTimeText` | per taal | Bijv. `"Gemiddelde responstijd: binnen 15 minuten"` — per project aanpasbaar |
 | `theme` | LeadTrackr-kleuren | Alle kleuren + radius overridebaar, zie hieronder |
@@ -91,6 +92,13 @@ window.dataLayer.push({
 ```
 
 Kanaalnamen zijn overal identiek (config, code en dataLayer). Een klik op het bel-kanaal geeft een `channel_click` met `channel: "phone"`; er is dan geen conversie-event omdat het daadwerkelijke gesprek door LeadTrackr-calltracking wordt gemeten.
+
+## Call tracking (dynamic number insertion)
+
+Omdat de LeadBot in een Shadow DOM zit, kan het reguliere call-tracking-script het nummer daar niet vervangen. Zet daarom `callTracking: true` — de LeadBot leest het dynamische nummer dan zelf uit de call-tracking-cookie (naam `yeswetrack_<account>_<timestamp>`, veld `swap_numbers`) en gebruikt het voor de weergave én de `tel:`-link. Het nummer wordt bij elke weergave opnieuw gelezen, dus ook als de cookie pas ná pageload wordt gezet klopt hij zodra de bezoeker het panel opent.
+
+- Fallback: geen (geldige, niet-verlopen) cookie → het geconfigureerde `phone`-nummer; is dat er ook niet, dan verdwijnt het bel-kanaal.
+- Meerdere swap-groepen: `callTracking: { swapGroup: 1 }`; afwijkende cookieprefix: `callTracking: { prefix: "andereprefix_" }`.
 
 ## WhatsApp-flow
 

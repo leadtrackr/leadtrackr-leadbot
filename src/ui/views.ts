@@ -1,3 +1,4 @@
+import type { DynamicNumber } from '../calltracking';
 import type { LeadBotConfig } from '../config';
 import type { Country } from '../countries';
 import { icons } from './icons';
@@ -53,13 +54,19 @@ function channelButton(action: string, icon: string, title: string, sub: string,
   </${tag}>`;
 }
 
-export function panelView(cfg: LeadBotConfig): string {
+export function panelView(cfg: LeadBotConfig, dynamicNumber: DynamicNumber | null): string {
   const t = cfg.texts;
   const buttons = cfg.channels
     .map((c) => {
       if (c === 'contact_form') return channelButton('channel-contact_form', icons.chat(20), t.msgTitle, t.msgSub);
-      if (c === 'phone')
-        return channelButton('channel-phone', icons.phone(20), t.callTitle, cfg.phone || '', 'tel:' + (cfg.phone || '').replace(/[\s-]/g, ''));
+      if (c === 'phone') {
+        const display = dynamicNumber?.display || cfg.phone;
+        if (!display) return '';
+        const href = dynamicNumber
+          ? 'tel:+' + dynamicNumber.link.replace(/\D/g, '')
+          : 'tel:' + (cfg.phone || '').replace(/[\s-]/g, '');
+        return channelButton('channel-phone', icons.phone(20), t.callTitle, display, href);
+      }
       return channelButton('channel-whatsapp', icons.whatsapp(20), t.waTitle, t.waSub);
     })
     .join('');

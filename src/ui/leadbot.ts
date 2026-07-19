@@ -1,3 +1,4 @@
+import { getDynamicNumber } from '../calltracking';
 import type { LeadBotConfig } from '../config';
 import { getCountries } from '../countries';
 import { pushChannelClick, pushConversion, pushOpen } from '../datalayer';
@@ -70,9 +71,12 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
       container.innerHTML = `<div class="ltb-root${sideClass}">${launcherView(cfg, teaserVisible())}</div>`;
       return;
     }
+    const dynamicNumber = cfg.callTracking
+      ? getDynamicNumber(cfg.callTracking.prefix, cfg.callTracking.swapGroup)
+      : null;
     const inner =
       view === 'panel'
-        ? panelView(cfg)
+        ? panelView(cfg, dynamicNumber)
         : view === 'contact_form'
           ? messageView(cfg, form)
           : view === 'whatsapp'

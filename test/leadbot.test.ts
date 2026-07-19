@@ -97,9 +97,10 @@ describe('mount + launcher + panel', () => {
   it('phone click pushes a flat channel_click event', () => {
     const { root } = freshMount();
     click(root, 'open');
-    q(root, '[data-action="channel-phone"]')!.dispatchEvent(
-      new MouseEvent('click', { bubbles: true, cancelable: true }),
-    );
+    const anchor = q(root, '[data-action="channel-phone"]')!;
+    // happy-dom would navigate the page to tel:… and break cookies for later tests
+    anchor.addEventListener('click', (e) => e.preventDefault());
+    anchor.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
     expect(window.dataLayer).toContainEqual({
       event: 'leadtrackr_leadbot_channel_click',
       channel: 'phone',
@@ -114,6 +115,55 @@ describe('mount + launcher + panel', () => {
     );
     expect(q(root, '.ltb-panel')).toBeNull();
     expect(q(root, '[data-action="open"]')).toBeTruthy();
+  });
+});
+
+describe('call tracking integration', () => {
+  const COOKIE_VALUE = encodeURIComponent(
+    JSON.stringify({
+      swap_numbers: JSON.stringify([
+        { swapNumbers: { link: '31853016935', display: '+31 085 3016935' }, swapGroup: 0 },
+      ]),
+      expires_on: Date.now() + 86400000,
+    }),
+  );
+
+  beforeEach(() => {
+    document.getElementById('lt-leadbot-host')?.remove();
+    for (const part of document.cookie.split('; ')) {
+      const name = part.split('=')[0];
+      if (name) document.cookie = name + '=;max-age=0;path=/';
+    }
+  });
+
+  it('shows the dynamic number from the call-tracking cookie when enabled', () => {
+    document.cookie = 'yeswetrack_9079013837_20250530075820=' + COOKIE_VALUE + ';path=/';
+    const { root } = freshMount({ callTracking: true } as never);
+    click(root, 'open');
+    const btn = q(root, '[data-action="channel-phone"]')!;
+    expect(btn.textContent).toContain('+31 085 3016935');
+    expect(btn.getAttribute('href')).toBe('tel:+31853016935');
+  });
+
+  it('falls back to the configured number without a cookie', () => {
+    const { root } = freshMount({ callTracking: true } as never);
+    click(root, 'open');
+    const btn = q(root, '[data-action="channel-phone"]')!;
+    expect(btn.textContent).toContain('+31 20 123 4567');
+    expect(btn.getAttribute('href')).toBe('tel:+31201234567');
+  });
+
+  it('hides the phone channel when enabled without cookie and without fallback number', () => {
+    const { root } = freshMount({ callTracking: true, phone: null } as never);
+    click(root, 'open');
+    expect(q(root, '[data-action="channel-phone"]')).toBeNull();
+  });
+
+  it('ignores the cookie when the setting is off', () => {
+    document.cookie = 'yeswetrack_9079013837_20250530075820=' + COOKIE_VALUE + ';path=/';
+    const { root } = freshMount();
+    click(root, 'open');
+    expect(q(root, '[data-action="channel-phone"]')!.textContent).toContain('+31 20 123 4567');
   });
 });
 

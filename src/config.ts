@@ -31,6 +31,9 @@ export interface LeadBotConfig {
   defaultCountry: string;
   language: Language;
   responseTimeText: string | null;
+  // true of { prefix, swapGroup }: haal het telefoonnummer uit de
+  // LeadTrackr call-tracking cookie (dynamic number insertion).
+  callTracking: false | { prefix: string; swapGroup: number };
   theme: LeadBotTheme;
   formNames: Record<'contact_form' | 'whatsapp', string>;
   texts: LeadBotTexts;
@@ -61,9 +64,16 @@ export function resolveConfig(projectId: string, user: Partial<LeadBotConfig> | 
   const personal = u.agentName ? PERSONAL_TEXTS[language] : {};
   const texts: LeadBotTexts = { ...TEXTS[language], ...personal, ...(u.texts || {}) };
   if (u.responseTimeText) texts.responseTime = u.responseTimeText;
+  const ctInput = u.callTracking as unknown as boolean | { prefix?: string; swapGroup?: number } | undefined;
+  const callTracking: false | { prefix: string; swapGroup: number } = ctInput
+    ? {
+        prefix: (typeof ctInput === 'object' && ctInput.prefix) || 'yeswetrack_',
+        swapGroup: (typeof ctInput === 'object' && ctInput.swapGroup) || 0,
+      }
+    : false;
   const requested: ChannelId[] = u.channels && u.channels.length ? u.channels : ['contact_form', 'phone', 'whatsapp'];
   const channels = requested.filter((c) => {
-    if (c === 'phone') return Boolean(u.phone);
+    if (c === 'phone') return Boolean(u.phone) || Boolean(callTracking);
     if (c === 'whatsapp') return Boolean(u.whatsapp);
     return c === 'contact_form';
   });
@@ -82,6 +92,7 @@ export function resolveConfig(projectId: string, user: Partial<LeadBotConfig> | 
     defaultCountry: u.defaultCountry || 'NL',
     language,
     responseTimeText: u.responseTimeText || null,
+    callTracking,
     theme: { ...DEFAULT_THEME, ...(u.theme || {}) },
     formNames: { contact_form: 'LeadBot — Contact form', whatsapp: 'LeadBot — WhatsApp', ...(u.formNames || {}) },
     texts,

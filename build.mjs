@@ -1,5 +1,5 @@
 import esbuild from 'esbuild';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join } from 'node:path';
 import { gzipSync } from 'node:zlib';
@@ -35,9 +35,10 @@ if (process.argv.includes('--watch')) {
       });
       return;
     }
-    const path = req.url === '/' ? '/demo/index.html' : req.url.split('?')[0];
+    let path = req.url.split('?')[0];
+    if (path === '/') path = '/demo/index.html';
     const file = join(process.cwd(), path);
-    if (existsSync(file) && !file.includes('..')) {
+    if (existsSync(file) && statSync(file).isFile() && !file.includes('..')) {
       res.writeHead(200, { 'Content-Type': MIME[extname(file)] || 'application/octet-stream' });
       res.end(readFileSync(file));
     } else {

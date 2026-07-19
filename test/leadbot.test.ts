@@ -235,7 +235,7 @@ describe('whatsapp flow', () => {
 
   it('renders the WhatsApp compose view with greeting', () => {
     const { root } = openWa();
-    expect(q(root, '.ltb-wa-chat')!.textContent).toContain('Waar kunnen we je mee helpen?');
+    expect(q(root, '.ltb-wa-chat')!.textContent).toContain('Waar kan ik je mee helpen?');
     expect(q(root, '[data-wa="message"]')).toBeTruthy();
   });
 

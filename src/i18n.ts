@@ -42,6 +42,27 @@ export interface LeadBotTexts {
   errorSend: string;
 }
 
+// Personal voice ("I" instead of "we") — applied on top of TEXTS when an
+// agentName is configured, because a person is shown above the copy.
+export const PERSONAL_TEXTS: Record<Language, Partial<LeadBotTexts>> = {
+  en: {
+    greeting: 'Hi 👋 How can I help you?',
+    msgSub: "I'll get back to you as soon as possible",
+    callTitle: 'Call me',
+    waSub: 'Chat with me directly',
+    messagePlaceholder: 'How can I help?',
+    successBody: "I'll get back to you as soon as possible.",
+  },
+  nl: {
+    greeting: 'Goedendag 👋 Waar kan ik je mee helpen?',
+    msgSub: 'Ik reageer zo snel mogelijk',
+    callTitle: 'Bel mij direct',
+    waSub: 'Chat direct met mij',
+    messagePlaceholder: 'Waar kan ik je mee helpen?',
+    successBody: 'Ik neem zo snel mogelijk contact met je op.',
+  },
+};
+
 export const TEXTS: Record<Language, LeadBotTexts> = {
   en: {
     greeting: 'Hi 👋 How can we help you?',

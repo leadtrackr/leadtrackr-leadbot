@@ -33,6 +33,18 @@ describe('resolveConfig', () => {
     expect(resolveConfig('p1', { language: 'nl' }).texts.submit).toBe('Verstuur bericht');
   });
 
+  it('speaks as "I" with an agent and as "we" without one', () => {
+    const personal = resolveConfig('p1', { agentName: 'Nick' });
+    expect(personal.greeting).toBe('Goedendag 👋 Waar kan ik je mee helpen?');
+    expect(personal.texts.successBody).toBe('Ik neem zo snel mogelijk contact met je op.');
+    expect(personal.texts.msgSub).toBe('Ik reageer zo snel mogelijk');
+    const company = resolveConfig('p1', undefined);
+    expect(company.greeting).toBe('Goedendag 👋 Waar kunnen we je mee helpen?');
+    expect(company.texts.successBody).toBe('We nemen zo snel mogelijk contact met je op.');
+    const overridden = resolveConfig('p1', { agentName: 'Nick', texts: { msgSub: 'Custom' } as never });
+    expect(overridden.texts.msgSub).toBe('Custom');
+  });
+
   it('uses a localized default greeting and responseTime, both overridable', () => {
     const cfg = resolveConfig('p1', undefined);
     expect(cfg.greeting).toContain('Waar kunnen we je mee helpen');

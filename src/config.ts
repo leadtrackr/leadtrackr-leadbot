@@ -1,4 +1,4 @@
-import { detectLanguage, TEXTS, type Language, type LeadBotTexts } from './i18n';
+import { detectLanguage, PERSONAL_TEXTS, TEXTS, type Language, type LeadBotTexts } from './i18n';
 import type { ChannelId } from './types';
 
 export interface LeadBotTheme {
@@ -57,7 +57,9 @@ const DEFAULT_THEME: LeadBotTheme = {
 export function resolveConfig(projectId: string, user: Partial<LeadBotConfig> | undefined): LeadBotConfig {
   const u = user || {};
   const language = detectLanguage(u.language || document.documentElement.lang);
-  const texts: LeadBotTexts = { ...TEXTS[language], ...(u.texts || {}) };
+  // With an agent on top, the copy speaks as "I"; without one, as "we".
+  const personal = u.agentName ? PERSONAL_TEXTS[language] : {};
+  const texts: LeadBotTexts = { ...TEXTS[language], ...personal, ...(u.texts || {}) };
   if (u.responseTimeText) texts.responseTime = u.responseTimeText;
   const requested: ChannelId[] = u.channels && u.channels.length ? u.channels : ['contact_form', 'phone', 'whatsapp'];
   const channels = requested.filter((c) => {

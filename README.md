@@ -6,6 +6,7 @@ Lightweight leadgeneratie-bot voor klantwebsites. Eén script-tag, rechtsonder o
 - **Shadow DOM** — geen CSS-conflicten met de klantsite, geen iframe
 - **GTM-tag-compatibel** — zelfde `lt_channelflow`-cookie, zelfde `createLead`-payload; LeadBot en GTM-tag kunnen naast elkaar draaien
 - **Meertalig** — taal volgt automatisch het `lang`-attribuut van de pagina (`nl`/`en`, fallback `en`); alle teksten komen uit taalbestanden en zijn per key overridebaar
+- **Persoonlijke stem** — met een `agentName` spreekt de LeadBot in de ik-vorm ("Waar kan ik je mee helpen?"); zonder agent in de wij-vorm
 - **Volledige landenlijst** — telefoonlandcodes via de native systeem-selector (220+ landen, namen gelokaliseerd via `Intl.DisplayNames`)
 
 ## Installatie

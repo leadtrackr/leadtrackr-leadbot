@@ -1,1 +1,4 @@
 node_modules/
+
+# iCloud duplicate artifacts
+* 2.*

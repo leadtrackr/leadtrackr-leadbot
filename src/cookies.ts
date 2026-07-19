@@ -14,9 +14,9 @@ function cookieDomain(): string | null {
   const parts = location.hostname.split('.');
   for (let i = parts.length - 2; i >= 0; i--) {
     const candidate = parts.slice(i).join('.');
-    document.cookie = 'ltw_probe=1;path=/;domain=' + candidate;
-    if (getCookie('ltw_probe')) {
-      document.cookie = 'ltw_probe=;path=/;domain=' + candidate + ';max-age=0';
+    document.cookie = 'ltb_probe=1;path=/;domain=' + candidate;
+    if (getCookie('ltb_probe')) {
+      document.cookie = 'ltb_probe=;path=/;domain=' + candidate + ';max-age=0';
       cachedDomain = candidate;
       return candidate;
     }

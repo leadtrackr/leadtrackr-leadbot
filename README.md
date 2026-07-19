@@ -1,26 +1,26 @@
-# LeadTrackr Widget
+# LeadTrackr LeadBot
 
-Lightweight leadgeneratie-widget voor klantwebsites. Eén script-tag, rechtsonder op de site, drie contactkanalen — **bericht sturen**, **direct bellen** en **WhatsApp** — en elke lead gaat mét volledige attributie (channel flow, gclid/wbraid, fbc/fbp, GA4 client-id) naar LeadTrackr via hetzelfde contract als de officiële [GTM-tag](https://github.com/leadtrackr/gtm-leadtrackr-tag).
+Lightweight leadgeneratie-bot voor klantwebsites. Eén script-tag, rechtsonder op de site, drie contactkanalen — **contactformulier**, **bellen** en **WhatsApp** — en elke lead gaat mét volledige attributie (channel flow, gclid/wbraid, fbc/fbp, GA4 client-id) naar LeadTrackr via hetzelfde contract als de officiële [GTM-tag](https://github.com/leadtrackr/gtm-leadtrackr-tag).
 
-- **Geen dependencies** — één IIFE-bundle van ±11 KB gzip
+- **Geen dependencies** — één IIFE-bundle van ±13 KB gzip
 - **Shadow DOM** — geen CSS-conflicten met de klantsite, geen iframe
-- **GTM-tag-compatibel** — zelfde `lt_channelflow`-cookie, zelfde `createLead`-payload; widget en GTM-tag kunnen naast elkaar draaien
-- **Marketer-ready dataLayer-events** — inclusief `user_provided_data` in Google Enhanced Conversions-schema
+- **GTM-tag-compatibel** — zelfde `lt_channelflow`-cookie, zelfde `createLead`-payload; LeadBot en GTM-tag kunnen naast elkaar draaien
+- **Meertalig** — taal volgt automatisch het `lang`-attribuut van de pagina (`nl`/`en`, fallback `en`); alle teksten komen uit taalbestanden en zijn per key overridebaar
+- **Volledige landenlijst** — telefoonlandcodes via de native systeem-selector (220+ landen, namen gelokaliseerd via `Intl.DisplayNames`)
 
 ## Installatie
 
 ```html
 <script>
-window.ltWidgetConfig = {
+window.ltLeadBotConfig = {
   companyName: "Voorbeeld B.V.",
   agentName: "Nick",
   agentPhoto: "https://voorbeeld.nl/nick.jpg",
-  greeting: "Goedemiddag 👋 Waar kunnen we je mee helpen?",
   phone: "+31 20 123 4567",
   whatsapp: "+31612345678"
 };
 </script>
-<script src="https://cdn.jsdelivr.net/gh/leadtrackr/leadtrackr-widget@1/dist/lt-widget.min.js"
+<script src="https://cdn.jsdelivr.net/gh/leadtrackr/leadtrackr-leadbot@1/dist/lt-leadbot.min.js"
         data-project-id="JOUW_PROJECT_ID" async></script>
 ```
 
@@ -28,24 +28,26 @@ window.ltWidgetConfig = {
 
 ## Configuratie
 
-Alle opties op `window.ltWidgetConfig` (vóór het script-tag zetten):
+Alle opties op `window.ltLeadBotConfig` (vóór het script-tag zetten):
 
 | Optie | Default | Uitleg |
 |---|---|---|
 | `companyName` | `""` | Bedrijfsnaam in header en teaser |
 | `agentName` | `""` | Naam van de medewerker |
 | `agentPhoto` | `""` | URL van ronde profielfoto (launcher + panel); leeg = initiaal-fallback |
-| `greeting` | NL-default | Begroeting in teaser, panel en WhatsApp-chat |
+| `greeting` | per taal | Begroeting in teaser, panel en WhatsApp-chat |
 | `phone` | `null` | Telefoonnummer voor het bel-kanaal; `null` verbergt het kanaal |
 | `whatsapp` | `null` | WhatsApp-nummer (wa.me-doel); `null` verbergt het kanaal |
-| `channels` | `["message","call","whatsapp"]` | Volgorde = weergavevolgorde; subset mogelijk |
+| `channels` | `["contact_form","phone","whatsapp"]` | Volgorde = weergavevolgorde; subset mogelijk |
 | `position` | `"right"` | `"right"` of `"left"` |
 | `offset` | `{ bottom: 20, side: 20 }` | Afstand tot de hoek in px |
 | `teaser` | `true` | Teaser-bubbel; dismiss onthouden per sessie |
-| `defaultCountry` | `"NL"` | Startland van de landcode-kiezer (WhatsApp-flow) |
+| `defaultCountry` | `"NL"` | Startland van de landcode-selector (WhatsApp-flow) |
+| `language` | auto | Forceer `"nl"` of `"en"`; default = `lang`-attribuut van de pagina, fallback `en` |
+| `responseTimeText` | per taal | Bijv. `"Gemiddelde responstijd: binnen 15 minuten"` — per project aanpasbaar |
 | `theme` | LeadTrackr-kleuren | Alle kleuren + radius overridebaar, zie hieronder |
-| `formNames` | `Widget — Bericht` / `Widget — WhatsApp` | `formData.formName` per kanaal |
-| `texts` | NL-defaults | Elke UI-string overridebaar per key |
+| `formNames` | `LeadBot — Contact form` / `LeadBot — WhatsApp` | `formData.formName` per kanaal |
+| `texts` | taalbestand | Elke UI-string overridebaar per key |
 | `endpoint` | LeadTrackr createLead | Alleen voor testen overriden |
 
 ### Theme
@@ -61,36 +63,43 @@ theme: {
 
 ## dataLayer-events
 
-| Event | Moment |
-|---|---|
-| `leadtrackr_widget_open` | panel geopend |
-| `leadtrackr_widget_channel_click` | kanaal gekozen (`channel`) |
-| `leadtrackr_widget_call_click` | telefoonlink aangeklikt (`phone_number` = bedrijfsnummer) |
-| `leadtrackr_widget_lead_submitted` | lead geaccepteerd door endpoint |
-
-De lead-push bevat bewust PII in Google's Enhanced Conversions-schema — direct bruikbaar voor GA4 EC, Google Ads EC en Meta Advanced Matching:
+Drie events, altijd plat — alleen `event`, `channel` en `user_data`:
 
 ```js
-{
-  event: "leadtrackr_widget_lead_submitted",
-  leadtrackr: {
-    channel: "message", form_name: "Widget — Bericht",
-    project_id: "…", widget_version: "1.0.0",
-    attribution: { source: "google", medium: "cpc", campaign: "…", gclid: "…", wbraid: "", fbclid: "", ga_client_id: "…" }
-  },
-  user_provided_data: {
-    email: "jan@bedrijf.nl",
-    phone_number: "+31612345678",
-    address: [{ first_name: "Jan", last_name: "Jansen" }]
+// LeadBot geopend
+window.dataLayer.push({ event: "leadtrackr_leadbot_open" });
+
+// Kanaal geselecteerd (contact_form | phone | whatsapp)
+window.dataLayer.push({ event: "leadtrackr_leadbot_channel_click", channel: "whatsapp" });
+
+// Conversie — user_data afhankelijk van het kanaal
+window.dataLayer.push({
+  event: "leadtrackr_leadbot_conversion",
+  channel: "whatsapp",
+  user_data: { phone_number: "+31612345678" }
+});
+window.dataLayer.push({
+  event: "leadtrackr_leadbot_conversion",
+  channel: "contact_form",
+  user_data: {
+    email_address: "example@email.com",
+    first_name: "Lester",
+    last_name: "Visser"
   }
-}
+});
 ```
+
+Kanaalnamen zijn overal identiek (config, code en dataLayer). Een klik op het bel-kanaal geeft een `channel_click` met `channel: "phone"`; er is dan geen conversie-event omdat het daadwerkelijke gesprek door LeadTrackr-calltracking wordt gemeten.
+
+## WhatsApp-flow
+
+Bezoeker typt een bericht → vult het telefoonnummer in waarmee die het WhatsApp-gesprek wil starten (native landcode-selector) → de lead wordt opgeslagen in LeadTrackr → WhatsApp opent in een nieuw tabblad met het bericht vooraf ingevuld. De bevestiging zegt expliciet dat het gesprek in WhatsApp nog verstuurd moet worden.
 
 ## Payload-contract
 
-POST naar `https://app.leadtrackr.io/api/leads/createLead` met exact de GTM-tag-structuur: `projectId`, `formData` (`formName`, `uniqueEventId`, vrije `formFields` incl. `message`, `page_url`, `page_title`), `userData` (`firstName`/`lastName`/`email`/`phone`, E.164), `channelFlow` (uit de gedeelde `lt_channelflow`-cookie, 395 dagen) en `attributionData` (`gclid`, `wbraid`, `fbc`, `fbp`, `cid`) — inclusief alle cookie-fallbacks van de GTM-tag. Bij de WhatsApp-flow wordt de lead **eerst** opgeslagen en opent daarna pas `wa.me`.
+POST naar `https://app.leadtrackr.io/api/leads/createLead` met exact de GTM-tag-structuur: `projectId`, `formData` (`formName`, `uniqueEventId`, vrije `formFields` incl. `message`, `page_url`, `page_title`), `userData` (`firstName`/`lastName`/`email`/`phone`, E.164), `channelFlow` (uit de gedeelde `lt_channelflow`-cookie, 395 dagen) en `attributionData` (`gclid`, `wbraid`, `fbc`, `fbp`, `cid`) — inclusief alle cookie-fallbacks van de GTM-tag. Bij WhatsApp wordt de lead **eerst** opgeslagen en opent daarna pas `wa.me`.
 
-Spam-bescherming client-side: honeypot-veld + minimale invultijd (2 s). Bellen doet geen `createLead`-POST (alleen dataLayer); de daadwerkelijke call vangt LeadTrackr-calltracking af.
+Spam-bescherming client-side: honeypot-veld + minimale invultijd (2 s).
 
 ## Development
 
@@ -98,8 +107,10 @@ Spam-bescherming client-side: honeypot-veld + minimale invultijd (2 s). Bellen d
 npm install
 npm run dev     # build-watch + demo op http://localhost:4173 (POST /mock-lead logt leads)
 npm test        # vitest (happy-dom)
-npm run build   # dist/lt-widget.min.js + gzip-size
+npm run build   # dist/lt-leadbot.min.js + gzip-size
 ```
+
+Demo-parameters: `?projectId=<LeadTrackr project-ID>` stuurt leads naar het echte endpoint, `?lang=en` test de Engelse versie, UTM/gclid/fbclid-parameters testen attributie.
 
 ## Release
 

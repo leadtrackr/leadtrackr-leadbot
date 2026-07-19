@@ -1,6 +1,6 @@
 # LeadTrackr Website Widget — Design Spec (MVP)
 
-**Date:** 2026-07-18 (rev. 3)
+**Date:** 2026-07-18 (rev. 3) · **Rev. 4 addendum (2026-07-19):** component hernoemd naar **LeadTrackr LeadBot**; flat dataLayer-contract (`leadtrackr_leadbot_*`), i18n (nl/en via `lang`-attribuut), volledige landenlijst met native country-select, responstijd-copy configureerbaar. Zie `README.md` voor de actuele documentatie — dit document is historisch.
 **Status:** Routes approved: A1 (vanilla TS + Shadow DOM), C1 (inline config), distribution via GitHub + jsDelivr. Lead delivery: **direct to the existing public LeadTrackr endpoint** (replaces the earlier Cloudflare Worker plan). **Visual design delivered: option 2A "Persoonlijk — medewerker centraal"** from the Claude design project (`design/LeadTrackr Widget.dc.html`, options 1A/1B are rejected alternatives kept at 55% opacity). Build approved.
 **Owner:** Lester (YesWeTrack / LeadTrackr). MVP built standalone; later handed off to the LeadTrackr dev to integrate as a native lead source in app.leadtrackr.io.
 

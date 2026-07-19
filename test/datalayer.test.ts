@@ -1,7 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { pushCallClick, pushChannelClick, pushLeadSubmitted, pushOpen } from '../src/datalayer';
-import { resolveConfig } from '../src/config';
-import { updateChannelFlow } from '../src/channelflow';
+import { pushChannelClick, pushConversion, pushOpen } from '../src/datalayer';
 
 declare global {
   interface Window {
@@ -9,61 +7,48 @@ declare global {
   }
 }
 
-function clearCookies() {
-  for (const part of document.cookie.split('; ')) {
-    const name = part.split('=')[0];
-    if (name) document.cookie = name + '=;max-age=0;path=/';
-  }
-}
-
-describe('datalayer', () => {
-  const cfg = resolveConfig('proj-1', { phone: '+31201234567' });
-
+describe('datalayer (LeadBot events, flat contract)', () => {
   beforeEach(() => {
-    clearCookies();
     window.dataLayer = undefined;
   });
 
-  it('creates dataLayer and pushes the open event', () => {
-    pushOpen(cfg);
-    expect(window.dataLayer).toHaveLength(1);
-    expect(window.dataLayer![0]).toMatchObject({
-      event: 'leadtrackr_widget_open',
-      leadtrackr: { project_id: 'proj-1', widget_version: 'test' },
-    });
+  it('pushes leadtrackr_leadbot_open with only the event field', () => {
+    pushOpen();
+    expect(window.dataLayer).toEqual([{ event: 'leadtrackr_leadbot_open' }]);
   });
 
-  it('pushes channel_click and call_click', () => {
-    pushChannelClick(cfg, 'whatsapp');
-    pushCallClick(cfg);
-    expect(window.dataLayer![0]).toMatchObject({
-      event: 'leadtrackr_widget_channel_click',
-      leadtrackr: { channel: 'whatsapp' },
-    });
-    expect(window.dataLayer![1]).toMatchObject({
-      event: 'leadtrackr_widget_call_click',
-      leadtrackr: { channel: 'call', phone_number: '+31201234567' },
-    });
+  it('pushes channel_click with the channel at top level', () => {
+    pushChannelClick('whatsapp');
+    pushChannelClick('phone');
+    pushChannelClick('contact_form');
+    expect(window.dataLayer).toEqual([
+      { event: 'leadtrackr_leadbot_channel_click', channel: 'whatsapp' },
+      { event: 'leadtrackr_leadbot_channel_click', channel: 'phone' },
+      { event: 'leadtrackr_leadbot_channel_click', channel: 'contact_form' },
+    ]);
   });
 
-  it('pushes lead_submitted with user_provided_data in Google EC schema and an attribution snapshot', () => {
-    updateChannelFlow('?utm_source=google&utm_medium=cpc&utm_campaign=zomer', '', 'klant.nl', 1000);
-    pushLeadSubmitted(cfg, 'message', {
-      name: 'Jan Jansen',
-      email: 'jan@bedrijf.nl',
-      phone: '+31612345678',
-    });
-    const e = window.dataLayer![0] as Record<string, never>;
-    expect(e.event).toBe('leadtrackr_widget_lead_submitted');
-    expect(e.user_provided_data).toEqual({
-      email: 'jan@bedrijf.nl',
-      phone_number: '+31612345678',
-      address: [{ first_name: 'Jan', last_name: 'Jansen' }],
-    });
-    expect(e.leadtrackr).toMatchObject({
-      channel: 'message',
-      form_name: 'Widget — Bericht',
-      attribution: { source: 'google', medium: 'cpc', campaign: 'zomer' },
+  it('pushes conversion with only event, channel and user_data', () => {
+    pushConversion('whatsapp', { phone: '+31612345678' });
+    expect(window.dataLayer).toEqual([
+      {
+        event: 'leadtrackr_leadbot_conversion',
+        channel: 'whatsapp',
+        user_data: { phone_number: '+31612345678' },
+      },
+    ]);
+  });
+
+  it('includes name and email fields for contact_form conversions', () => {
+    pushConversion('contact_form', { name: 'Lester Visser', email: 'example@email.com' });
+    expect(window.dataLayer![0]).toEqual({
+      event: 'leadtrackr_leadbot_conversion',
+      channel: 'contact_form',
+      user_data: {
+        email_address: 'example@email.com',
+        first_name: 'Lester',
+        last_name: 'Visser',
+      },
     });
   });
 });

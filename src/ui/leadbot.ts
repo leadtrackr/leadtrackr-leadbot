@@ -56,15 +56,6 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
     }
   }
 
-  function injectFont(): void {
-    if (document.getElementById('ltb-cairo')) return;
-    const link = document.createElement('link');
-    link.id = 'ltb-cairo';
-    link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap';
-    document.head.appendChild(link);
-  }
-
   function render(): void {
     const sideClass = cfg.position === 'left' ? ' ltb-left' : '';
     if (view === 'closed') {
@@ -89,7 +80,6 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
   function open(): void {
     view = 'panel';
     openedAt = Date.now();
-    injectFont();
     pushOpen();
     render();
   }

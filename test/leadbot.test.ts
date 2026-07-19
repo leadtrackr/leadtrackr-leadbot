@@ -50,15 +50,20 @@ describe('mount + launcher + panel', () => {
     expect(sessionStorage.getItem('ltb_teaser_dismissed')).toBe('1');
   });
 
-  it('opens the panel, pushes leadtrackr_leadbot_open (flat), injects Cairo once', () => {
+  it('opens the panel and pushes leadtrackr_leadbot_open (flat), without loading external fonts', () => {
     const { root } = freshMount();
     click(root, 'open');
     expect(q(root, '.ltb-panel')).toBeTruthy();
     expect(window.dataLayer![0]).toEqual({ event: 'leadtrackr_leadbot_open' });
-    expect(document.getElementById('ltb-cairo')).toBeTruthy();
-    click(root, 'close');
-    click(root, 'open');
-    expect(document.querySelectorAll('#ltb-cairo')).toHaveLength(1);
+    expect(document.querySelector('link[href*="fonts.googleapis.com"]')).toBeNull();
+  });
+
+  it('inherits the site font by default and accepts a custom font stack', () => {
+    const { root } = freshMount();
+    expect(root.querySelector('style')!.textContent).toContain('font-family: inherit');
+    document.getElementById('lt-leadbot-host')?.remove();
+    const { root: custom } = freshMount({ theme: { font: 'Georgia, serif' } as never });
+    expect(custom.querySelector('style')!.textContent).toContain('font-family: Georgia, serif');
   });
 
   it('shows the response time instead of an instant-reply promise', () => {

@@ -2,6 +2,10 @@ import { detectLanguage, PERSONAL_TEXTS, TEXTS, type Language, type LeadBotTexts
 import type { ChannelId } from './types';
 
 export interface LeadBotTheme {
+  // "inherit" = neem het lettertype van de website over (default);
+  // anders een CSS font-stack, bijv. "Cairo, system-ui, sans-serif"
+  // (het font zelf moet dan door de site geladen worden).
+  font: string;
   primary: string;
   primaryHover: string;
   primaryTint: string;
@@ -43,6 +47,7 @@ export interface LeadBotConfig {
 export const DEFAULT_ENDPOINT = 'https://app.leadtrackr.io/api/leads/createLead';
 
 const DEFAULT_THEME: LeadBotTheme = {
+  font: 'inherit',
   primary: '#52B483',
   primaryHover: '#3E8762',
   primaryTint: '#EDF8F2',

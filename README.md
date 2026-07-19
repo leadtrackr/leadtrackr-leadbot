@@ -7,6 +7,7 @@ Lightweight leadgeneratie-bot voor klantwebsites. Eén script-tag, rechtsonder o
 - **GTM-tag-compatibel** — zelfde `lt_channelflow`-cookie, zelfde `createLead`-payload; LeadBot en GTM-tag kunnen naast elkaar draaien
 - **Meertalig** — taal volgt automatisch het `lang`-attribuut van de pagina (`nl`/`en`, fallback `en`); alle teksten komen uit taalbestanden en zijn per key overridebaar
 - **Persoonlijke stem** — met een `agentName` spreekt de LeadBot in de ik-vorm ("Waar kan ik je mee helpen?"); zonder agent in de wij-vorm
+- **Native typografie** — neemt standaard het lettertype van de website over (`theme.font: "inherit"`); geen externe font-requests
 - **Volledige landenlijst** — telefoonlandcodes via de native systeem-selector (220+ landen, namen gelokaliseerd via `Intl.DisplayNames`)
 
 ## Installatie
@@ -56,6 +57,7 @@ Alle opties op `window.ltLeadBotConfig` (vóór het script-tag zetten):
 
 ```js
 theme: {
+  font: "inherit",           // site-font overnemen; of eigen stack: "Cairo, sans-serif"
   primary: "#52B483", primaryHover: "#3E8762", primaryTint: "#EDF8F2",
   launcherBorder: "#52B483", headerBg: "#FFFFFF", headerText: "#020A24",
   panelBg: "#FFFFFF", text: "#1F2937", textMuted: "#6B7280",

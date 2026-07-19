@@ -12,9 +12,9 @@ export function buildStyles(cfg: LeadBotConfig): string {
   const side = cfg.position;
   const align = side === 'left' ? 'flex-start' : 'flex-end';
   return `
-:host { all: initial; }
+:host { all: initial; font-family: ${t.font === 'inherit' ? 'inherit' : t.font}; }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-#ltb-container { font-family: 'Cairo', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.4; color: var(--tx); }
+#ltb-container { font-family: inherit; font-size: 15px; line-height: 1.4; color: var(--tx); }
 button { background: none; border: none; cursor: pointer; font: inherit; color: inherit; }
 a { text-decoration: none; color: inherit; }
 img { display: block; }

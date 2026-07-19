@@ -45,22 +45,12 @@
   };
 
   const projectId = params.get('projectId');
-  // ?theme=ywt → YesWeTrack-huisstijl (blauw #0054FF)
-  const themes = {
-    ywt: {
-      primary: '#0054FF', primaryHover: '#0041CC', primaryTint: '#EAF0FF',
-      launcherBorder: '#0054FF', headerBg: '#FFFFFF', headerText: '#0A1633',
-      panelBg: '#FFFFFF', text: '#1F2937', textMuted: '#6B7280',
-      border: '#E1E7F2', error: '#FF6A6A', radius: 16
-    }
-  };
   window.ltLeadBotConfig = {
-    companyName: params.get('theme') === 'ywt' ? 'YesWeTrack' : 'Voorbeeld B.V.',
-    agentName: params.get('theme') === 'ywt' ? 'Lester' : 'Nick',
+    companyName: 'Voorbeeld B.V.',
+    agentName: 'Nick',
     agentPhoto: '/demo/avatar.png',
     phone: '+31 20 123 4567',
     whatsapp: '+31612345678',
-    theme: themes[params.get('theme')] || undefined,
     // Zonder ?projectId= gaan leads naar de lokale mock; mét projectId naar
     // het echte LeadTrackr-endpoint (default in de LeadBot zelf).
     endpoint: projectId ? null : '/mock-lead'

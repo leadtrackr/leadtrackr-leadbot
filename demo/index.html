@@ -3,29 +3,39 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Demo — Klantsite met LeadTrackr Widget</title>
+<title>Demo — Klantsite met LeadTrackr LeadBot</title>
 <style>
   body { margin: 0; font-family: system-ui, sans-serif; color: #1F2937; background: #fff; }
   header { padding: 16px 32px; border-bottom: 1px solid #E5E7EB; font-weight: 700; }
   main { max-width: 720px; margin: 48px auto; padding: 0 24px; }
   a { color: #3E8762; }
   pre { background: #F3F4F6; padding: 12px; border-radius: 8px; font-size: 12px; overflow: auto; max-height: 240px; }
+  .note { background: #EDF8F2; border-left: 3px solid #52B483; padding: 10px 14px; border-radius: 6px; font-size: 14px; }
 </style>
 </head>
 <body>
 <header>Voorbeeld B.V.</header>
 <main>
   <h1>Fake klantsite</h1>
+  <p class="note">
+    <strong>Testproject koppelen:</strong> voeg <code>?projectId=JOUW_PROJECT_ID</code> toe aan de URL —
+    dan gaan leads naar het échte LeadTrackr-endpoint in plaats van de mock.
+    Taal testen: <code>?lang=en</code>.
+  </p>
   <p>Testlinks (herladen met attributie):</p>
   <ul>
     <li><a href="/?utm_source=google&utm_medium=cpc&utm_campaign=zomer&gclid=TESTGCLID123">Google Ads klik</a></li>
     <li><a href="/?utm_source=facebook&utm_medium=paid_social&fbclid=TESTFBCLID456">Meta klik</a></li>
+    <li><a href="/?lang=en">Engelse versie</a></li>
     <li><a href="/">Direct</a></li>
   </ul>
   <h2>dataLayer</h2>
   <pre id="dl-log">(nog leeg)</pre>
 </main>
 <script>
+  const params = new URLSearchParams(location.search);
+  if (params.get('lang')) document.documentElement.lang = params.get('lang');
+
   window.dataLayer = window.dataLayer || [];
   const origPush = window.dataLayer.push.bind(window.dataLayer);
   window.dataLayer.push = function (entry) {
@@ -33,16 +43,24 @@
       JSON.stringify(window.dataLayer.concat([entry]), null, 2);
     return origPush(entry);
   };
-  window.ltWidgetConfig = {
+
+  const projectId = params.get('projectId');
+  window.ltLeadBotConfig = {
     companyName: 'Voorbeeld B.V.',
     agentName: 'Nick',
     agentPhoto: '/demo/avatar.png',
-    greeting: 'Goedemiddag 👋 Waar kunnen we je mee helpen?',
     phone: '+31 20 123 4567',
     whatsapp: '+31612345678',
-    endpoint: '/mock-lead'
+    // Zonder ?projectId= gaan leads naar de lokale mock; mét projectId naar
+    // het echte LeadTrackr-endpoint (default in de LeadBot zelf).
+    endpoint: projectId ? null : '/mock-lead'
   };
+
+  const s = document.createElement('script');
+  s.src = '/dist/lt-leadbot.min.js';
+  s.async = true;
+  s.setAttribute('data-project-id', projectId || 'demo-project');
+  document.body.appendChild(s);
 </script>
-<script src="/dist/lt-widget.min.js" data-project-id="demo-project" async></script>
 </body>
 </html>

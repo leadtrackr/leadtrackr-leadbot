@@ -1,6 +1,7 @@
+import { detectLanguage, TEXTS, type Language, type LeadBotTexts } from './i18n';
 import type { ChannelId } from './types';
 
-export interface WidgetTheme {
+export interface LeadBotTheme {
   primary: string;
   primaryHover: string;
   primaryTint: string;
@@ -15,39 +16,7 @@ export interface WidgetTheme {
   radius: number;
 }
 
-export interface WidgetTexts {
-  from: string;
-  online: string;
-  launcherLabel: string;
-  close: string;
-  back: string;
-  msgTitle: string;
-  msgSub: string;
-  callTitle: string;
-  waTitle: string;
-  waSub: string;
-  waPlaceholder: string;
-  waPhoneQuestion: string;
-  waPhonePlaceholder: string;
-  waSearchPlaceholder: string;
-  formTitle: string;
-  nameLabel: string;
-  namePlaceholder: string;
-  emailLabel: string;
-  emailPlaceholder: string;
-  messageLabel: string;
-  messagePlaceholder: string;
-  submit: string;
-  successTitle: string;
-  successBody: string;
-  successBack: string;
-  errorRequired: string;
-  errorEmail: string;
-  errorPhone: string;
-  errorSend: string;
-}
-
-export interface WidgetConfig {
+export interface LeadBotConfig {
   projectId: string;
   companyName: string;
   agentName: string;
@@ -60,15 +29,17 @@ export interface WidgetConfig {
   offset: { bottom: number; side: number };
   teaser: boolean;
   defaultCountry: string;
-  theme: WidgetTheme;
-  formNames: Record<'message' | 'whatsapp', string>;
-  texts: WidgetTexts;
+  language: Language;
+  responseTimeText: string | null;
+  theme: LeadBotTheme;
+  formNames: Record<'contact_form' | 'whatsapp', string>;
+  texts: LeadBotTexts;
   endpoint: string;
 }
 
 export const DEFAULT_ENDPOINT = 'https://app.leadtrackr.io/api/leads/createLead';
 
-const DEFAULT_THEME: WidgetTheme = {
+const DEFAULT_THEME: LeadBotTheme = {
   primary: '#52B483',
   primaryHover: '#3E8762',
   primaryTint: '#EDF8F2',
@@ -83,52 +54,23 @@ const DEFAULT_THEME: WidgetTheme = {
   radius: 16,
 };
 
-const DEFAULT_TEXTS: WidgetTexts = {
-  from: 'van',
-  online: 'Online — we reageren direct',
-  launcherLabel: 'Neem contact op',
-  close: 'Sluiten',
-  back: 'Terug',
-  msgTitle: 'Stuur een bericht',
-  msgSub: 'We reageren zo snel mogelijk',
-  callTitle: 'Bel ons direct',
-  waTitle: 'WhatsApp',
-  waSub: 'Chat direct met ons',
-  waPlaceholder: 'Typ je bericht…',
-  waPhoneQuestion: 'Top! Op welk nummer kunnen we je bereiken als het gesprek wegvalt?',
-  waPhonePlaceholder: '6 12345678',
-  waSearchPlaceholder: 'Zoek land…',
-  formTitle: 'Stuur een bericht',
-  nameLabel: 'Naam',
-  namePlaceholder: 'Je naam',
-  emailLabel: 'E-mailadres',
-  emailPlaceholder: 'naam@bedrijf.nl',
-  messageLabel: 'Bericht',
-  messagePlaceholder: 'Waar kunnen we je mee helpen?',
-  submit: 'Verstuur bericht',
-  successTitle: 'Verzonden!',
-  successBody: 'We nemen zo snel mogelijk contact met je op.',
-  successBack: 'Terug naar start',
-  errorRequired: 'Dit veld is verplicht',
-  errorEmail: 'Vul een geldig e-mailadres in',
-  errorPhone: 'Vul een geldig telefoonnummer in',
-  errorSend: 'Versturen mislukt. Probeer het opnieuw.',
-};
-
-export function resolveConfig(projectId: string, user: Partial<WidgetConfig> | undefined): WidgetConfig {
+export function resolveConfig(projectId: string, user: Partial<LeadBotConfig> | undefined): LeadBotConfig {
   const u = user || {};
-  const requested: ChannelId[] = u.channels && u.channels.length ? u.channels : ['message', 'call', 'whatsapp'];
+  const language = detectLanguage(u.language || document.documentElement.lang);
+  const texts: LeadBotTexts = { ...TEXTS[language], ...(u.texts || {}) };
+  if (u.responseTimeText) texts.responseTime = u.responseTimeText;
+  const requested: ChannelId[] = u.channels && u.channels.length ? u.channels : ['contact_form', 'phone', 'whatsapp'];
   const channels = requested.filter((c) => {
-    if (c === 'call') return Boolean(u.phone);
+    if (c === 'phone') return Boolean(u.phone);
     if (c === 'whatsapp') return Boolean(u.whatsapp);
-    return c === 'message';
+    return c === 'contact_form';
   });
   return {
     projectId,
     companyName: u.companyName || '',
     agentName: u.agentName || '',
     agentPhoto: u.agentPhoto || '',
-    greeting: u.greeting || 'Goedendag 👋 Waar kunnen we je mee helpen?',
+    greeting: u.greeting || texts.greeting,
     phone: u.phone || null,
     whatsapp: u.whatsapp || null,
     channels,
@@ -136,9 +78,11 @@ export function resolveConfig(projectId: string, user: Partial<WidgetConfig> | u
     offset: { bottom: u.offset?.bottom ?? 20, side: u.offset?.side ?? 20 },
     teaser: u.teaser !== false,
     defaultCountry: u.defaultCountry || 'NL',
+    language,
+    responseTimeText: u.responseTimeText || null,
     theme: { ...DEFAULT_THEME, ...(u.theme || {}) },
-    formNames: { message: 'Widget — Bericht', whatsapp: 'Widget — WhatsApp', ...(u.formNames || {}) },
-    texts: { ...DEFAULT_TEXTS, ...(u.texts || {}) },
+    formNames: { contact_form: 'LeadBot — Contact form', whatsapp: 'LeadBot — WhatsApp', ...(u.formNames || {}) },
+    texts,
     endpoint: u.endpoint || DEFAULT_ENDPOINT,
   };
 }

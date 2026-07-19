@@ -28,15 +28,15 @@ describe('buildLeadPayload', () => {
 
   it('builds the GTM-contract payload for a message lead', () => {
     updateChannelFlow('?utm_source=google&utm_medium=cpc', '', 'klant.nl', 1000);
-    const p = buildLeadPayload(cfg, 'message', {
+    const p = buildLeadPayload(cfg, 'contact_form', {
       name: 'Jan Jansen',
       email: 'jan@bedrijf.nl',
       message: 'Hallo!',
     });
     expect(Object.keys(p).sort()).toEqual(['attributionData', 'channelFlow', 'formData', 'projectId', 'userData']);
     expect(p.projectId).toBe('proj-1');
-    expect(p.formData.formName).toBe('Widget — Bericht');
-    expect(p.formData.uniqueEventId).toMatch(/^ltw-\d+-[a-z0-9]+$/);
+    expect(p.formData.formName).toBe('LeadBot — Contact form');
+    expect(p.formData.uniqueEventId).toMatch(/^ltb-\d+-[a-z0-9]+$/);
     expect(p.formData.formFields.message).toBe('Hallo!');
     expect(typeof p.formData.formFields.page_url).toBe('string');
     expect(p.userData).toEqual({ firstName: 'Jan', lastName: 'Jansen', email: 'jan@bedrijf.nl' });
@@ -47,7 +47,7 @@ describe('buildLeadPayload', () => {
   it('omits channelFlow when the cookie is empty and includes phone for whatsapp leads', () => {
     const p = buildLeadPayload(cfg, 'whatsapp', { phone: '+31612345678', message: 'Vraagje' });
     expect(p.channelFlow).toBeUndefined();
-    expect(p.formData.formName).toBe('Widget — WhatsApp');
+    expect(p.formData.formName).toBe('LeadBot — WhatsApp');
     expect(p.userData).toEqual({ phone: '+31612345678' });
   });
 });

@@ -1,6 +1,6 @@
 import { collectAttributionFromPage } from './attribution';
 import { readChannelFlow } from './channelflow';
-import type { WidgetConfig } from './config';
+import type { LeadBotConfig } from './config';
 import type { LeadPayload, LeadUserData } from './types';
 
 export function splitName(full: string): { firstName?: string; lastName?: string } {
@@ -19,8 +19,8 @@ export interface LeadFields {
 }
 
 export function buildLeadPayload(
-  cfg: WidgetConfig,
-  channel: 'message' | 'whatsapp',
+  cfg: LeadBotConfig,
+  channel: 'contact_form' | 'whatsapp',
   fields: LeadFields,
 ): LeadPayload {
   const userData: LeadUserData = { ...splitName(fields.name || '') };
@@ -36,7 +36,7 @@ export function buildLeadPayload(
     projectId: cfg.projectId,
     formData: {
       formName: cfg.formNames[channel],
-      uniqueEventId: 'ltw-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
+      uniqueEventId: 'ltb-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
       formFields,
     },
     userData,

@@ -1,30 +1,30 @@
-import { resolveConfig, type WidgetConfig } from './config';
+import { resolveConfig, type LeadBotConfig } from './config';
 import { updateChannelFlowFromPage } from './channelflow';
-import { mountWidget } from './ui/widget';
+import { mountLeadBot } from './ui/leadbot';
 
 declare global {
   interface Window {
-    ltWidgetConfig?: Partial<WidgetConfig>;
-    __ltWidgetLoaded?: boolean;
+    ltLeadBotConfig?: Partial<LeadBotConfig>;
+    __ltLeadBotLoaded?: boolean;
   }
 }
 
 export function boot(projectId: string | null): void {
   if (!projectId) {
-    console.warn('[LeadTrackr Widget] data-project-id ontbreekt — widget niet geladen.');
+    console.warn('[LeadTrackr LeadBot] data-project-id ontbreekt — LeadBot niet geladen.');
     return;
   }
-  if (window.__ltWidgetLoaded) return;
-  window.__ltWidgetLoaded = true;
+  if (window.__ltLeadBotLoaded) return;
+  window.__ltLeadBotLoaded = true;
   updateChannelFlowFromPage();
-  mountWidget(resolveConfig(projectId, window.ltWidgetConfig));
+  mountLeadBot(resolveConfig(projectId, window.ltLeadBotConfig));
 }
 
 // document.currentScript is null when imported in tests — no auto-boot there.
 const script = document.currentScript as HTMLScriptElement | null;
 if (script) {
   const projectId =
-    script.getAttribute('data-project-id') || window.ltWidgetConfig?.projectId || null;
+    script.getAttribute('data-project-id') || window.ltLeadBotConfig?.projectId || null;
   const start = () => boot(projectId);
   const idle = () =>
     'requestIdleCallback' in window

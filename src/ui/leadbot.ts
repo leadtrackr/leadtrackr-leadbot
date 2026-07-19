@@ -1,31 +1,35 @@
-import type { WidgetConfig } from '../config';
-import { pushCallClick, pushChannelClick, pushLeadSubmitted, pushOpen } from '../datalayer';
+import type { LeadBotConfig } from '../config';
+import { getCountries } from '../countries';
+import { pushChannelClick, pushConversion, pushOpen } from '../datalayer';
 import { buildLeadPayload } from '../payload';
 import { sendLead } from '../transport';
-import { COUNTRIES, isValidEmail, normalizePhone } from '../validate';
+import { isValidEmail, normalizePhone } from '../validate';
 import { buildStyles } from './styles';
 import type { FormState, WaState } from './views';
 import { launcherView, messageView, panelView, successView, whatsappView } from './views';
 
-type View = 'closed' | 'panel' | 'message' | 'whatsapp' | 'success';
+type View = 'closed' | 'panel' | 'contact_form' | 'whatsapp' | 'success';
 
-const TEASER_KEY = 'ltw_teaser_dismissed';
+const TEASER_KEY = 'ltb_teaser_dismissed';
 const MIN_OPEN_MS = 2000;
 
-export function mountWidget(cfg: WidgetConfig): void {
-  if (document.getElementById('lt-widget-host')) return;
+export function mountLeadBot(cfg: LeadBotConfig): void {
+  if (document.getElementById('lt-leadbot-host')) return;
 
   const host = document.createElement('div');
-  host.id = 'lt-widget-host';
+  host.id = 'lt-leadbot-host';
   const shadow = host.attachShadow({ mode: 'open' });
   const style = document.createElement('style');
   style.textContent = buildStyles(cfg);
   const container = document.createElement('div');
-  container.id = 'ltw-container';
+  container.id = 'ltb-container';
   shadow.append(style, container);
   document.body.appendChild(host);
 
+  const countries = getCountries(cfg.language);
+
   let view: View = 'closed';
+  let successChannel: 'contact_form' | 'whatsapp' = 'contact_form';
   let openedAt = 0;
 
   const form: FormState = {
@@ -38,9 +42,7 @@ export function mountWidget(cfg: WidgetConfig): void {
     step: 'compose',
     message: '',
     phone: '',
-    country: COUNTRIES.find((c) => c.code === cfg.defaultCountry) || COUNTRIES[0],
-    pickerOpen: false,
-    search: '',
+    country: countries.find((c) => c.code === cfg.defaultCountry) || countries[0],
     error: null,
     sending: false,
   };
@@ -54,37 +56,37 @@ export function mountWidget(cfg: WidgetConfig): void {
   }
 
   function injectFont(): void {
-    if (document.getElementById('ltw-cairo')) return;
+    if (document.getElementById('ltb-cairo')) return;
     const link = document.createElement('link');
-    link.id = 'ltw-cairo';
+    link.id = 'ltb-cairo';
     link.rel = 'stylesheet';
     link.href = 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap';
     document.head.appendChild(link);
   }
 
   function render(): void {
-    const sideClass = cfg.position === 'left' ? ' ltw-left' : '';
+    const sideClass = cfg.position === 'left' ? ' ltb-left' : '';
     if (view === 'closed') {
-      container.innerHTML = `<div class="ltw-root${sideClass}">${launcherView(cfg, teaserVisible())}</div>`;
+      container.innerHTML = `<div class="ltb-root${sideClass}">${launcherView(cfg, teaserVisible())}</div>`;
       return;
     }
     const inner =
       view === 'panel'
         ? panelView(cfg)
-        : view === 'message'
+        : view === 'contact_form'
           ? messageView(cfg, form)
           : view === 'whatsapp'
-            ? whatsappView(cfg, wa)
-            : successView(cfg);
-    container.innerHTML = `<div class="ltw-root${sideClass}"><div class="ltw-overlay" data-action="close"></div><div class="ltw-panel" role="dialog" aria-modal="true">${inner}</div></div>`;
-    container.querySelector<HTMLElement>('.ltw-panel .ltw-close, .ltw-panel .ltw-back')?.focus();
+            ? whatsappView(cfg, wa, countries)
+            : successView(cfg, successChannel);
+    container.innerHTML = `<div class="ltb-root${sideClass}"><div class="ltb-overlay" data-action="close"></div><div class="ltb-panel" role="dialog" aria-modal="true"><div class="ltb-view">${inner}</div></div></div>`;
+    container.querySelector<HTMLElement>('.ltb-panel .ltb-close, .ltb-panel .ltb-back')?.focus();
   }
 
   function open(): void {
     view = 'panel';
     openedAt = Date.now();
     injectFont();
-    pushOpen(cfg);
+    pushOpen();
     render();
   }
 
@@ -100,7 +102,7 @@ export function mountWidget(cfg: WidgetConfig): void {
     form.values.message = (container.querySelector<HTMLTextAreaElement>('[name="message"]')?.value || '').trim();
   }
 
-  async function submitMessage(): Promise<void> {
+  async function submitContactForm(): Promise<void> {
     readFormInputs();
     const t = cfg.texts;
     form.errors = {};
@@ -113,8 +115,9 @@ export function mountWidget(cfg: WidgetConfig): void {
       render();
       return;
     }
-    const honeypot = container.querySelector<HTMLInputElement>('[name="ltw_website"]')?.value;
+    const honeypot = container.querySelector<HTMLInputElement>('[name="ltb_website"]')?.value;
     if (honeypot || Date.now() - openedAt < MIN_OPEN_MS) {
+      successChannel = 'contact_form';
       view = 'success';
       render();
       return;
@@ -122,11 +125,12 @@ export function mountWidget(cfg: WidgetConfig): void {
     form.sending = true;
     form.sendFailed = false;
     render();
-    const ok = await sendLead(buildLeadPayload(cfg, 'message', form.values), cfg.endpoint);
+    const ok = await sendLead(buildLeadPayload(cfg, 'contact_form', form.values), cfg.endpoint);
     form.sending = false;
     if (ok) {
-      pushLeadSubmitted(cfg, 'message', { name: form.values.name, email: form.values.email });
+      pushConversion('contact_form', { name: form.values.name, email: form.values.email });
       form.values = { name: '', email: '', message: '' };
+      successChannel = 'contact_form';
       view = 'success';
     } else {
       form.sendFailed = true;
@@ -156,6 +160,7 @@ export function mountWidget(cfg: WidgetConfig): void {
     }
     wa.error = null;
     if (Date.now() - openedAt < MIN_OPEN_MS) {
+      successChannel = 'whatsapp';
       view = 'success';
       render();
       return;
@@ -168,11 +173,12 @@ export function mountWidget(cfg: WidgetConfig): void {
     );
     wa.sending = false;
     if (ok) {
-      pushLeadSubmitted(cfg, 'whatsapp', { phone: normalized });
+      pushConversion('whatsapp', { phone: normalized });
       openWhatsApp(wa.message);
       wa.step = 'compose';
       wa.message = '';
       wa.phone = '';
+      successChannel = 'whatsapp';
       view = 'success';
       render();
     } else {
@@ -207,17 +213,16 @@ export function mountWidget(cfg: WidgetConfig): void {
         form.sendFailed = false;
         render();
         break;
-      case 'channel-message':
-        pushChannelClick(cfg, 'message');
-        view = 'message';
+      case 'channel-contact_form':
+        pushChannelClick('contact_form');
+        view = 'contact_form';
         render();
         break;
-      case 'channel-call':
-        pushChannelClick(cfg, 'call');
-        pushCallClick(cfg);
+      case 'channel-phone':
+        pushChannelClick('phone');
         break; // native tel: navigation continues
       case 'channel-whatsapp':
-        pushChannelClick(cfg, 'whatsapp');
+        pushChannelClick('whatsapp');
         view = 'whatsapp';
         wa.step = 'compose';
         render();
@@ -233,38 +238,23 @@ export function mountWidget(cfg: WidgetConfig): void {
       case 'wa-phone-send':
         void submitWhatsApp();
         break;
-      case 'wa-cc-toggle':
-        readWaInputs();
-        wa.pickerOpen = !wa.pickerOpen;
-        wa.search = '';
-        render();
-        break;
-      case 'wa-country': {
-        const code = target.getAttribute('data-country');
-        const country = COUNTRIES.find((c) => c.code === code);
-        if (country) wa.country = country;
-        wa.pickerOpen = false;
-        render();
-        container.querySelector<HTMLInputElement>('[data-wa="phone"]')?.focus();
-        break;
-      }
+    }
+  });
+
+  container.addEventListener('change', (e) => {
+    const el = e.target as HTMLSelectElement;
+    if (el.getAttribute('data-wa') === 'country') {
+      readWaInputs();
+      const country = countries.find((c) => c.code === el.value);
+      if (country) wa.country = country;
+      render();
+      container.querySelector<HTMLInputElement>('[data-wa="phone"]')?.focus();
     }
   });
 
   container.addEventListener('submit', (e) => {
     e.preventDefault();
-    if ((e.target as HTMLElement).getAttribute('data-form') === 'message') void submitMessage();
-  });
-
-  container.addEventListener('input', (e) => {
-    const el = e.target as HTMLInputElement;
-    if (el.getAttribute('data-wa') === 'search') {
-      wa.search = el.value;
-      const needle = wa.search.toLowerCase();
-      container.querySelectorAll<HTMLElement>('.ltw-wa-country').forEach((btn) => {
-        btn.style.display = btn.textContent!.toLowerCase().includes(needle) ? '' : 'none';
-      });
-    }
+    if ((e.target as HTMLElement).getAttribute('data-form') === 'contact_form') void submitContactForm();
   });
 
   container.addEventListener('keydown', (e) => {
@@ -285,7 +275,7 @@ export function mountWidget(cfg: WidgetConfig): void {
     }
     if (e.key === 'Tab' && view !== 'closed') {
       const focusables = Array.from(
-        container.querySelectorAll<HTMLElement>('.ltw-panel button, .ltw-panel a[href], .ltw-panel input, .ltw-panel textarea'),
+        container.querySelectorAll<HTMLElement>('.ltb-panel button, .ltb-panel a[href], .ltb-panel input, .ltb-panel textarea, .ltb-panel select'),
       ).filter((f) => f.tabIndex !== -1);
       if (!focusables.length) return;
       const first = focusables[0];

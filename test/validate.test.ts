@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { COUNTRIES, isValidEmail, normalizePhone } from '../src/validate';
+import { isValidEmail, normalizePhone } from '../src/validate';
 
 describe('normalizePhone', () => {
   it('converts NL national formats to E.164', () => {
@@ -29,13 +29,5 @@ describe('isValidEmail', () => {
     expect(isValidEmail('jan@bedrijf')).toBe(false);
     expect(isValidEmail('jan @bedrijf.nl')).toBe(false);
     expect(isValidEmail('')).toBe(false);
-  });
-});
-
-describe('COUNTRIES', () => {
-  it('starts with NL and contains dial codes', () => {
-    expect(COUNTRIES[0].code).toBe('NL');
-    expect(COUNTRIES[0].dial).toBe('+31');
-    expect(COUNTRIES.length).toBeGreaterThanOrEqual(8);
   });
 });

@@ -11,8 +11,7 @@ const options = {
   minify: true,
   format: 'iife',
   target: 'es2019',
-  outfile: 'dist/lt-widget.min.js',
-  define: { LT_WIDGET_VERSION: JSON.stringify(version) },
+  outfile: 'dist/lt-leadbot.min.js',
   legalComments: 'none',
 };
 

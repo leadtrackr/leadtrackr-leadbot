@@ -38,4 +38,4 @@ export interface LeadPayload {
   attributionData: AttributionData;
 }
 
-export type ChannelId = 'message' | 'call' | 'whatsapp';
+export type ChannelId = 'contact_form' | 'phone' | 'whatsapp';

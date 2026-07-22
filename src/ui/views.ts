@@ -124,6 +124,9 @@ export function messageView(cfg: LeadBotConfig, s: FormState): string {
 
 export interface WaState {
   step: 'compose' | 'phone';
+  /** False during the first render after sending — plays the message
+      sequence; true afterwards so re-renders don't replay it. */
+  entered: boolean;
   message: string;
   phone: string;
   country: Country;
@@ -135,8 +138,11 @@ export function whatsappView(cfg: LeadBotConfig, s: WaState, countries: Country[
   const t = cfg.texts;
   const sent =
     s.step === 'phone'
-      ? `<div class="ltb-wa-bubble ltb-wa-sent">${esc(s.message)}<p class="ltb-wa-meta">${icons.doubleCheck(14)}</p></div>
-         <div class="ltb-wa-bubble">${esc(t.waPhoneQuestion)}</div>`
+      ? `<div class="ltb-wa-bubble ltb-wa-sent">${esc(s.message)}<p class="ltb-wa-meta"><span class="ltb-wa-ticks"><span class="ltb-wa-tick-one">${icons.check(12, 2.2)}</span><span class="ltb-wa-tick-two">${icons.doubleCheck(14)}</span></span></p></div>
+         <div class="ltb-wa-reply">
+           <div class="ltb-wa-bubble ltb-wa-typing" aria-hidden="true"><span></span><span></span><span></span></div>
+           <div class="ltb-wa-bubble ltb-wa-question">${esc(t.waPhoneQuestion)}</div>
+         </div>`
       : '';
   // Native <select> under an invisible overlay: system picker UX (searchable on
   // Apple/Android), no custom dropdown. Chosen flag is shown in the chip.
@@ -176,7 +182,7 @@ export function whatsappView(cfg: LeadBotConfig, s: WaState, countries: Country[
     </div>
     <span class="ltb-wa-head-icon">${icons.whatsapp(22)}</span>
   </div>
-  <div class="ltb-wa-chat">
+  <div class="ltb-wa-chat${s.entered ? ' ltb-static' : ''}">
     <div class="ltb-wa-bubble">${esc(cfg.greeting)}</div>
     ${sent}
   </div>

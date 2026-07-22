@@ -129,7 +129,30 @@ input, textarea, select { font: inherit; color: var(--tx); }
 .ltb-wa-head-icon { margin-left: auto; color: rgba(255,255,255,.85); display: flex; }
 .ltb-wa-chat { background: #ECE5DD; padding: 16px 14px; display: flex; flex-direction: column; gap: 11px; min-height: 140px; }
 .ltb-wa-bubble { align-self: flex-start; max-width: 84%; background: #fff; border-radius: 0 10px 10px 10px; padding: 9px 13px; box-shadow: 0 1px 1px rgba(0,0,0,.08); font-size: 14px; line-height: 1.5; }
-.ltb-wa-bubble.ltb-wa-sent { align-self: flex-end; background: #DCF8C6; border-radius: 10px 0 10px 10px; animation: ltb-fade-up .4s ease-out both; }
+.ltb-wa-bubble.ltb-wa-sent { align-self: flex-end; background: #DCF8C6; border-radius: 10px 0 10px 10px; animation: ltb-wa-send .38s cubic-bezier(.2, .8, .25, 1.12) both; }
+@keyframes ltb-wa-send { 0% { opacity: 0; transform: translate(14px, 10px) scale(.92); } 100% { opacity: 1; transform: translate(0, 0) scale(1); } }
+.ltb-wa-ticks { display: inline-grid; }
+.ltb-wa-ticks > span { grid-area: 1 / 1; display: flex; align-items: center; }
+.ltb-wa-tick-one { color: #9CA3AF; animation: ltb-tick-hide .15s linear .8s both; }
+.ltb-wa-tick-two { opacity: 0; animation: ltb-tick-show .25s ease-out .8s both; }
+@keyframes ltb-tick-hide { to { opacity: 0; } }
+@keyframes ltb-tick-show { 0% { opacity: 0; transform: scale(.7); } 100% { opacity: 1; transform: scale(1); } }
+.ltb-wa-reply { display: grid; max-width: 84%; align-self: flex-start; }
+.ltb-wa-reply > .ltb-wa-bubble { grid-area: 1 / 1; align-self: start; justify-self: start; }
+.ltb-wa-typing { opacity: 0; display: flex; gap: 4px; align-items: center; padding: 12px 13px; animation: ltb-typing 1s ease-out .45s both; }
+@keyframes ltb-typing { 0% { opacity: 0; transform: translateY(6px); } 12%, 86% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; } }
+.ltb-wa-typing span { width: 6px; height: 6px; border-radius: 999px; background: #B6BEC4; animation: ltb-dot 1s ease-in-out infinite; }
+.ltb-wa-typing span:nth-child(2) { animation-delay: .15s; }
+.ltb-wa-typing span:nth-child(3) { animation-delay: .3s; }
+.ltb-wa-question { opacity: 0; animation: ltb-question .3s ease-out 1.5s both; }
+@keyframes ltb-question { 0% { opacity: 0; transform: translateY(8px); } 100% { opacity: 1; transform: translateY(0); } }
+@keyframes ltb-dot { 0%, 60%, 100% { transform: translateY(0); opacity: .5; } 30% { transform: translateY(-3px); opacity: 1; } }
+/* Re-renders (landwissel, foutmelding) tonen de eindtoestand direct. */
+.ltb-static .ltb-wa-sent, .ltb-static .ltb-wa-question, .ltb-static .ltb-wa-tick-one, .ltb-static .ltb-wa-tick-two { animation: none; }
+.ltb-static .ltb-wa-question { opacity: 1; }
+.ltb-static .ltb-wa-typing { display: none; }
+.ltb-static .ltb-wa-tick-one { opacity: 0; }
+.ltb-static .ltb-wa-tick-two { opacity: 1; }
 .ltb-wa-meta { margin-top: 3px; font-size: 10.5px; color: #9CA3AF; text-align: right; display: flex; justify-content: flex-end; align-items: center; gap: 3px; }
 .ltb-wa-inputbar { display: flex; gap: 8px; align-items: center; padding: 10px 12px; background: #F0F2F5; }
 .ltb-wa-input { flex: 1; min-width: 0; height: 44px; border: none; border-radius: 999px; padding: 0 16px; background: #fff; font-size: 14.5px; outline: none; transition: box-shadow .2s ease-out; }
@@ -172,6 +195,11 @@ input, textarea, select { font: inherit; color: var(--tx); }
 @media (prefers-reduced-motion: reduce) {
   .ltb-launcher, .ltb-avatar-dot { animation: none; }
   .ltb-panel, .ltb-view, .ltb-teaser, .ltb-wa-sent, .ltb-success-avatar, .ltb-overlay { animation: none; }
+  .ltb-wa-question, .ltb-wa-tick-one, .ltb-wa-tick-two { animation: none; }
+  .ltb-wa-question { opacity: 1; }
+  .ltb-wa-typing { display: none; }
+  .ltb-wa-tick-one { opacity: 0; }
+  .ltb-wa-tick-two { opacity: 1; }
 }
 `;
 }

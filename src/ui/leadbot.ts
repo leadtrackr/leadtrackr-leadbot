@@ -41,6 +41,7 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
   };
   const wa: WaState = {
     step: 'compose',
+    entered: false,
     message: '',
     phone: '',
     country: countries.find((c) => c.code === cfg.defaultCountry) || countries[0],
@@ -170,6 +171,7 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
       pushConversion('whatsapp', { phone: normalized });
       openWhatsApp(wa.message);
       wa.step = 'compose';
+      wa.entered = false;
       wa.message = '';
       wa.phone = '';
       successChannel = 'whatsapp';
@@ -222,13 +224,16 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
         pushChannelClick('whatsapp');
         view = 'whatsapp';
         wa.step = 'compose';
+        wa.entered = false;
         render();
         break;
       case 'wa-send':
         readWaInputs();
         if (wa.message) {
           wa.step = 'phone';
+          wa.entered = false;
           render();
+          wa.entered = true; // volgende renders spelen de sequence niet opnieuw
           container.querySelector<HTMLInputElement>('[data-wa="phone"]')?.focus();
         }
         break;

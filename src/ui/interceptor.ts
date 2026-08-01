@@ -139,9 +139,14 @@ export function mountWhatsAppInterceptor(cfg: LeadBotConfig): void {
       cfg.endpoint,
     );
     s.sending = false;
-    void res;
-    // Handoff en conversie-event gaan altijd door — een mislukte lead-POST
-    // mag de bezoeker nooit in de weg zitten.
+    // 404 = project niet gevonden / abonnement inactief: dan bewust blokkeren.
+    // Elke andere fout (netwerk, 5xx, overige 4xx) mag de bezoeker nooit in
+    // de weg zitten: handoff én conversie-event gaan gewoon door.
+    if (res.status === 404) {
+      s.error = cfg.texts.errorSend;
+      render();
+      return;
+    }
     pushConversion('whatsapp', { phone: normalized });
     finish();
   }

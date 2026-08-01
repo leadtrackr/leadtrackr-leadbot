@@ -174,9 +174,14 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
       cfg.endpoint,
     );
     wa.sending = false;
-    void res;
-    // WhatsApp opent altijd en het conversie-event gaat altijd mee — een
-    // mislukte lead-POST mag de bezoeker nooit in de weg zitten.
+    // 404 = project niet gevonden / abonnement inactief: dan bewust blokkeren.
+    // Elke andere fout mag de bezoeker nooit in de weg zitten: WhatsApp opent
+    // gewoon en het conversie-event gaat mee.
+    if (res.status === 404) {
+      wa.error = cfg.texts.errorSend;
+      render();
+      return;
+    }
     pushConversion('whatsapp', { phone: normalized });
     openWhatsApp(wa.message);
     wa.step = 'compose';

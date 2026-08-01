@@ -12,10 +12,10 @@ const payload: LeadPayload = {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('sendLead', () => {
-  it('POSTs JSON and resolves true on ok', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+  it('POSTs JSON and resolves ok with status', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200 });
     vi.stubGlobal('fetch', fetchMock);
-    await expect(sendLead(payload, 'https://x/lead')).resolves.toBe(true);
+    await expect(sendLead(payload, 'https://x/lead')).resolves.toEqual({ ok: true, status: 200 });
     expect(fetchMock).toHaveBeenCalledWith('https://x/lead', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -23,13 +23,13 @@ describe('sendLead', () => {
     });
   });
 
-  it('resolves false on non-ok response', async () => {
+  it('resolves not-ok with status on non-ok response', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 422 }));
-    await expect(sendLead(payload, 'https://x/lead')).resolves.toBe(false);
+    await expect(sendLead(payload, 'https://x/lead')).resolves.toEqual({ ok: false, status: 422 });
   });
 
-  it('resolves false on network error', async () => {
+  it('resolves status 0 on network error', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('down')));
-    await expect(sendLead(payload, 'https://x/lead')).resolves.toBe(false);
+    await expect(sendLead(payload, 'https://x/lead')).resolves.toEqual({ ok: false, status: 0 });
   });
 });

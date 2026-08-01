@@ -43,6 +43,7 @@ export interface LeadBotTexts {
   errorEmail: string;
   errorPhone: string;
   errorSend: string;
+  errorBlocked: string;
 }
 
 // Personal voice ("I" instead of "we") — applied on top of TEXTS when an
@@ -103,6 +104,7 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     errorEmail: 'Enter a valid email address',
     errorPhone: 'Enter a valid phone number',
     errorSend: 'Sending failed. Please try again.',
+    errorBlocked: 'Sending is currently unavailable.',
   },
   nl: {
     greeting: 'Goedendag 👋 Waar kunnen we je mee helpen?',
@@ -140,5 +142,6 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     errorEmail: 'Vul een geldig e-mailadres in',
     errorPhone: 'Vul een geldig telefoonnummer in',
     errorSend: 'Versturen mislukt. Probeer het opnieuw.',
+    errorBlocked: 'Versturen is op dit moment niet mogelijk.',
   },
 };

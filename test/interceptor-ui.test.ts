@@ -207,6 +207,8 @@ describe('WhatsApp interceptor — leadflow', () => {
     (q(root, '[data-wa="phone"]') as HTMLInputElement).value = '06 12345678';
     q(root, '[data-action="wa-phone-send"]')!.click();
     await vi.waitFor(() => expect(q(root, '.ltb-wa-error')).toBeTruthy());
+    // Eigen melding zonder "probeer opnieuw" — opnieuw proberen helpt hier niet
+    expect(q(root, '.ltb-wa-error')!.textContent).toContain('op dit moment niet mogelijk');
     expect(openSpy).not.toHaveBeenCalled();
     expect(window.dataLayer!.map((x) => x.event)).not.toContain('leadtrackr_leadbot_conversion');
   });

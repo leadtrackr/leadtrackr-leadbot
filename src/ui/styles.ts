@@ -128,7 +128,7 @@ input, textarea, select { font: inherit; color: var(--tx); }
 .ltb-wa-head-status { font-size: 11.5px; color: rgba(255,255,255,.75); }
 .ltb-wa-head-icon { margin-left: auto; color: rgba(255,255,255,.85); display: flex; }
 .ltb-wa-chat { background: #ECE5DD; padding: 16px 14px; display: flex; flex-direction: column; gap: 11px; min-height: 140px; }
-.ltb-wa-bubble { align-self: flex-start; max-width: 84%; background: #fff; border-radius: 0 10px 10px 10px; padding: 9px 13px; box-shadow: 0 1px 1px rgba(0,0,0,.08); font-size: 14px; line-height: 1.5; }
+.ltb-wa-bubble { align-self: flex-start; max-width: 84%; background: #fff; border-radius: 0 10px 10px 10px; padding: 9px 13px; box-shadow: 0 1px 1px rgba(0,0,0,.08); font-size: 14px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: break-word; }
 .ltb-wa-bubble.ltb-wa-sent { align-self: flex-end; background: #DCF8C6; border-radius: 10px 0 10px 10px; animation: ltb-wa-send .38s cubic-bezier(.2, .8, .25, 1.12) both; }
 @keyframes ltb-wa-send { 0% { opacity: 0; transform: translate(14px, 10px) scale(.92); } 100% { opacity: 1; transform: translate(0, 0) scale(1); } }
 .ltb-wa-ticks { display: inline-grid; }
@@ -154,8 +154,9 @@ input, textarea, select { font: inherit; color: var(--tx); }
 .ltb-static .ltb-wa-tick-one { opacity: 0; }
 .ltb-static .ltb-wa-tick-two { opacity: 1; }
 .ltb-wa-meta { margin-top: 3px; font-size: 10.5px; color: #9CA3AF; text-align: right; display: flex; justify-content: flex-end; align-items: center; gap: 3px; }
-.ltb-wa-inputbar { display: flex; gap: 8px; align-items: center; padding: 10px 12px; background: #F0F2F5; }
+.ltb-wa-inputbar { display: flex; gap: 8px; align-items: flex-end; padding: 10px 12px; background: #F0F2F5; }
 .ltb-wa-input { flex: 1; min-width: 0; height: 44px; border: none; border-radius: 999px; padding: 0 16px; background: #fff; font-size: 14.5px; outline: none; transition: box-shadow .2s ease-out; }
+.ltb-wa-multiline { height: 44px; min-height: 44px; max-height: 120px; padding: 11.5px 16px; border-radius: 22px; resize: none; line-height: 1.45; overflow-y: auto; }
 .ltb-wa-input:focus { box-shadow: 0 0 0 2px #25D366; }
 .ltb-wa-send { width: 44px; height: 44px; border-radius: 999px; background: #25D366; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .2s ease-out; }
 .ltb-wa-send:hover { background: #1EBE5A; transform: translateY(-1px); }
@@ -182,19 +183,61 @@ input, textarea, select { font: inherit; color: var(--tx); }
 .ltb-success-back { margin-top: 14px; font-weight: 700; font-size: 14px; color: var(--ph); display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 8px; transition: color .2s ease-out; }
 .ltb-success-back:hover { color: var(--p); }
 
+/* ── WhatsApp Interceptor: modal (desktop) / bottom sheet (mobiel) ── */
+.ltb-wi-root { position: fixed; inset: 0; z-index: 2147483001; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.ltb-wi-overlay { position: absolute; inset: 0; background: rgba(2,10,36,.5); animation: ltb-fade .25s ease-out both; }
+.ltb-wi-modal { position: relative; width: 460px; max-width: 100%; max-height: calc(100dvh - 40px); overflow: hidden; display: flex; flex-direction: column; background: var(--bg); border-radius: 20px; box-shadow: 0 24px 60px -12px rgba(2,10,36,.45); animation: ltb-wi-in .25s ease-out both; }
+@keyframes ltb-wi-in { 0% { opacity: 0; transform: scale(.96); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes ltb-wi-up { 0% { transform: translateY(100%); } 100% { transform: translateY(0); } }
+@keyframes ltb-wi-spin { to { transform: rotate(360deg); } }
+.ltb-wi-static .ltb-wi-overlay, .ltb-wi-static .ltb-wi-modal { animation: none; }
+.ltb-wi-modal .ltb-wa-head { border-radius: 20px 20px 0 0; }
+.ltb-wi-modal .ltb-wa-chat { flex: 1 1 auto; min-height: min(320px, 45dvh); overflow-y: auto; }
+.ltb-wi-close { width: 34px; height: 34px; margin-left: 2px; border-radius: 999px; color: rgba(255,255,255,.85); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .2s ease-out; }
+.ltb-wi-close:hover { background: rgba(255,255,255,.14); color: #fff; }
+.ltb-wi-close:focus-visible { outline: 2px solid #25D366; outline-offset: 2px; }
+.ltb-wi-handoff { padding: 24px 22px 18px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 7px; background: var(--bg); }
+.ltb-wi-spinner { width: 50px; height: 50px; border-radius: 999px; border: 3px solid var(--bd); border-top-color: #25D366; animation: ltb-wi-spin .9s linear infinite; margin-bottom: 4px; }
+.ltb-wi-badge { width: 54px; height: 54px; border-radius: 999px; background: #25D366; color: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; animation: ltb-pop .45s ease-out both; box-shadow: 0 20px 50px -12px rgba(37,211,102,.45); }
+.ltb-wi-handoff-title { font-weight: 700; font-size: 17px; color: var(--ht); }
+.ltb-wi-handoff-body { font-size: 13.5px; line-height: 1.55; color: #4B5563; max-width: 300px; }
+.ltb-wi-reopen { margin-top: 8px; min-height: 44px; display: inline-flex; align-items: center; gap: 8px; padding: 0 18px; border-radius: 8px; background: #25D366; color: #fff; font-weight: 700; font-size: 14px; transition: all .2s ease-out; }
+.ltb-wi-reopen:hover { background: #1EBE5A; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,211,102,.3); }
+.ltb-wi-reopen:focus-visible { outline: 2px solid #075E54; outline-offset: 2px; }
+@media (max-width: 640px) {
+  /* --ltb-kb/--ltb-vvh worden via visualViewport gezet: de sheet blijft boven
+     het iOS-toetsenbord (dat over de layout-viewport heen valt). */
+  .ltb-wi-root { padding: 0 0 var(--ltb-kb, 0px); align-items: flex-end; }
+  .ltb-wi-modal { width: 100%; height: min(620px, 80dvh); max-height: calc(var(--ltb-vvh, 100dvh) - 48px); border-radius: 20px 20px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); animation: ltb-wi-up .3s ease-out both; }
+  .ltb-wi-modal .ltb-wa-chat { min-height: 0; overscroll-behavior: contain; }
+}
+
+/* iOS zoomt in op velden met een font < 16px — op mobiel dus altijd 16px. */
+@media (max-width: 640px) {
+  .ltb-input, .ltb-textarea, .ltb-wa-input, .ltb-wa-phone, .ltb-wa-cc-select { font-size: 16px; }
+}
+
 /* ── Mobiel: bottom sheet ── */
 @media (max-width: 480px) {
   .ltb-overlay { display: block; position: fixed; inset: 0; background: rgba(2,10,36,.35); animation: ltb-fade .25s ease-out both; }
-  .ltb-panel { position: fixed; left: 0; right: 0; bottom: 0; width: 100%; max-width: 100%; max-height: 88vh; border-radius: 20px 20px 0 0; box-shadow: 0 -8px 30px rgba(2,10,36,.18); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .ltb-panel { position: fixed; left: 0; right: 0; bottom: var(--ltb-kb, 0px); width: 100%; max-width: 100%; max-height: calc(var(--ltb-vvh, 100dvh) - 48px); border-radius: 20px 20px 0 0; box-shadow: 0 -8px 30px rgba(2,10,36,.18); padding-bottom: env(safe-area-inset-bottom, 0px); }
   .ltb-handle { display: flex; justify-content: center; padding: 8px 0 0; background: var(--hb); }
   .ltb-handle span { width: 36px; height: 4px; border-radius: 999px; background: var(--bd); }
   .ltb-wa-head { border-radius: 20px 20px 0 0; }
   .ltb-wa-head .ltb-handle { background: transparent; }
+  /* WhatsApp-view: zelfde opmaak als de interceptor-popup — zelfde hoogte,
+     geen handle boven de groene header, chat is het scrollgebied en de
+     inputbar blijft onderin in beeld. */
+  .ltb-panel:has(.ltb-wa-chat) { display: flex; flex-direction: column; overflow: hidden; height: min(620px, 80dvh); }
+  .ltb-panel:has(.ltb-wa-chat) .ltb-handle { display: none; }
+  .ltb-panel:has(.ltb-wa-chat) .ltb-view { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+  .ltb-panel:has(.ltb-wa-chat) .ltb-wa-chat { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .ltb-launcher, .ltb-avatar-dot { animation: none; }
   .ltb-panel, .ltb-view, .ltb-teaser, .ltb-wa-sent, .ltb-success-avatar, .ltb-overlay { animation: none; }
+  .ltb-wi-modal, .ltb-wi-overlay, .ltb-wi-badge, .ltb-wi-spinner { animation: none; }
   .ltb-wa-question, .ltb-wa-tick-one, .ltb-wa-tick-two { animation: none; }
   .ltb-wa-question { opacity: 1; }
   .ltb-wa-typing { display: none; }

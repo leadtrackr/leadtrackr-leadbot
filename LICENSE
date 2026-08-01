@@ -1,0 +1,25 @@
+LeadTrackr LeadBot — Source-Available License
+
+Copyright (c) 2026 LeadTrackr (leadtrackr.io). All rights reserved.
+
+Permission is granted, free of charge, to:
+
+1. View and inspect the source code in this repository.
+2. Load and execute the official built bundle (dist/lt-leadbot.min.js) on any
+   website via the official CDN or a self-hosted copy of the unmodified
+   bundle, for use with the LeadTrackr service.
+
+No permission is granted to:
+
+- Copy, modify, translate, or create derivative works of the source code or
+  the bundle;
+- Redistribute, sublicense, sell, or rehost the source code or bundle as part
+  of another product or service;
+- Use the code to build a competing product.
+
+Exceptions require prior written permission from LeadTrackr
+(support@leadtrackr.io).
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. IN NO EVENT SHALL LEADTRACKR BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY ARISING FROM THE USE OF THE SOFTWARE.

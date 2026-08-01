@@ -13,6 +13,8 @@ function freshMount(user: Parameters<typeof resolveConfig>[1] = {}) {
   document.getElementById('ltb-cairo')?.remove();
   sessionStorage.clear();
   document.documentElement.lang = 'nl';
+  // happy-dom default is en-US; de landdetectie moet hier deterministisch NL zijn
+  Object.defineProperty(window.navigator, 'language', { value: 'nl-NL', configurable: true });
   window.dataLayer = [];
   const cfg = resolveConfig('proj-1', {
     companyName: 'Voorbeeld B.V.',
@@ -115,6 +117,16 @@ describe('mount + launcher + panel', () => {
       channel: 'phone',
       user_data: {},
     });
+  });
+
+  it('shows the branding footer by default and hides it with branding:false', () => {
+    const { root } = freshMount();
+    click(root, 'open');
+    expect(q(root, '.ltb-brand')!.textContent).toContain('LeadTrackr.io');
+    document.getElementById('lt-leadbot-host')?.remove();
+    const { root: bare } = freshMount({ branding: false } as never);
+    click(bare, 'open');
+    expect(q(bare, '.ltb-brand')).toBeNull();
   });
 
   it('closes on Escape', () => {
@@ -322,6 +334,13 @@ describe('whatsapp flow', () => {
       'Op welk telefoonnummer wil je het WhatsApp-gesprek starten?',
     );
     expect(q(root, '[data-wa="phone"]')).toBeTruthy();
+  });
+
+  it('supports multi-line messages and keeps the line breaks', () => {
+    const { root } = openWa();
+    (q(root, '[data-wa="message"]') as HTMLTextAreaElement).value = 'Regel 1\nRegel 2';
+    click(root, 'wa-send');
+    expect(q(root, '.ltb-wa-sent')!.textContent).toContain('Regel 1\nRegel 2');
   });
 
   it('uses a native select with a full country list, flag shown in the chip', () => {

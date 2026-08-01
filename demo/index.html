@@ -29,6 +29,12 @@
     <li><a href="/?lang=en">Engelse versie</a></li>
     <li><a href="/">Direct</a></li>
   </ul>
+  <p>WhatsApp-links op de pagina (interceptor vangt deze af; uit met <code>?interceptor=0</code>, launcher uit met <code>?launcher=0</code>):</p>
+  <ul>
+    <li><a href="https://wa.me/31612345678?text=Hoi%2C%20ik%20heb%20een%20vraag!">Chat via WhatsApp (wa.me, met voorafingevuld bericht)</a></li>
+    <li><a href="https://api.whatsapp.com/send?phone=31698765432">api.whatsapp.com-variant (ander nummer)</a></li>
+    <li><a href="https://wa.me/">wa.me zonder nummer (valt terug op config-nummer)</a></li>
+  </ul>
   <h2>dataLayer</h2>
   <pre id="dl-log">(nog leeg)</pre>
 </main>
@@ -51,6 +57,9 @@
     agentPhoto: '/demo/avatar.png',
     phone: '+31 20 123 4567',
     whatsapp: '+31612345678',
+    // Demo: interceptor standaard aan (productie-default is uit).
+    whatsappInterceptor: params.get('interceptor') !== '0',
+    launcher: params.get('launcher') !== '0',
     // Zonder ?projectId= gaan leads naar de lokale mock; mét projectId naar
     // het echte LeadTrackr-endpoint (default in de LeadBot zelf).
     endpoint: projectId ? null : '/mock-lead'

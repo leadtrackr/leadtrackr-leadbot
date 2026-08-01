@@ -41,10 +41,12 @@ Alle opties op `window.ltLeadBotConfig` (vóór het script-tag zetten):
 | `phone` | `null` | Telefoonnummer voor het bel-kanaal; `null` verbergt het kanaal |
 | `whatsapp` | `null` | WhatsApp-nummer (wa.me-doel); `null` verbergt het kanaal |
 | `channels` | `["contact_form","phone","whatsapp"]` | Volgorde = weergavevolgorde; subset mogelijk |
+| `launcher` | `true` | `false` verbergt de LeadBot-launcher volledig (bijv. voor interceptor-only) |
+| `whatsappInterceptor` | `false` | `true` onderschept kliks op bestaande wa.me-/WhatsApp-links en opent de LeadBot-modal; zie hieronder |
 | `position` | `"right"` | `"right"` of `"left"` |
 | `offset` | `{ bottom: 20, side: 20 }` | Afstand tot de hoek in px |
 | `teaser` | `true` | Teaser-bubbel; dismiss onthouden per sessie |
-| `defaultCountry` | `"NL"` | Startland van de landcode-selector (WhatsApp-flow) |
+| `defaultCountry` | auto | Startland van de landcode-selector; default = land uit de browser-locale (bijv. `nl-BE` → BE), fallback `NL`. Geen IP-geolocatie |
 | `callTracking` | `false` | `true` = telefoonnummer komt uit de LeadTrackr call-tracking cookie (dynamic number insertion); zie hieronder |
 | `language` | auto | Forceer `"nl"` of `"en"`; default = `lang`-attribuut van de pagina, fallback `en` |
 | `responseTimeText` | per taal | Bijv. `"Gemiddelde responstijd: binnen 15 minuten"` — per project aanpasbaar |
@@ -105,6 +107,24 @@ Omdat de LeadBot in een Shadow DOM zit, kan het reguliere call-tracking-script h
 ## WhatsApp-flow
 
 Bezoeker typt een bericht → vult het telefoonnummer in waarmee die het WhatsApp-gesprek wil starten (native landcode-selector) → de lead wordt opgeslagen in LeadTrackr → WhatsApp opent in een nieuw tabblad met het bericht vooraf ingevuld. De bevestiging zegt expliciet dat het gesprek in WhatsApp nog verstuurd moet worden.
+
+## WhatsApp Interceptor
+
+Met `whatsappInterceptor: true` onderschept de LeadBot kliks op de bestaande WhatsApp-links van de site (`wa.me/<nummer>`, `api.whatsapp.com/send`, `web.whatsapp.com/send`, `whatsapp://send`) en opent in plaats daarvan een modal (desktop: gecentreerd; mobiel: bottom sheet) met dezelfde WhatsApp-leadflow: bericht → telefoonnummer → lead naar LeadTrackr → daarna pas door naar WhatsApp.
+
+- Het **doelnummer komt uit de aangeklikte link** (per link kan dat dus verschillen); een `?text=`-prefill wordt in het berichtveld gezet. Links zonder nummer vallen terug op het geconfigureerde `whatsapp`-nummer; is dat er ook niet, dan blijft de link gewoon werken.
+- Groeps- en shortcode-links (`chat.whatsapp.com`, `wa.me/message/…`) worden bewust niet onderschept.
+- Leads krijgen `formName` `LeadBot — WhatsApp Interceptor` (overridebaar via `formNames.whatsapp_interceptor`); dataLayer-events gebruiken gewoon channel `whatsapp`.
+- Combineer met `launcher: false` voor interceptor-only (geen bolletje rechtsonder). Sluiten van de modal stuurt de bezoeker níet alsnog door naar WhatsApp; na een geslaagde submit toont de modal een "WhatsApp opnieuw openen"-knop als popup-vangnet.
+
+```js
+window.ltLeadBotConfig = {
+  launcher: false,            // alleen de interceptor, geen launcher
+  whatsappInterceptor: true,
+  agentName: "Ruben",
+  agentPhoto: "https://…/ruben.jpg",
+};
+```
 
 ## Payload-contract
 

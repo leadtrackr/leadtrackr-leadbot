@@ -23,6 +23,9 @@ export interface LeadBotTexts {
   waPhoneQuestion: string;
   waPhonePlaceholder: string;
   waCountryLabel: string;
+  waiOpening: string;
+  waiReopen: string;
+  waiDialogLabel: string;
   formTitle: string;
   nameLabel: string;
   namePlaceholder: string;
@@ -80,6 +83,9 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     waPhoneQuestion: 'Which phone number would you like to start the WhatsApp conversation with?',
     waPhonePlaceholder: '6 12345678',
     waCountryLabel: 'Country code',
+    waiOpening: 'Opening WhatsApp…',
+    waiReopen: 'Open WhatsApp again',
+    waiDialogLabel: 'Contact via WhatsApp',
     formTitle: 'Send a message',
     nameLabel: 'Name',
     namePlaceholder: 'Your name',
@@ -114,6 +120,9 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     waPhoneQuestion: 'Op welk telefoonnummer wil je het WhatsApp-gesprek starten?',
     waPhonePlaceholder: '6 12345678',
     waCountryLabel: 'Landcode',
+    waiOpening: 'WhatsApp openen…',
+    waiReopen: 'WhatsApp opnieuw openen',
+    waiDialogLabel: 'Contact via WhatsApp',
     formTitle: 'Stuur een bericht',
     nameLabel: 'Naam',
     namePlaceholder: 'Je naam',

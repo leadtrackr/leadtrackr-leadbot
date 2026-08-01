@@ -22,6 +22,7 @@ export function buildLeadPayload(
   cfg: LeadBotConfig,
   channel: 'contact_form' | 'whatsapp',
   fields: LeadFields,
+  formKey: keyof LeadBotConfig['formNames'] = channel,
 ): LeadPayload {
   const userData: LeadUserData = { ...splitName(fields.name || '') };
   if (fields.email) userData.email = fields.email;
@@ -35,7 +36,7 @@ export function buildLeadPayload(
   const payload: LeadPayload = {
     projectId: cfg.projectId,
     formData: {
-      formName: cfg.formNames[channel],
+      formName: cfg.formNames[formKey],
       uniqueEventId: 'ltb-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
       formFields,
     },

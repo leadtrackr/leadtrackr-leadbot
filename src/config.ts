@@ -1,3 +1,4 @@
+import { regionFromLocale } from './countries';
 import { detectLanguage, PERSONAL_TEXTS, TEXTS, type Language, type LeadBotTexts } from './i18n';
 import type { ChannelId } from './types';
 
@@ -28,6 +29,13 @@ export interface LeadBotConfig {
   greeting: string;
   phone: string | null;
   whatsapp: string | null;
+  // false verbergt de LeadBot-launcher volledig (bijv. voor interceptor-only).
+  launcher: boolean;
+  // Ongedocumenteerd: false verbergt de "Better leads start with LeadTrackr.io"-footer.
+  branding: boolean;
+  // true onderschept kliks op bestaande wa.me-/WhatsApp-links op de pagina en
+  // opent de LeadBot-modal; het nummer komt uit de aangeklikte link.
+  whatsappInterceptor: boolean;
   channels: ChannelId[];
   position: 'right' | 'left';
   offset: { bottom: number; side: number };
@@ -39,7 +47,7 @@ export interface LeadBotConfig {
   // LeadTrackr call-tracking cookie (dynamic number insertion).
   callTracking: false | { prefix: string; swapGroup: number };
   theme: LeadBotTheme;
-  formNames: Record<'contact_form' | 'whatsapp', string>;
+  formNames: Record<'contact_form' | 'whatsapp' | 'whatsapp_interceptor', string>;
   texts: LeadBotTexts;
   endpoint: string;
 }
@@ -90,16 +98,26 @@ export function resolveConfig(projectId: string, user: Partial<LeadBotConfig> | 
     greeting: u.greeting || texts.greeting,
     phone: u.phone || null,
     whatsapp: u.whatsapp || null,
+    launcher: u.launcher !== false,
+    branding: u.branding !== false,
+    whatsappInterceptor: u.whatsappInterceptor === true,
     channels,
     position: u.position === 'left' ? 'left' : 'right',
     offset: { bottom: u.offset?.bottom ?? 20, side: u.offset?.side ?? 20 },
     teaser: u.teaser !== false,
-    defaultCountry: u.defaultCountry || 'NL',
+    // Zonder expliciete keuze: land uit de browser-locale (nl-BE → BE), geen
+    // IP-geolocatie — de LeadBot doet bewust nul externe calls.
+    defaultCountry: u.defaultCountry || regionFromLocale(navigator.language) || 'NL',
     language,
     responseTimeText: u.responseTimeText || null,
     callTracking,
     theme: { ...DEFAULT_THEME, ...(u.theme || {}) },
-    formNames: { contact_form: 'LeadBot — Contact form', whatsapp: 'LeadBot — WhatsApp', ...(u.formNames || {}) },
+    formNames: {
+      contact_form: 'LeadBot — Contact form',
+      whatsapp: 'LeadBot — WhatsApp',
+      whatsapp_interceptor: 'LeadBot — WhatsApp Interceptor',
+      ...(u.formNames || {}),
+    },
     texts,
     endpoint: u.endpoint || DEFAULT_ENDPOINT,
   };

@@ -61,6 +61,16 @@ export function flagEmoji(code: string): string {
   return String.fromCodePoint(...[...code.toUpperCase()].map((c) => 127397 + c.charCodeAt(0)));
 }
 
+const DIAL_CODES = new Set(DIAL.map(([code]) => code));
+
+// "nl-BE" / "zh-Hans-CN" → land uit een browser-locale; null als de locale
+// geen (bekende) regio bevat, zoals kaal "nl" of "en".
+export function regionFromLocale(locale: string | null | undefined): string | null {
+  const m = /^[a-z]{2,3}(?:-[a-z]{4})?-([a-z]{2})(?:-|$)/i.exec((locale || '').trim());
+  const code = m ? m[1].toUpperCase() : '';
+  return DIAL_CODES.has(code) ? code : null;
+}
+
 // Localized country names come from Intl at runtime — nothing extra in the bundle.
 export function getCountries(locale: string): Country[] {
   let names: Intl.DisplayNames | null = null;

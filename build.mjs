@@ -13,6 +13,9 @@ const options = {
   target: 'es2019',
   outfile: 'dist/lt-leadbot.min.js',
   legalComments: 'none',
+  banner: {
+    js: `/*! LeadTrackr LeadBot v${version} — (c) LeadTrackr.io — All rights reserved — see LICENSE. */`,
+  },
 };
 
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.css': 'text/css' };

@@ -22,7 +22,8 @@ function agentLine(cfg: LeadBotConfig): string {
   return `${esc(cfg.agentName || cfg.companyName)}${company}`;
 }
 
-export function brandFooter(): string {
+export function brandFooter(cfg: LeadBotConfig): string {
+  if (!cfg.branding) return '';
   return `<div class="ltb-brand"><span>Better leads start with&nbsp;</span><a href="https://leadtrackr.io" target="_blank" rel="noopener">LeadTrackr.io</a><span>&nbsp;🚀</span></div>`;
 }
 
@@ -84,7 +85,7 @@ export function panelView(cfg: LeadBotConfig, dynamicNumber: DynamicNumber | nul
     <div class="ltb-greeting">${esc(cfg.greeting)}</div>
   </div>
   <div class="ltb-channels">${buttons}</div>
-  ${brandFooter()}`;
+  ${brandFooter(cfg)}`;
 }
 
 export interface FormState {
@@ -119,7 +120,7 @@ export function messageView(cfg: LeadBotConfig, s: FormState): string {
     <div class="ltb-hp" aria-hidden="true"><input name="ltb_website" type="text" tabindex="-1" autocomplete="off"></div>
     <button class="ltb-submit" type="submit"${s.sending ? ' disabled' : ''}>${esc(s.sending ? '…' : t.submit)}</button>
   </form>
-  ${brandFooter()}`;
+  ${brandFooter(cfg)}`;
 }
 
 export interface WaState {
@@ -134,16 +135,58 @@ export interface WaState {
   sending: boolean;
 }
 
-export function whatsappView(cfg: LeadBotConfig, s: WaState, countries: Country[]): string {
-  const t = cfg.texts;
-  const sent =
-    s.step === 'phone'
-      ? `<div class="ltb-wa-bubble ltb-wa-sent">${esc(s.message)}<p class="ltb-wa-meta"><span class="ltb-wa-ticks"><span class="ltb-wa-tick-one">${icons.check(12, 2.2)}</span><span class="ltb-wa-tick-two">${icons.doubleCheck(14)}</span></span></p></div>
+// Gedeelde WhatsApp-bouwstenen: dezelfde bubbels, ticks en inputbar voeden
+// zowel de kanaal-flow in het panel als de interceptor-modal.
+interface WaChatOpts {
+  greeting: string;
+  message: string;
+  showSent: boolean;
+  question: string;
+  phoneSent?: string;
+  isStatic: boolean;
+}
+
+function waChat(o: WaChatOpts): string {
+  const sent = o.showSent
+    ? `<div class="ltb-wa-bubble ltb-wa-sent">${esc(o.message)}<p class="ltb-wa-meta"><span class="ltb-wa-ticks"><span class="ltb-wa-tick-one">${icons.check(12, 2.2)}</span><span class="ltb-wa-tick-two">${icons.doubleCheck(14)}</span></span></p></div>
          <div class="ltb-wa-reply">
            <div class="ltb-wa-bubble ltb-wa-typing" aria-hidden="true"><span></span><span></span><span></span></div>
-           <div class="ltb-wa-bubble ltb-wa-question">${esc(t.waPhoneQuestion)}</div>
+           <div class="ltb-wa-bubble ltb-wa-question">${esc(o.question)}</div>
          </div>`
-      : '';
+    : '';
+  const phoneSent = o.phoneSent
+    ? `<div class="ltb-wa-bubble ltb-wa-sent">${esc(o.phoneSent)}<p class="ltb-wa-meta"><span class="ltb-wa-ticks"><span class="ltb-wa-tick-two">${icons.doubleCheck(14)}</span></span></p></div>`
+    : '';
+  return `<div class="ltb-wa-chat${o.isStatic ? ' ltb-static' : ''}">
+    <div class="ltb-wa-bubble">${esc(o.greeting)}</div>
+    ${sent}${phoneSent}
+  </div>`;
+}
+
+interface WaInputState {
+  step: 'compose' | 'phone';
+  message: string;
+  phone: string;
+  country: Country;
+  error: string | null;
+  sending: boolean;
+}
+
+// Meerregelig berichtveld dat meegroeit met de inhoud (à la WhatsApp),
+// tot een maximum — daarna scrollt het veld zelf.
+export function autoGrowMessage(el: HTMLTextAreaElement): void {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function waInputBar(cfg: LeadBotConfig, s: WaInputState, countries: Country[]): string {
+  const t = cfg.texts;
+  if (s.step === 'compose') {
+    return `<div class="ltb-wa-inputbar">
+          <textarea class="ltb-wa-input ltb-wa-multiline" data-wa="message" rows="1" aria-label="${esc(t.waPlaceholder)}" placeholder="${esc(t.waPlaceholder)}">${esc(s.message)}</textarea>
+          <button type="button" class="ltb-wa-send" data-action="wa-send" aria-label="${esc(t.waTitle)}">${icons.send(19)}</button>
+        </div>`;
+  }
   // Native <select> under an invisible overlay: system picker UX (searchable on
   // Apple/Android), no custom dropdown. Chosen flag is shown in the chip.
   const options = countries
@@ -152,13 +195,7 @@ export function whatsappView(cfg: LeadBotConfig, s: WaState, countries: Country[
         `<option value="${c.code}"${c.code === s.country.code ? ' selected' : ''}>${esc(c.name)} (${c.dial})</option>`,
     )
     .join('');
-  const inputBar =
-    s.step === 'compose'
-      ? `<div class="ltb-wa-inputbar">
-          <input class="ltb-wa-input" data-wa="message" aria-label="${esc(t.waPlaceholder)}" placeholder="${esc(t.waPlaceholder)}" value="${esc(s.message)}">
-          <button type="button" class="ltb-wa-send" data-action="wa-send" aria-label="${esc(t.waTitle)}">${icons.send(19)}</button>
-        </div>`
-      : `<div class="ltb-wa-inputbar">
+  return `<div class="ltb-wa-inputbar">
           <div class="ltb-wa-phonewrap">
             <span class="ltb-wa-cc">
               <span class="ltb-wa-cc-label">${s.country.flag}&nbsp;${s.country.dial}</span>
@@ -166,11 +203,15 @@ export function whatsappView(cfg: LeadBotConfig, s: WaState, countries: Country[
               <select class="ltb-wa-cc-select" data-wa="country" aria-label="${esc(t.waCountryLabel)}">${options}</select>
             </span>
             <span class="ltb-wa-cc-divider"></span>
-            <input class="ltb-wa-phone" data-wa="phone" type="tel" aria-label="${esc(t.waPhonePlaceholder)}" placeholder="${esc(t.waPhonePlaceholder)}" value="${esc(s.phone)}">
+            <input class="ltb-wa-phone" data-wa="phone" type="tel" enterkeyhint="send" autocomplete="tel-national" aria-label="${esc(t.waPhonePlaceholder)}" placeholder="${esc(t.waPhonePlaceholder)}" value="${esc(s.phone)}">
           </div>
           <button type="button" class="ltb-wa-send" data-action="wa-phone-send" aria-label="${esc(t.waTitle)}"${s.sending ? ' disabled' : ''}>${icons.send(19)}</button>
         </div>
         ${s.error ? `<div class="ltb-wa-error"><p class="ltb-error" role="alert">${icons.errorInfo(13)} ${esc(s.error)}</p></div>` : ''}`;
+}
+
+export function whatsappView(cfg: LeadBotConfig, s: WaState, countries: Country[]): string {
+  const t = cfg.texts;
   return `
   <div class="ltb-handle"><span></span></div>
   <div class="ltb-wa-head">
@@ -182,11 +223,68 @@ export function whatsappView(cfg: LeadBotConfig, s: WaState, countries: Country[
     </div>
     <span class="ltb-wa-head-icon">${icons.whatsapp(22)}</span>
   </div>
-  <div class="ltb-wa-chat${s.entered ? ' ltb-static' : ''}">
-    <div class="ltb-wa-bubble">${esc(cfg.greeting)}</div>
-    ${sent}
-  </div>
-  ${inputBar}`;
+  ${waChat({ greeting: cfg.greeting, message: s.message, showSent: s.step === 'phone', question: t.waPhoneQuestion, isStatic: s.entered })}
+  ${waInputBar(cfg, s, countries)}`;
+}
+
+export interface WiState {
+  view: 'compose' | 'phone' | 'opening' | 'success';
+  entered: boolean;
+  message: string;
+  phone: string;
+  /** Genormaliseerd E.164-nummer na een geslaagde submit. */
+  phoneE164: string | null;
+  country: Country;
+  error: string | null;
+  sending: boolean;
+  /** Doelnummer (alleen cijfers) uit de onderschepte link of de config-fallback. */
+  number: string;
+}
+
+export function interceptorView(cfg: LeadBotConfig, s: WiState, countries: Country[]): string {
+  const t = cfg.texts;
+  const done = s.view === 'opening' || s.view === 'success';
+  // Zelfde teksten als de WhatsApp-flow in het panel — de interceptor is
+  // dezelfde chat, alleen anders geopend.
+  const chat = waChat({
+    greeting: cfg.greeting,
+    message: s.message,
+    showSent: s.view !== 'compose',
+    question: t.waPhoneQuestion,
+    phoneSent: done && s.phoneE164 ? s.phoneE164 : undefined,
+    isStatic: s.entered,
+  });
+  const waHref =
+    'https://wa.me/' + s.number + (s.message ? '?text=' + encodeURIComponent(s.message) : '');
+  const footer = done
+    ? `<div class="ltb-wi-handoff">
+        ${
+          s.view === 'opening'
+            ? `<div class="ltb-wi-spinner" aria-hidden="true"></div>
+               <p class="ltb-wi-handoff-title">${esc(t.waiOpening)}</p>`
+            : `<div class="ltb-wi-badge">${icons.whatsapp(28)}</div>
+               <p class="ltb-wi-handoff-title">${esc(t.waSuccessTitle)}</p>
+               <p class="ltb-wi-handoff-body">${esc(t.waSuccessBody)}</p>
+               <a class="ltb-wi-reopen" href="${esc(waHref)}" target="_blank" rel="noopener">${esc(t.waiReopen)}</a>`
+        }
+      </div>
+      ${brandFooter(cfg)}`
+    : waInputBar(cfg, { step: s.view === 'phone' ? 'phone' : 'compose', message: s.message, phone: s.phone, country: s.country, error: s.error, sending: s.sending }, countries);
+  return `
+  <div class="ltb-wi-overlay" data-action="close"></div>
+  <div class="ltb-wi-modal" role="dialog" aria-modal="true" aria-label="${esc(t.waiDialogLabel)}">
+    <div class="ltb-wa-head">
+      ${avatar(cfg, 'ltb-avatar-fallback')}
+      <div>
+        <p class="ltb-wa-head-name">${esc(cfg.agentName || cfg.companyName)}</p>
+        <p class="ltb-wa-head-status">${esc(t.responseTime)}</p>
+      </div>
+      <span class="ltb-wa-head-icon">${icons.whatsapp(22)}</span>
+      <button class="ltb-wi-close" data-action="close" aria-label="${esc(t.close)}">${icons.close(16)}</button>
+    </div>
+    ${chat}
+    ${footer}
+  </div>`;
 }
 
 export function successView(cfg: LeadBotConfig, channel: 'contact_form' | 'whatsapp'): string {
@@ -207,5 +305,5 @@ export function successView(cfg: LeadBotConfig, channel: 'contact_form' | 'whats
       <button class="ltb-success-back" data-action="back">${icons.back(15)} ${esc(t.successBack)}</button>
     </div>
   </div>
-  ${brandFooter()}`;
+  ${brandFooter(cfg)}`;
 }

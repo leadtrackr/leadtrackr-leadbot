@@ -1,5 +1,6 @@
 import { resolveConfig, type LeadBotConfig } from './config';
 import { updateChannelFlowFromPage } from './channelflow';
+import { mountWhatsAppInterceptor } from './ui/interceptor';
 import { mountLeadBot } from './ui/leadbot';
 
 declare global {
@@ -17,7 +18,9 @@ export function boot(projectId: string | null): void {
   if (window.__ltLeadBotLoaded) return;
   window.__ltLeadBotLoaded = true;
   updateChannelFlowFromPage();
-  mountLeadBot(resolveConfig(projectId, window.ltLeadBotConfig));
+  const cfg = resolveConfig(projectId, window.ltLeadBotConfig);
+  if (cfg.launcher) mountLeadBot(cfg);
+  if (cfg.whatsappInterceptor) mountWhatsAppInterceptor(cfg);
 }
 
 // document.currentScript is null when imported in tests — no auto-boot there.

@@ -6,8 +6,9 @@ import { buildLeadPayload } from '../payload';
 import { sendLead } from '../transport';
 import { isValidEmail, normalizePhone } from '../validate';
 import { buildStyles } from './styles';
+import { trackVisualViewport } from './viewport';
 import type { FormState, WaState } from './views';
-import { launcherView, messageView, panelView, successView, whatsappView } from './views';
+import { autoGrowMessage, launcherView, messageView, panelView, successView, whatsappView } from './views';
 
 type View = 'closed' | 'panel' | 'contact_form' | 'whatsapp' | 'success';
 
@@ -26,6 +27,7 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
   container.id = 'ltb-container';
   shadow.append(style, container);
   document.body.appendChild(host);
+  trackVisualViewport(container);
 
   const countries = getCountries(cfg.language);
 
@@ -75,6 +77,11 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
             ? whatsappView(cfg, wa, countries)
             : successView(cfg, successChannel);
     container.innerHTML = `<div class="ltb-root${sideClass}"><div class="ltb-overlay" data-action="close"></div><div class="ltb-panel" role="dialog" aria-modal="true"><div class="ltb-view">${inner}</div></div></div>`;
+    const msg = container.querySelector<HTMLTextAreaElement>('textarea[data-wa="message"]');
+    if (msg) autoGrowMessage(msg);
+    // Nieuwste bubbel (bijv. de nummer-vraag) altijd in beeld
+    const chat = container.querySelector<HTMLElement>('.ltb-wa-chat');
+    if (chat) chat.scrollTop = chat.scrollHeight;
     container.querySelector<HTMLElement>('.ltb-panel .ltb-close, .ltb-panel .ltb-back')?.focus();
   }
 
@@ -259,6 +266,17 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
     if ((e.target as HTMLElement).getAttribute('data-form') === 'contact_form') void submitContactForm();
   });
 
+  container.addEventListener('input', (e) => {
+    const el = e.target as HTMLElement;
+    if (el.tagName === 'TEXTAREA' && el.getAttribute('data-wa') === 'message') {
+      autoGrowMessage(el as HTMLTextAreaElement);
+    }
+  });
+
+  // WhatsApp-gedrag: desktop verstuurt met Enter (Shift+Enter = nieuwe regel),
+  // op touch-toetsenborden is return altijd een nieuwe regel.
+  const coarsePointer = matchMedia('(pointer: coarse)').matches;
+
   container.addEventListener('keydown', (e) => {
     const el = e.target as HTMLElement;
     if (e.key === 'Escape' && view !== 'closed') {
@@ -266,6 +284,7 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
       return;
     }
     if (e.key === 'Enter' && el.getAttribute('data-wa') === 'message') {
+      if (e.shiftKey || coarsePointer) return;
       e.preventDefault();
       container.querySelector<HTMLElement>('[data-action="wa-send"]')?.click();
       return;

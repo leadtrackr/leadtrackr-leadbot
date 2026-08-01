@@ -127,9 +127,9 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
     form.sending = true;
     form.sendFailed = false;
     render();
-    const ok = await sendLead(buildLeadPayload(cfg, 'contact_form', form.values), cfg.endpoint);
+    const res = await sendLead(buildLeadPayload(cfg, 'contact_form', form.values), cfg.endpoint);
     form.sending = false;
-    if (ok) {
+    if (res.ok) {
       pushConversion('contact_form', { name: form.values.name, email: form.values.email });
       form.values = { name: '', email: '', message: '' };
       successChannel = 'contact_form';
@@ -169,14 +169,15 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
     }
     wa.sending = true;
     render();
-    const ok = await sendLead(
+    const res = await sendLead(
       buildLeadPayload(cfg, 'whatsapp', { phone: normalized, message: wa.message }),
       cfg.endpoint,
     );
     wa.sending = false;
-    // WhatsApp opent ALTIJD — een mislukte lead-POST mag de bezoeker nooit
-    // blokkeren. Alleen de conversie blijft dan uit.
-    if (ok) pushConversion('whatsapp', { phone: normalized });
+    void res;
+    // WhatsApp opent altijd en het conversie-event gaat altijd mee — een
+    // mislukte lead-POST mag de bezoeker nooit in de weg zitten.
+    pushConversion('whatsapp', { phone: normalized });
     openWhatsApp(wa.message);
     wa.step = 'compose';
     wa.entered = false;

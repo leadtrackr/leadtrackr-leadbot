@@ -174,20 +174,17 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
       cfg.endpoint,
     );
     wa.sending = false;
-    if (ok) {
-      pushConversion('whatsapp', { phone: normalized });
-      openWhatsApp(wa.message);
-      wa.step = 'compose';
-      wa.entered = false;
-      wa.message = '';
-      wa.phone = '';
-      successChannel = 'whatsapp';
-      view = 'success';
-      render();
-    } else {
-      wa.error = cfg.texts.errorSend;
-      render();
-    }
+    // WhatsApp opent ALTIJD — een mislukte lead-POST mag de bezoeker nooit
+    // blokkeren. Alleen de conversie blijft dan uit.
+    if (ok) pushConversion('whatsapp', { phone: normalized });
+    openWhatsApp(wa.message);
+    wa.step = 'compose';
+    wa.entered = false;
+    wa.message = '';
+    wa.phone = '';
+    successChannel = 'whatsapp';
+    view = 'success';
+    render();
   }
 
   container.addEventListener('click', (e) => {

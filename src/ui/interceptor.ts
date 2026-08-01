@@ -139,12 +139,9 @@ export function mountWhatsAppInterceptor(cfg: LeadBotConfig): void {
       cfg.endpoint,
     );
     s.sending = false;
-    if (!ok) {
-      s.error = cfg.texts.errorSend;
-      render();
-      return;
-    }
-    pushConversion('whatsapp', { phone: normalized });
+    // De bezoeker klikte op een echte WhatsApp-link: de handoff gaat ALTIJD
+    // door, ook als de lead-POST faalt. Alleen de conversie blijft dan uit.
+    if (ok) pushConversion('whatsapp', { phone: normalized });
     finish();
   }
 

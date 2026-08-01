@@ -179,6 +179,22 @@ describe('WhatsApp interceptor — leadflow', () => {
     expect(q(root, '.ltb-wa-error')!.textContent).toContain('geldig telefoonnummer');
   });
 
+  it('still opens WhatsApp when the lead POST fails (no conversion event)', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
+    const openSpy = vi.fn();
+    vi.stubGlobal('open', openSpy);
+    const { root } = freshMount();
+    clickLink(addLink('https://wa.me/31698765432'));
+    vi.setSystemTime(1_000_000 + 5000);
+    (q(root, '[data-wa="message"]') as HTMLInputElement).value = 'Hoi';
+    q(root, '[data-action="wa-send"]')!.click();
+    (q(root, '[data-wa="phone"]') as HTMLInputElement).value = '06 12345678';
+    q(root, '[data-action="wa-phone-send"]')!.click();
+    await vi.waitFor(() => expect(q(root, '.ltb-wi-handoff')).toBeTruthy());
+    expect(openSpy).toHaveBeenCalled();
+    expect(window.dataLayer!.map((x) => x.event)).not.toContain('leadtrackr_leadbot_conversion');
+  });
+
   it('skips the POST but still hands off to WhatsApp within the 2s bot window', async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);

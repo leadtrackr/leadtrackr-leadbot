@@ -139,10 +139,10 @@ export function mountWhatsAppInterceptor(cfg: LeadBotConfig): void {
       cfg.endpoint,
     );
     s.sending = false;
-    // 404 = project niet gevonden / abonnement inactief: dan bewust blokkeren.
-    // Elke andere fout (netwerk, 5xx, overige 4xx) mag de bezoeker nooit in
-    // de weg zitten: handoff én conversie-event gaan gewoon door.
-    if (res.status === 404) {
+    // 404 = project niet gevonden, 403 = abonnement inactief: bewust blokkeren
+    // (betaal-check). Elke andere fout (netwerk, 5xx, overige 4xx) mag de
+    // bezoeker nooit in de weg zitten: handoff én conversie gaan gewoon door.
+    if (res.status === 404 || res.status === 403) {
       s.error = cfg.texts.errorSend;
       render();
       return;

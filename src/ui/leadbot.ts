@@ -174,10 +174,10 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
       cfg.endpoint,
     );
     wa.sending = false;
-    // 404 = project niet gevonden / abonnement inactief: dan bewust blokkeren.
-    // Elke andere fout mag de bezoeker nooit in de weg zitten: WhatsApp opent
-    // gewoon en het conversie-event gaat mee.
-    if (res.status === 404) {
+    // 404 = project niet gevonden, 403 = abonnement inactief: bewust blokkeren
+    // (betaal-check). Elke andere fout mag de bezoeker nooit in de weg zitten:
+    // WhatsApp opent gewoon en het conversie-event gaat mee.
+    if (res.status === 404 || res.status === 403) {
       wa.error = cfg.texts.errorSend;
       render();
       return;

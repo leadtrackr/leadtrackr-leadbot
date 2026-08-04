@@ -36,6 +36,14 @@ export interface LeadBotConfig {
   // true onderschept kliks op bestaande wa.me-/WhatsApp-links op de pagina en
   // opent de LeadBot-modal; het nummer komt uit de aangeklikte link.
   whatsappInterceptor: boolean;
+  // false slaat de nummervraag in beide WhatsApp-flows over: de bezoeker gaat
+  // na zijn bericht direct door naar WhatsApp en de lead gaat zonder
+  // telefoonnummer naar LeadTrackr (bericht en attributie blijven behouden).
+  whatsappPhoneQuestion: boolean;
+  // Ongedocumenteerd: false laat de flow doorlopen bij een 403 (abonnement
+  // inactief) of 404 (project niet gevonden) van de lead-API. Alleen voor
+  // klanten met een expliciete vrijstelling — niet in de README zetten.
+  subscriptionCheck: boolean;
   channels: ChannelId[];
   position: 'right' | 'left';
   offset: { bottom: number; side: number };
@@ -101,6 +109,8 @@ export function resolveConfig(projectId: string, user: Partial<LeadBotConfig> | 
     launcher: u.launcher !== false,
     branding: u.branding !== false,
     whatsappInterceptor: u.whatsappInterceptor === true,
+    whatsappPhoneQuestion: u.whatsappPhoneQuestion !== false,
+    subscriptionCheck: u.subscriptionCheck !== false,
     channels,
     position: u.position === 'left' ? 'left' : 'right',
     offset: { bottom: u.offset?.bottom ?? 20, side: u.offset?.side ?? 20 },

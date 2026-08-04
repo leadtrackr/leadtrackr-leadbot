@@ -396,6 +396,38 @@ describe('whatsapp flow', () => {
     expect(q(root, '.ltb-success-body')!.textContent).toContain('nieuw tabblad');
   });
 
+  it('blocks the WhatsApp handoff on 403 by default', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 403 }));
+    const openSpy = vi.fn();
+    vi.stubGlobal('open', openSpy);
+    const { root } = openWa();
+    vi.setSystemTime(1_000_000 + 5000);
+    (q(root, '[data-wa="message"]') as HTMLInputElement).value = 'Hoi';
+    click(root, 'wa-send');
+    (q(root, '[data-wa="phone"]') as HTMLInputElement).value = '06 12345678';
+    click(root, 'wa-phone-send');
+    await vi.waitFor(() => expect(q(root, '.ltb-wa-error')).toBeTruthy());
+    expect(openSpy).not.toHaveBeenCalled();
+    expect(window.dataLayer!.map((e) => e.event)).not.toContain('leadtrackr_leadbot_conversion');
+  });
+
+  it('lets the WhatsApp handoff through on 403 when subscriptionCheck is off', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 403 }));
+    const openSpy = vi.fn();
+    vi.stubGlobal('open', openSpy);
+    const m = freshMount({ subscriptionCheck: false });
+    click(m.root, 'open');
+    click(m.root, 'channel-whatsapp');
+    vi.setSystemTime(1_000_000 + 5000);
+    (q(m.root, '[data-wa="message"]') as HTMLInputElement).value = 'Hoi';
+    click(m.root, 'wa-send');
+    (q(m.root, '[data-wa="phone"]') as HTMLInputElement).value = '06 12345678';
+    click(m.root, 'wa-phone-send');
+    await vi.waitFor(() => expect(q(m.root, '.ltb-success')).toBeTruthy());
+    expect(openSpy).toHaveBeenCalled();
+    expect(window.dataLayer!.map((e) => e.event)).toContain('leadtrackr_leadbot_conversion');
+  });
+
   it('skips the phone step and POSTs without a number when the question is off', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true });
     vi.stubGlobal('fetch', fetchMock);

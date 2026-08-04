@@ -148,13 +148,17 @@ export function mountWhatsAppInterceptor(cfg: LeadBotConfig): void {
     // (betaal-check). Elke andere fout (netwerk, 5xx, overige 4xx) mag de
     // bezoeker nooit in de weg zitten: handoff én conversie gaan gewoon door.
     if (res.status === 404 || res.status === 403) {
+      // De warn blijft altijd staan, ook bij een vrijgestelde klant: in de
+      // console moet zichtbaar zijn wat de API zei.
       console.warn(
         '[LeadTrackr LeadBot] Lead geblokkeerd: ' +
           (res.status === 403 ? 'abonnement inactief (403)' : 'project niet gevonden (404)'),
       );
-      s.error = cfg.texts.errorBlocked;
-      render();
-      return;
+      if (cfg.subscriptionCheck) {
+        s.error = cfg.texts.errorBlocked;
+        render();
+        return;
+      }
     }
     pushConversion('whatsapp', normalized ? { phone: normalized } : {});
     finish();

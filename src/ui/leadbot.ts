@@ -183,13 +183,17 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
     // (betaal-check). Elke andere fout mag de bezoeker nooit in de weg zitten:
     // WhatsApp opent gewoon en het conversie-event gaat mee.
     if (res.status === 404 || res.status === 403) {
+      // De warn blijft altijd staan, ook bij een vrijgestelde klant: in de
+      // console moet zichtbaar zijn wat de API zei.
       console.warn(
         '[LeadTrackr LeadBot] Lead geblokkeerd: ' +
           (res.status === 403 ? 'abonnement inactief (403)' : 'project niet gevonden (404)'),
       );
-      wa.error = cfg.texts.errorBlocked;
-      render();
-      return;
+      if (cfg.subscriptionCheck) {
+        wa.error = cfg.texts.errorBlocked;
+        render();
+        return;
+      }
     }
     pushConversion('whatsapp', normalized ? { phone: normalized } : {});
     openWhatsApp(wa.message);

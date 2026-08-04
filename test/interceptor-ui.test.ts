@@ -169,6 +169,52 @@ describe('WhatsApp interceptor — leadflow', () => {
     expect(q(root, '.ltb-wi-reopen')!.getAttribute('href')).toContain('wa.me/31698765432');
   });
 
+  it('goes straight to the handoff without a number when the question is off', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+    const openSpy = vi.fn();
+    vi.stubGlobal('open', openSpy);
+    const { root } = freshMount({ whatsappPhoneQuestion: false });
+    clickLink(addLink('https://wa.me/31698765432'));
+    vi.setSystemTime(1_000_000 + 5000);
+    (q(root, '[data-wa="message"]') as HTMLInputElement).value = 'Wat kost het?';
+    q(root, '[data-action="wa-send"]')!.click();
+    await vi.waitFor(() => expect(q(root, '.ltb-wi-handoff')).toBeTruthy());
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.formData.formName).toBe('LeadBot — WhatsApp Interceptor');
+    expect(body.formData.formFields.message).toBe('Wat kost het?');
+    expect(body.userData.phone).toBeUndefined();
+    expect(openSpy).toHaveBeenCalledWith(
+      'https://wa.me/31698765432?text=' + encodeURIComponent('Wat kost het?'),
+      '_blank',
+      'noopener',
+    );
+    expect(window.dataLayer).toContainEqual({
+      event: 'leadtrackr_leadbot_conversion',
+      channel: 'whatsapp',
+      user_data: {},
+    });
+    // Het verzonden bericht blijft zichtbaar, maar er is nooit om een nummer gevraagd
+    expect(q(root, '.ltb-wa-sent')!.textContent).toContain('Wat kost het?');
+    expect(q(root, '.ltb-wa-chat')!.textContent).not.toContain('Op welk telefoonnummer');
+    expect(q(root, '.ltb-wa-question')).toBeNull();
+  });
+
+  it('POSTs once when send is clicked twice with the question off', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+    vi.stubGlobal('open', vi.fn());
+    const { root } = freshMount({ whatsappPhoneQuestion: false });
+    clickLink(addLink('https://wa.me/31698765432'));
+    vi.setSystemTime(1_000_000 + 5000);
+    (q(root, '[data-wa="message"]') as HTMLInputElement).value = 'Hoi';
+    q(root, '[data-action="wa-send"]')!.click();
+    q(root, '[data-action="wa-send"]')!.click();
+    await vi.waitFor(() => expect(q(root, '.ltb-wi-handoff')).toBeTruthy());
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('rejects an invalid phone number inline', () => {
     const { root } = freshMount();
     clickLink(addLink('https://wa.me/31698765432'));

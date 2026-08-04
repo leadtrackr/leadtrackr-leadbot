@@ -117,9 +117,14 @@ export function mountWhatsAppInterceptor(cfg: LeadBotConfig): void {
   }
 
   async function submit(): Promise<void> {
+    // De compose-knop heeft geen disabled-state; zonder deze guard levert
+    // dubbelklikken twee POSTs op.
+    if (s.sending) return;
     readInputs();
-    const normalized = normalizePhone(s.phone, s.country.dial);
-    if (!normalized) {
+    // Met de nummervraag uit gaat de lead zonder telefoonnummer de deur uit;
+    // s.phoneE164 blijft null, dus de "nummer verstuurd"-bubbel blijft weg.
+    const normalized = cfg.whatsappPhoneQuestion ? normalizePhone(s.phone, s.country.dial) : null;
+    if (cfg.whatsappPhoneQuestion && !normalized) {
       s.error = cfg.texts.errorPhone;
       render();
       return;
@@ -135,7 +140,7 @@ export function mountWhatsAppInterceptor(cfg: LeadBotConfig): void {
     s.sending = true;
     render();
     const res = await sendLead(
-      buildLeadPayload(cfg, 'whatsapp', { phone: normalized, message: s.message }, 'whatsapp_interceptor'),
+      buildLeadPayload(cfg, 'whatsapp', { phone: normalized || undefined, message: s.message }, 'whatsapp_interceptor'),
       cfg.endpoint,
     );
     s.sending = false;
@@ -143,15 +148,19 @@ export function mountWhatsAppInterceptor(cfg: LeadBotConfig): void {
     // (betaal-check). Elke andere fout (netwerk, 5xx, overige 4xx) mag de
     // bezoeker nooit in de weg zitten: handoff én conversie gaan gewoon door.
     if (res.status === 404 || res.status === 403) {
+      // De warn blijft altijd staan, ook bij een vrijgestelde klant: in de
+      // console moet zichtbaar zijn wat de API zei.
       console.warn(
         '[LeadTrackr LeadBot] Lead geblokkeerd: ' +
           (res.status === 403 ? 'abonnement inactief (403)' : 'project niet gevonden (404)'),
       );
-      s.error = cfg.texts.errorBlocked;
-      render();
-      return;
+      if (cfg.subscriptionCheck) {
+        s.error = cfg.texts.errorBlocked;
+        render();
+        return;
+      }
     }
-    pushConversion('whatsapp', { phone: normalized });
+    pushConversion('whatsapp', normalized ? { phone: normalized } : {});
     finish();
   }
 
@@ -183,13 +192,17 @@ export function mountWhatsAppInterceptor(cfg: LeadBotConfig): void {
         break;
       case 'wa-send':
         readInputs();
-        if (s.message) {
-          s.view = 'phone';
-          s.entered = false;
-          render();
-          s.entered = true; // volgende renders spelen de sequence niet opnieuw
-          container.querySelector<HTMLInputElement>('[data-wa="phone"]')?.focus();
+        if (!s.message) break;
+        // Zonder nummervraag is dit meteen de verzendknop
+        if (!cfg.whatsappPhoneQuestion) {
+          void submit();
+          break;
         }
+        s.view = 'phone';
+        s.entered = false;
+        render();
+        s.entered = true; // volgende renders spelen de sequence niet opnieuw
+        container.querySelector<HTMLInputElement>('[data-wa="phone"]')?.focus();
         break;
       case 'wa-phone-send':
         void submit();

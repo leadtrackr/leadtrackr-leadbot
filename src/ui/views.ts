@@ -147,12 +147,17 @@ interface WaChatOpts {
 }
 
 function waChat(o: WaChatOpts): string {
-  const sent = o.showSent
-    ? `<div class="ltb-wa-bubble ltb-wa-sent">${esc(o.message)}<p class="ltb-wa-meta"><span class="ltb-wa-ticks"><span class="ltb-wa-tick-one">${icons.check(12, 2.2)}</span><span class="ltb-wa-tick-two">${icons.doubleCheck(14)}</span></span></p></div>
-         <div class="ltb-wa-reply">
+  // Zonder question (nummervraag uit) blijft alleen de verzonden bubbel staan:
+  // de bot vraagt dan niets meer en de bezoeker gaat direct door naar WhatsApp.
+  const reply = o.question
+    ? `<div class="ltb-wa-reply">
            <div class="ltb-wa-bubble ltb-wa-typing" aria-hidden="true"><span></span><span></span><span></span></div>
            <div class="ltb-wa-bubble ltb-wa-question">${esc(o.question)}</div>
          </div>`
+    : '';
+  const sent = o.showSent
+    ? `<div class="ltb-wa-bubble ltb-wa-sent">${esc(o.message)}<p class="ltb-wa-meta"><span class="ltb-wa-ticks"><span class="ltb-wa-tick-one">${icons.check(12, 2.2)}</span><span class="ltb-wa-tick-two">${icons.doubleCheck(14)}</span></span></p></div>
+         ${reply}`
     : '';
   const phoneSent = o.phoneSent
     ? `<div class="ltb-wa-bubble ltb-wa-sent">${esc(o.phoneSent)}<p class="ltb-wa-meta"><span class="ltb-wa-ticks"><span class="ltb-wa-tick-two">${icons.doubleCheck(14)}</span></span></p></div>`
@@ -223,7 +228,7 @@ export function whatsappView(cfg: LeadBotConfig, s: WaState, countries: Country[
     </div>
     <span class="ltb-wa-head-icon">${icons.whatsapp(22)}</span>
   </div>
-  ${waChat({ greeting: cfg.greeting, message: s.message, showSent: s.step === 'phone', question: t.waPhoneQuestion, isStatic: s.entered })}
+  ${waChat({ greeting: cfg.greeting, message: s.message, showSent: s.step === 'phone', question: cfg.whatsappPhoneQuestion ? t.waPhoneQuestion : '', isStatic: s.entered })}
   ${waInputBar(cfg, s, countries)}`;
 }
 
@@ -250,7 +255,7 @@ export function interceptorView(cfg: LeadBotConfig, s: WiState, countries: Count
     greeting: cfg.greeting,
     message: s.message,
     showSent: s.view !== 'compose',
-    question: t.waPhoneQuestion,
+    question: cfg.whatsappPhoneQuestion ? t.waPhoneQuestion : '',
     phoneSent: done && s.phoneE164 ? s.phoneE164 : undefined,
     isStatic: s.entered,
   });

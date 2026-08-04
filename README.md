@@ -108,6 +108,8 @@ Omdat de LeadBot in een Shadow DOM zit, kan het reguliere call-tracking-script h
 
 Bezoeker typt een bericht → vult het telefoonnummer in waarmee die het WhatsApp-gesprek wil starten (native landcode-selector) → de lead wordt opgeslagen in LeadTrackr → WhatsApp opent in een nieuw tabblad met het bericht vooraf ingevuld. De bevestiging zegt expliciet dat het gesprek in WhatsApp nog verstuurd moet worden.
 
+- `whatsappPhoneQuestion: false` slaat de nummervraag over: de bezoeker gaat na zijn bericht direct door naar WhatsApp. De lead gaat nog steeds naar LeadTrackr — met bericht, pagina-context en attributie, alleen zonder telefoonnummer. Geldt voor zowel het WhatsApp-kanaal in het paneel als de interceptor. Afweging: meer doorstroom, maar een lead die je niet zelf kunt terugbellen.
+
 ## WhatsApp Interceptor
 
 Met `whatsappInterceptor: true` onderschept de LeadBot kliks op de bestaande WhatsApp-links van de site (`wa.me/<nummer>`, `api.whatsapp.com/send`, `web.whatsapp.com/send`, `whatsapp://send`) en opent in plaats daarvan een modal (desktop: gecentreerd; mobiel: bottom sheet) met dezelfde WhatsApp-leadflow: bericht → telefoonnummer → lead naar LeadTrackr → daarna pas door naar WhatsApp.

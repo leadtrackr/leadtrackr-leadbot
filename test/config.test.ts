@@ -83,4 +83,23 @@ describe('resolveConfig', () => {
     expect(cfg.formNames.contact_form).toBe('Custom');
     expect(cfg.formNames.whatsapp).toBe('LeadBot — WhatsApp');
   });
+
+  it('keeps the WhatsApp phone question on unless it is explicitly false', () => {
+    expect(resolveConfig('p1', undefined).whatsappPhoneQuestion).toBe(true);
+    expect(resolveConfig('p1', {}).whatsappPhoneQuestion).toBe(true);
+    expect(resolveConfig('p1', { whatsappPhoneQuestion: false }).whatsappPhoneQuestion).toBe(false);
+    // Alleen een letterlijke false telt: een typefout mag de vraag niet stilletjes uitzetten
+    const typo = resolveConfig('p1', { whatsappPhoneQuestion: 'false' as unknown as boolean });
+    expect(typo.whatsappPhoneQuestion).toBe(true);
+    const zero = resolveConfig('p1', { whatsappPhoneQuestion: 0 as unknown as boolean });
+    expect(zero.whatsappPhoneQuestion).toBe(true);
+  });
+
+  it('keeps the subscription check on unless it is explicitly false', () => {
+    expect(resolveConfig('p1', undefined).subscriptionCheck).toBe(true);
+    expect(resolveConfig('p1', {}).subscriptionCheck).toBe(true);
+    expect(resolveConfig('p1', { subscriptionCheck: false }).subscriptionCheck).toBe(false);
+    const typo = resolveConfig('p1', { subscriptionCheck: 'false' as unknown as boolean });
+    expect(typo.subscriptionCheck).toBe(true);
+  });
 });

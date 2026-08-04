@@ -153,9 +153,14 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
   }
 
   async function submitWhatsApp(): Promise<void> {
+    // De compose-knop heeft geen disabled-state; zonder deze guard levert
+    // dubbelklikken twee POSTs op.
+    if (wa.sending) return;
     readWaInputs();
-    const normalized = normalizePhone(wa.phone, wa.country.dial);
-    if (!normalized) {
+    // Met de nummervraag uit gaat de lead zonder telefoonnummer de deur uit;
+    // bericht, pagina-context en attributie blijven wel behouden.
+    const normalized = cfg.whatsappPhoneQuestion ? normalizePhone(wa.phone, wa.country.dial) : null;
+    if (cfg.whatsappPhoneQuestion && !normalized) {
       wa.error = cfg.texts.errorPhone;
       render();
       return;
@@ -170,7 +175,7 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
     wa.sending = true;
     render();
     const res = await sendLead(
-      buildLeadPayload(cfg, 'whatsapp', { phone: normalized, message: wa.message }),
+      buildLeadPayload(cfg, 'whatsapp', { phone: normalized || undefined, message: wa.message }),
       cfg.endpoint,
     );
     wa.sending = false;
@@ -186,7 +191,7 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
       render();
       return;
     }
-    pushConversion('whatsapp', { phone: normalized });
+    pushConversion('whatsapp', normalized ? { phone: normalized } : {});
     openWhatsApp(wa.message);
     wa.step = 'compose';
     wa.entered = false;
@@ -243,13 +248,17 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
         break;
       case 'wa-send':
         readWaInputs();
-        if (wa.message) {
-          wa.step = 'phone';
-          wa.entered = false;
-          render();
-          wa.entered = true; // volgende renders spelen de sequence niet opnieuw
-          container.querySelector<HTMLInputElement>('[data-wa="phone"]')?.focus();
+        if (!wa.message) break;
+        // Zonder nummervraag is dit meteen de verzendknop
+        if (!cfg.whatsappPhoneQuestion) {
+          void submitWhatsApp();
+          break;
         }
+        wa.step = 'phone';
+        wa.entered = false;
+        render();
+        wa.entered = true; // volgende renders spelen de sequence niet opnieuw
+        container.querySelector<HTMLInputElement>('[data-wa="phone"]')?.focus();
         break;
       case 'wa-phone-send':
         void submitWhatsApp();

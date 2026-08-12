@@ -1,14 +1,19 @@
+// Compact keys, matching what the GTM tag writes: both write the same cookie,
+// so the format has to be identical or they overwrite each other's journeys.
+// The LeadTrackr backend expands these on intake.
 export interface Channel {
-  source: string;
-  medium: string;
-  campaign?: string;
-  content?: string;
-  term?: string;
+  s: string;
+  m: string;
+  cm?: string;
+  ct?: string;
+  tm?: string;
 }
 
 export interface ChannelFlowEntry {
-  timestamp: number;
-  channel: Channel;
+  t: number;
+  ch: Channel;
+  /** Landing path of this session, without query string. */
+  lp?: string;
 }
 
 export interface AttributionData {
@@ -17,6 +22,8 @@ export interface AttributionData {
   gclid: string;
   wbraid: string;
   cid: string;
+  /** Host and path of the page the conversion happened on, without query string. */
+  conversionPage: string;
 }
 
 export interface LeadUserData {

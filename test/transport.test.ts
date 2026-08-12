@@ -6,7 +6,7 @@ const payload: LeadPayload = {
   projectId: 'p',
   formData: { formName: 'f', uniqueEventId: 'id', formFields: {} },
   userData: { email: 'a@b.nl' },
-  attributionData: { fbc: '', fbp: '', gclid: '', wbraid: '', cid: '' },
+  attributionData: { fbc: '', fbp: '', gclid: '', wbraid: '', cid: '', conversionPage: '' },
 };
 
 afterEach(() => vi.unstubAllGlobals());

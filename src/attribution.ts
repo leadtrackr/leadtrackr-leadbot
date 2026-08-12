@@ -1,5 +1,6 @@
 import { getCookie } from './cookies';
-import type { AttributionData } from './types';
+import { readConsentState } from './consent';
+import type { AttributionData, Consent } from './types';
 
 // GTM parity: parts.length-1 for subdomains, else 1.
 function subDomainIndex(hostname: string): number {
@@ -12,6 +13,7 @@ export function collectAttribution(
   hostname: string,
   now: number,
   conversionPage = '',
+  consent?: Consent,
 ): AttributionData {
   const p = new URLSearchParams(search);
 
@@ -45,7 +47,10 @@ export function collectAttribution(
     if (parts.length >= 4) cid = parts[2] + '.' + parts[3];
   }
 
-  return { fbc, fbp, gclid, wbraid, cid, conversionPage };
+  const data: AttributionData = { fbc, fbp, gclid, wbraid, cid, conversionPage };
+  // Left off entirely when undetermined, rather than sent as a guess.
+  if (consent) data.consent = consent;
+  return data;
 }
 
 export function collectAttributionFromPage(): AttributionData {
@@ -54,5 +59,6 @@ export function collectAttributionFromPage(): AttributionData {
     location.hostname,
     Date.now(),
     location.host + location.pathname,
+    readConsentState(),
   );
 }

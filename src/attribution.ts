@@ -7,7 +7,12 @@ function subDomainIndex(hostname: string): number {
   return parts.length > 2 ? parts.length - 1 : 1;
 }
 
-export function collectAttribution(search: string, hostname: string, now: number): AttributionData {
+export function collectAttribution(
+  search: string,
+  hostname: string,
+  now: number,
+  conversionPage = '',
+): AttributionData {
   const p = new URLSearchParams(search);
 
   let gclid = p.get('gclid') || '';
@@ -40,9 +45,14 @@ export function collectAttribution(search: string, hostname: string, now: number
     if (parts.length >= 4) cid = parts[2] + '.' + parts[3];
   }
 
-  return { fbc, fbp, gclid, wbraid, cid };
+  return { fbc, fbp, gclid, wbraid, cid, conversionPage };
 }
 
 export function collectAttributionFromPage(): AttributionData {
-  return collectAttribution(location.search, location.hostname, Date.now());
+  return collectAttribution(
+    location.search,
+    location.hostname,
+    Date.now(),
+    location.host + location.pathname,
+  );
 }

@@ -41,7 +41,9 @@ describe('buildLeadPayload', () => {
     expect(typeof p.formData.formFields.page_url).toBe('string');
     expect(p.userData).toEqual({ firstName: 'Jan', lastName: 'Jansen', email: 'jan@bedrijf.nl' });
     expect(p.channelFlow).toHaveLength(1);
-    expect(p.attributionData).toEqual({ fbc: '', fbp: '', gclid: '', wbraid: '', cid: '' });
+    expect(p.attributionData).toEqual({
+      fbc: '', fbp: '', gclid: '', wbraid: '', cid: '', conversionPage: 'localhost:3000/',
+    });
   });
 
   it('omits channelFlow when the cookie is empty and includes phone for whatsapp leads', () => {

@@ -44,8 +44,14 @@ describe('collectAttribution (GTM-tag parity)', () => {
 
   it('degrades to empty strings when nothing is present', () => {
     expect(collectAttribution('', 'klant.nl', 1000)).toEqual({
-      fbc: '', fbp: '', gclid: '', wbraid: '', cid: '',
+      fbc: '', fbp: '', gclid: '', wbraid: '', cid: '', conversionPage: '',
     });
+  });
+
+  it('carries the conversion page through', () => {
+    expect(collectAttribution('', 'klant.nl', 1000, 'www.klant.nl/bedankt').conversionPage).toBe(
+      'www.klant.nl/bedankt',
+    );
   });
 
   it('passes _fbp through untouched', () => {

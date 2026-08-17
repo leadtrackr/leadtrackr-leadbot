@@ -41,6 +41,16 @@ describe('readConsentState', () => {
     expect(readConsentState()).toBeUndefined();
   });
 
+  it('calls getConsentState as a method, since gtag reads its own state through this', () => {
+    // Mirrors gtag: the implementation only works when `this` is the ics object.
+    const store: Record<string, number> = { ad_storage: 1 };
+    setIcs(function (this: any, type: string) {
+      return this.store[type];
+    });
+    (window as any).google_tag_data.ics.store = store;
+    expect(readConsentState()).toEqual({ ad_storage: 'granted' });
+  });
+
   it('is undefined when the undocumented call throws', () => {
     setIcs(() => {
       throw new Error('gone');

@@ -54,6 +54,16 @@ describe('collectAttribution (GTM-tag parity)', () => {
     );
   });
 
+  it('leaves consent off entirely when it cannot be determined', () => {
+    expect(collectAttribution('', 'klant.nl', 1000)).not.toHaveProperty('consent');
+  });
+
+  it('includes consent when it is known', () => {
+    expect(collectAttribution('', 'klant.nl', 1000, '', { ad_storage: 'denied' }).consent).toEqual({
+      ad_storage: 'denied',
+    });
+  });
+
   it('passes _fbp through untouched', () => {
     document.cookie = '_fbp=fb.1.1719000000.987654321;path=/';
     expect(collectAttribution('', 'klant.nl', 1000).fbp).toBe('fb.1.1719000000.987654321');

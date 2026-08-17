@@ -16,6 +16,13 @@ export interface ChannelFlowEntry {
   lp?: string;
 }
 
+export type ConsentState = 'granted' | 'denied';
+
+/** Partial on purpose: a type we cannot determine is left out, never guessed. */
+export type Consent = Partial<
+  Record<'ad_storage' | 'analytics_storage' | 'ad_user_data' | 'ad_personalization', ConsentState>
+>;
+
 export interface AttributionData {
   fbc: string;
   fbp: string;
@@ -24,6 +31,8 @@ export interface AttributionData {
   cid: string;
   /** Host and path of the page the conversion happened on, without query string. */
   conversionPage: string;
+  /** Consent Mode state at conversion. Absent when it cannot be determined. */
+  consent?: Consent;
 }
 
 export interface LeadUserData {

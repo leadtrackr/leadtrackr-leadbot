@@ -29,19 +29,22 @@ declare global {
  * know", where a filled one would claim we do.
  */
 export function readConsentState(): Consent | undefined {
-  let getConsentState;
+  let ics;
   try {
-    getConsentState = window.google_tag_data?.ics?.getConsentState;
+    ics = window.google_tag_data?.ics;
   } catch {
     return undefined;
   }
-  if (typeof getConsentState !== 'function') return undefined;
+  if (!ics || typeof ics.getConsentState !== 'function') return undefined;
 
   const state: Consent = {};
   for (const type of CONSENT_TYPES) {
     let value;
     try {
-      value = getConsentState(type);
+      // Called as a method, never pulled out into a bare function: gtag reads
+      // its own state through `this`, so an unbound call throws — and the catch
+      // would quietly turn that into "unknown" on every site.
+      value = ics.getConsentState(type);
     } catch {
       continue;
     }

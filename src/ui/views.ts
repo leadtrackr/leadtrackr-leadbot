@@ -22,9 +22,25 @@ function agentLine(cfg: LeadBotConfig): string {
   return `${esc(cfg.agentName || cfg.companyName)}${company}`;
 }
 
+/**
+ * De promotielink is de enige plek waar de LeadBot naar buiten wijst. De UTM's
+ * maken in Analytics zichtbaar hoeveel bezoek hij oplevert, en per klantsite
+ * hoeveel: de campagne is de host waar de LeadBot draait.
+ */
+export function brandUrl(host: string): string {
+  const site = host.replace(/^www\./, '');
+  const params = new URLSearchParams({
+    utm_source: 'leadbot',
+    utm_medium: 'referral',
+    utm_campaign: site || '(not set)',
+  });
+  return `https://leadtrackr.io/?${params}`;
+}
+
 export function brandFooter(cfg: LeadBotConfig): string {
   if (!cfg.branding) return '';
-  return `<div class="ltb-brand"><span>Better leads start with&nbsp;</span><a href="https://leadtrackr.io" target="_blank" rel="noopener">LeadTrackr.io</a><span>&nbsp;🚀</span></div>`;
+  const href = esc(brandUrl(location.hostname));
+  return `<div class="ltb-brand"><span>Better leads start with&nbsp;</span><a href="${href}" target="_blank" rel="noopener">LeadTrackr.io</a><span>&nbsp;🚀</span></div>`;
 }
 
 export function launcherView(cfg: LeadBotConfig, showTeaser: boolean): string {

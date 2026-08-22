@@ -125,10 +125,9 @@ describe('collectAttribution — ad click IDs per channel', () => {
     expect(collectAttribution('', 'klant.nl', 1000).msclkid).toBe('561f11b5eb0d');
   });
 
-  it('prefers msclkid from the URL, then the server-side cookie', () => {
+  it('prefers msclkid from the URL over the cookie', () => {
     document.cookie = '_uetmsclkid=_uetPIXEL;path=/';
-    document.cookie = 'uet_msclkid=SERVER;path=/';
-    expect(collectAttribution('', 'klant.nl', 1000).msclkid).toBe('SERVER');
+    expect(collectAttribution('', 'klant.nl', 1000).msclkid).toBe('PIXEL');
     expect(collectAttribution('?msclkid=URL', 'klant.nl', 1000).msclkid).toBe('URL');
   });
 
@@ -137,12 +136,14 @@ describe('collectAttribution — ad click IDs per channel', () => {
     expect(collectAttribution('', 'klant.nl', 1000).gbraid).toBe('GBRAIDVALUE');
   });
 
-  it('reads Google click IDs from the server-side cookies too', () => {
+  it('ignores the server-side FPGCL* cookies, which are HttpOnly here', () => {
     document.cookie = 'FPGCLAW=GCL.1719000000.kSERVERGCLID$i;path=/';
-    document.cookie = 'FPGCLDC=GCL.1719000000.kSERVERDCLID$i;path=/';
-    const a = collectAttribution('', 'klant.nl', 1000);
-    expect(a.gclid).toBe('SERVERGCLID');
-    expect(a.dclid).toBe('SERVERDCLID');
+    expect(collectAttribution('', 'klant.nl', 1000).gclid).toBe('');
+  });
+
+  it('reads dclid from the browser tag cookie', () => {
+    document.cookie = '_gcl_dc=GCL.1719000000.DCLIDVALUE;path=/';
+    expect(collectAttribution('', 'klant.nl', 1000).dclid).toBe('DCLIDVALUE');
   });
 
   it('leaves every channel empty when nothing is present', () => {

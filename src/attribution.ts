@@ -25,7 +25,7 @@ const CLICK_ID_SOURCES: Record<string, [string, string[]]> = {
   // OpenAI's cookies are its parameter with a __ prefix.
   oppref: ['oppref', ['__oppref']],
   obref: ['', ['__obref']],
-  uetvid: ['', ['uet_vid', '_uetvid']],
+  uetvid: ['', ['_uetvid']],
 };
 
 function firstOf(p: URLSearchParams, param: string, cookies: string[]): string {
@@ -69,27 +69,23 @@ export function collectAttribution(
 ): AttributionData {
   const p = new URLSearchParams(search);
 
-  const google = (
-    param: string,
-    serverCookie: string,
-    browserCookie: string,
-    browserUsesServerFormat = false,
-  ): string =>
-    p.get(param) ||
-    unwrapGcl(getCookie(serverCookie), true) ||
-    unwrapGcl(getCookie(browserCookie), browserUsesServerFormat);
+  // Only the browser tag's cookies are read. A server-side container writes the
+  // same IDs to FPGCLAW, FPGCLGB, FPGCLAG and FPGCLDC, but those are set over
+  // HTTP as HttpOnly and are invisible to document.cookie — the WordPress
+  // plugin picks them up from $_COOKIE instead, where they do arrive.
+  const google = (param: string, cookie: string, usesServerFormat = false): string =>
+    p.get(param) || unwrapGcl(getCookie(cookie), usesServerFormat);
 
-  const gclid = google('gclid', 'FPGCLAW', '_gcl_aw');
-  const wbraid = google('wbraid', 'FPGCLGB', '_gcl_gb');
-  const gbraid = google('gbraid', 'FPGCLAG', '_gcl_ag', true);
+  const gclid = google('gclid', '_gcl_aw');
+  const wbraid = google('wbraid', '_gcl_gb');
+  const gbraid = google('gbraid', '_gcl_ag', true);
   // Collected but not actionable: Google Ads' ClickConversion takes gclid,
   // gbraid or wbraid only. dclid belongs to Campaign Manager 360 and DV360.
-  const dclid = google('dclid', 'FPGCLDC', '_gcl_dc');
+  const dclid = google('dclid', '_gcl_dc');
 
   // UET's browser pixel writes the cookie's own name into its value, so
-  // "_uet561f11…" has to be sent as "561f11…". A server-side container writes
-  // the same ID to uet_msclkid without the prefix.
-  const msclkid = firstOf(p, 'msclkid', ['uet_msclkid', '_uetmsclkid']).replace(/^_uet/, '');
+  // "_uet561f11…" has to be sent as "561f11…".
+  const msclkid = firstOf(p, 'msclkid', ['_uetmsclkid']).replace(/^_uet/, '');
 
   const channels: Record<string, string> = {};
   for (const [field, [param, cookies]] of Object.entries(CLICK_ID_SOURCES)) {

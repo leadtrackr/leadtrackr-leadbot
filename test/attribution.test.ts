@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { collectAttribution } from '../src/attribution';
+import { emptyAttribution } from './attribution-fixture';
 
 function clearCookies() {
   for (const part of document.cookie.split('; ')) {
@@ -43,9 +44,7 @@ describe('collectAttribution (GTM-tag parity)', () => {
   });
 
   it('degrades to empty strings when nothing is present', () => {
-    expect(collectAttribution('', 'klant.nl', 1000)).toEqual({
-      fbc: '', fbp: '', gclid: '', wbraid: '', cid: '', conversionPage: '',
-    });
+    expect(collectAttribution('', 'klant.nl', 1000)).toEqual(emptyAttribution());
   });
 
   it('carries the conversion page through', () => {
@@ -67,5 +66,90 @@ describe('collectAttribution (GTM-tag parity)', () => {
   it('passes _fbp through untouched', () => {
     document.cookie = '_fbp=fb.1.1719000000.987654321;path=/';
     expect(collectAttribution('', 'klant.nl', 1000).fbp).toBe('fb.1.1719000000.987654321');
+  });
+});
+
+describe('collectAttribution — ad click IDs per channel', () => {
+  beforeEach(clearCookies);
+
+  it('takes each channel click ID from the URL before the cookie', () => {
+    document.cookie = 'ttclid=COOKIE;path=/';
+    document.cookie = '_epik=COOKIE;path=/';
+    const a = collectAttribution(
+      '?ttclid=URLTT&epik=URLEPIK&twclid=URLTW&rdt_cid=URLRDT&li_fat_id=URLLI&oppref=URLOAI',
+      'klant.nl',
+      1000,
+    );
+    expect(a.ttclid).toBe('URLTT');
+    expect(a.epik).toBe('URLEPIK');
+    expect(a.twclid).toBe('URLTW');
+    expect(a.rdt_cid).toBe('URLRDT');
+    expect(a.li_fat_id).toBe('URLLI');
+    expect(a.oppref).toBe('URLOAI');
+  });
+
+  it("matches Snapchat's ScCid exactly, not a lowercased form", () => {
+    expect(collectAttribution('?ScCid=SNAP', 'klant.nl', 1000).scclid).toBe('SNAP');
+    expect(collectAttribution('?sccid=SNAP', 'klant.nl', 1000).scclid).toBe('');
+  });
+
+  it('falls back to the cookie each platform pixel writes', () => {
+    document.cookie = 'ttclid=TT;path=/';
+    document.cookie = '_ttp=TTP;path=/';
+    document.cookie = '_scclid=SC;path=/';
+    document.cookie = '_scid=SCID;path=/';
+    document.cookie = '_epik=EPIK;path=/';
+    document.cookie = 'twclid=TW;path=/';
+    document.cookie = '_rdt_cid=RDT;path=/';
+    document.cookie = '_rdt_uuid=1684189007728.uuid;path=/';
+    document.cookie = 'li_fat_id=LI;path=/';
+    document.cookie = '__oppref=OAI;path=/';
+    document.cookie = '__obref=OBREF;path=/';
+    const a = collectAttribution('', 'klant.nl', 1000);
+    expect(a).toMatchObject({
+      ttclid: 'TT', ttp: 'TTP', scclid: 'SC', scid: 'SCID', epik: 'EPIK',
+      twclid: 'TW', rdt_cid: 'RDT', rdt_uuid: '1684189007728.uuid',
+      li_fat_id: 'LI', oppref: 'OAI', obref: 'OBREF',
+    });
+  });
+
+  it("falls back to Reddit's older rdt_cid cookie", () => {
+    document.cookie = 'rdt_cid=OLD;path=/';
+    expect(collectAttribution('', 'klant.nl', 1000).rdt_cid).toBe('OLD');
+    document.cookie = '_rdt_cid=NEW;path=/';
+    expect(collectAttribution('', 'klant.nl', 1000).rdt_cid).toBe('NEW');
+  });
+
+  it("strips the _uet prefix UET writes into its own cookie value", () => {
+    document.cookie = '_uetmsclkid=_uet561f11b5eb0d;path=/';
+    expect(collectAttribution('', 'klant.nl', 1000).msclkid).toBe('561f11b5eb0d');
+  });
+
+  it('prefers msclkid from the URL, then the server-side cookie', () => {
+    document.cookie = '_uetmsclkid=_uetPIXEL;path=/';
+    document.cookie = 'uet_msclkid=SERVER;path=/';
+    expect(collectAttribution('', 'klant.nl', 1000).msclkid).toBe('SERVER');
+    expect(collectAttribution('?msclkid=URL', 'klant.nl', 1000).msclkid).toBe('URL');
+  });
+
+  it('reads gbraid from _gcl_ag, which uses the server-side format', () => {
+    document.cookie = '_gcl_ag=GCL.1719000000.kGBRAIDVALUE$i;path=/';
+    expect(collectAttribution('', 'klant.nl', 1000).gbraid).toBe('GBRAIDVALUE');
+  });
+
+  it('reads Google click IDs from the server-side cookies too', () => {
+    document.cookie = 'FPGCLAW=GCL.1719000000.kSERVERGCLID$i;path=/';
+    document.cookie = 'FPGCLDC=GCL.1719000000.kSERVERDCLID$i;path=/';
+    const a = collectAttribution('', 'klant.nl', 1000);
+    expect(a.gclid).toBe('SERVERGCLID');
+    expect(a.dclid).toBe('SERVERDCLID');
+  });
+
+  it('leaves every channel empty when nothing is present', () => {
+    const a = collectAttribution('', 'klant.nl', 1000);
+    expect(a.ttclid).toBe('');
+    expect(a.scclid).toBe('');
+    expect(a.msclkid).toBe('');
+    expect(a.gbraid).toBe('');
   });
 });

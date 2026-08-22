@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { buildLeadPayload, splitName } from '../src/payload';
 import { resolveConfig } from '../src/config';
 import { updateChannelFlow } from '../src/channelflow';
+import { emptyAttribution } from './attribution-fixture';
 
 function clearCookies() {
   for (const part of document.cookie.split('; ')) {
@@ -41,9 +42,7 @@ describe('buildLeadPayload', () => {
     expect(typeof p.formData.formFields.page_url).toBe('string');
     expect(p.userData).toEqual({ firstName: 'Jan', lastName: 'Jansen', email: 'jan@bedrijf.nl' });
     expect(p.channelFlow).toHaveLength(1);
-    expect(p.attributionData).toEqual({
-      fbc: '', fbp: '', gclid: '', wbraid: '', cid: '', conversionPage: 'localhost:3000/',
-    });
+    expect(p.attributionData).toEqual(emptyAttribution({ conversionPage: 'localhost:3000/' }));
   });
 
   it('omits channelFlow when the cookie is empty and includes phone for whatsapp leads', () => {

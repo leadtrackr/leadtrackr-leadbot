@@ -1,12 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { sendLead } from '../src/transport';
 import type { LeadPayload } from '../src/types';
+import { emptyAttribution } from './attribution-fixture';
 
 const payload: LeadPayload = {
   projectId: 'p',
   formData: { formName: 'f', uniqueEventId: 'id', formFields: {} },
   userData: { email: 'a@b.nl' },
-  attributionData: { fbc: '', fbp: '', gclid: '', wbraid: '', cid: '', conversionPage: '' },
+  attributionData: emptyAttribution(),
 };
 
 afterEach(() => vi.unstubAllGlobals());

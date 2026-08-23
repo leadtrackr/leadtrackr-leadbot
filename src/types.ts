@@ -28,6 +28,22 @@ export interface AttributionData {
   fbp: string;
   gclid: string;
   wbraid: string;
+  gbraid: string;
+  dclid: string;
+  msclkid: string;
+  /** Microsoft's browser ID, its equivalent of fbp. */
+  uetvid: string;
+  ttclid: string;
+  ttp: string;
+  li_fat_id: string;
+  scclid: string;
+  scid: string;
+  rdt_cid: string;
+  rdt_uuid: string;
+  epik: string;
+  twclid: string;
+  oppref: string;
+  obref: string;
   cid: string;
   /** Host and path of the page the conversion happened on, without query string. */
   conversionPage: string;

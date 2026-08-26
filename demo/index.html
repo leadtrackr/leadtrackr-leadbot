@@ -66,6 +66,7 @@
         sub: 'We bellen je zo snel mogelijk terug',
         icon: 'phone',
         formName: 'LeadBot — Terugbelverzoek',
+        submit: 'Versturen',
         successTitle: 'Yes, gelukt!',
         successBody: 'We bellen je zo snel mogelijk terug.',
         fields: [
@@ -79,6 +80,8 @@
     // Demo: interceptor standaard aan (productie-default is uit).
     whatsappInterceptor: params.get('interceptor') !== '0',
     launcher: params.get('launcher') !== '0',
+    // Promotie in de voettekst uit met ?branding=0.
+    branding: params.get('branding') !== '0',
     // Zonder ?projectId= gaan leads naar de lokale mock; mét projectId naar
     // het echte LeadTrackr-endpoint (default in de LeadBot zelf).
     endpoint: projectId ? null : '/mock-lead'

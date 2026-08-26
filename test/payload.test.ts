@@ -29,7 +29,7 @@ describe('buildLeadPayload', () => {
 
   it('builds the GTM-contract payload for a message lead', () => {
     updateChannelFlow('?utm_source=google&utm_medium=cpc', '', 'klant.nl', 1000);
-    const p = buildLeadPayload(cfg, 'contact_form', {
+    const p = buildLeadPayload(cfg, cfg.forms.contact_form.formName, {
       name: 'Jan Jansen',
       email: 'jan@bedrijf.nl',
       message: 'Hallo!',
@@ -46,9 +46,35 @@ describe('buildLeadPayload', () => {
   });
 
   it('omits channelFlow when the cookie is empty and includes phone for whatsapp leads', () => {
-    const p = buildLeadPayload(cfg, 'whatsapp', { phone: '+31612345678', message: 'Vraagje' });
+    const p = buildLeadPayload(cfg, cfg.formNames.whatsapp, { phone: '+31612345678', message: 'Vraagje' });
     expect(p.channelFlow).toBeUndefined();
     expect(p.formData.formName).toBe('LeadBot — WhatsApp');
     expect(p.userData).toEqual({ phone: '+31612345678' });
+  });
+
+  it('splits reserved keys into userData and sends every other field along as a form field', () => {
+    const p = buildLeadPayload(cfg, 'LeadBot — Terugbelverzoek', {
+      name: 'Jessica de Vries',
+      phone: '+31858330088',
+      company: 'Diks Process Support',
+      onderwerp: 'ISO 9001',
+      message: 'Graag terugbellen',
+    });
+    expect(p.userData).toEqual({ firstName: 'Jessica', lastName: 'de Vries', phone: '+31858330088' });
+    expect(p.formData.formName).toBe('LeadBot — Terugbelverzoek');
+    expect(p.formData.formFields).toMatchObject({
+      company: 'Diks Process Support',
+      onderwerp: 'ISO 9001',
+      message: 'Graag terugbellen',
+    });
+    expect(p.formData.formFields.company).toBeDefined();
+    expect(p.userData).not.toHaveProperty('company');
+  });
+
+  it('leaves out empty values instead of sending blanks', () => {
+    const p = buildLeadPayload(cfg, 'LeadBot — Test', { name: '', company: '  ', message: 'Hoi' });
+    expect(p.userData).toEqual({});
+    expect(p.formData.formFields).not.toHaveProperty('company');
+    expect(p.formData.formFields.message).toBe('Hoi');
   });
 });

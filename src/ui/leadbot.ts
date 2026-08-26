@@ -1,16 +1,17 @@
 import { getDynamicNumber } from '../calltracking';
 import type { LeadBotConfig } from '../config';
-import { getCountries } from '../countries';
+import { getCountries, type Country } from '../countries';
 import { pushChannelClick, pushConversion, pushOpen } from '../datalayer';
 import { buildLeadPayload } from '../payload';
 import { sendLead } from '../transport';
 import { isValidEmail, normalizePhone } from '../validate';
 import { buildStyles } from './styles';
 import { trackVisualViewport } from './viewport';
+import type { FormDef } from '../forms';
 import type { FormState, WaState } from './views';
-import { autoGrowMessage, launcherView, messageView, panelView, successView, whatsappView } from './views';
+import { autoGrowMessage, formView, launcherView, panelView, successView, whatsappView } from './views';
 
-type View = 'closed' | 'panel' | 'contact_form' | 'whatsapp' | 'success';
+type View = 'closed' | 'panel' | 'form' | 'whatsapp' | 'success';
 
 const TEASER_KEY = 'ltb_teaser_dismissed';
 const MIN_OPEN_MS = 2000;
@@ -31,16 +32,19 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
 
   const countries = getCountries(cfg.language);
 
+  const defaultCountry = countries.find((c) => c.code === cfg.defaultCountry) || countries[0];
+
   let view: View = 'closed';
-  let successChannel: 'contact_form' | 'whatsapp' = 'contact_form';
+  let success = { title: '', body: '', whatsapp: false };
   let openedAt = 0;
 
-  const form: FormState = {
-    values: { name: '', email: '', message: '' },
-    errors: {},
-    sending: false,
-    sendFailed: false,
-  };
+  function blankForm(def: FormDef): FormState {
+    const forCountries: Record<string, Country> = {};
+    for (const f of def.fields) if (f.type === 'tel') forCountries[f.key] = defaultCountry;
+    return { def, values: {}, countries: forCountries, errors: {}, sending: false, sendFailed: false };
+  }
+
+  let form: FormState = blankForm(cfg.forms.contact_form);
   const wa: WaState = {
     step: 'compose',
     entered: false,
@@ -71,11 +75,11 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
     const inner =
       view === 'panel'
         ? panelView(cfg, dynamicNumber)
-        : view === 'contact_form'
-          ? messageView(cfg, form)
+        : view === 'form'
+          ? formView(cfg, form, countries)
           : view === 'whatsapp'
             ? whatsappView(cfg, wa, countries)
-            : successView(cfg, successChannel);
+            : successView(cfg, success);
     container.innerHTML = `<div class="ltb-root${sideClass}"><div class="ltb-overlay" data-action="close"></div><div class="ltb-panel" role="dialog" aria-modal="true"><div class="ltb-view">${inner}</div></div></div>`;
     const msg = container.querySelector<HTMLTextAreaElement>('textarea[data-wa="message"]');
     if (msg) autoGrowMessage(msg);
@@ -99,19 +103,52 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
   }
 
   function readFormInputs(): void {
-    form.values.name = (container.querySelector<HTMLInputElement>('[name="name"]')?.value || '').trim();
-    form.values.email = (container.querySelector<HTMLInputElement>('[name="email"]')?.value || '').trim();
-    form.values.message = (container.querySelector<HTMLTextAreaElement>('[name="message"]')?.value || '').trim();
+    for (const f of form.def.fields) {
+      const el = container.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[name="${f.key}"]`);
+      if (el) form.values[f.key] = el.value.trim();
+    }
   }
 
-  async function submitContactForm(): Promise<void> {
+  function showFormSuccess(def: FormDef): void {
+    success = { title: def.successTitle, body: def.successBody, whatsapp: false };
+    view = 'success';
+  }
+
+  function openForm(id: string): void {
+    const def = cfg.forms[id];
+    if (!def) return;
+    pushChannelClick(id);
+    form = blankForm(def);
+    view = 'form';
+    render();
+  }
+
+  async function submitForm(): Promise<void> {
     readFormInputs();
     const t = cfg.texts;
+    const def = form.def;
     form.errors = {};
-    if (!form.values.name) form.errors.name = t.errorRequired;
-    if (!form.values.email) form.errors.email = t.errorRequired;
-    else if (!isValidEmail(form.values.email)) form.errors.email = t.errorEmail;
-    if (!form.values.message) form.errors.message = t.errorRequired;
+    // Alleen ingevulde, geldige waarden gaan mee; een leeg optioneel veld
+    // hoort niet als lege string in LeadTrackr te belanden.
+    const values: Record<string, string> = {};
+    for (const f of def.fields) {
+      const raw = (form.values[f.key] || '').trim();
+      if (!raw) {
+        if (f.required) form.errors[f.key] = t.errorRequired;
+        continue;
+      }
+      if (f.type === 'email' && !isValidEmail(raw)) {
+        form.errors[f.key] = t.errorEmail;
+        continue;
+      }
+      if (f.type === 'tel') {
+        const normalized = normalizePhone(raw, (form.countries[f.key] || defaultCountry).dial);
+        if (!normalized) form.errors[f.key] = t.errorPhone;
+        else values[f.key] = normalized;
+        continue;
+      }
+      values[f.key] = raw;
+    }
     if (Object.keys(form.errors).length) {
       form.sendFailed = false;
       render();
@@ -119,21 +156,19 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
     }
     const honeypot = container.querySelector<HTMLInputElement>('[name="ltb_website"]')?.value;
     if (honeypot || Date.now() - openedAt < MIN_OPEN_MS) {
-      successChannel = 'contact_form';
-      view = 'success';
+      showFormSuccess(def);
       render();
       return;
     }
     form.sending = true;
     form.sendFailed = false;
     render();
-    const res = await sendLead(buildLeadPayload(cfg, 'contact_form', form.values), cfg.endpoint);
+    const res = await sendLead(buildLeadPayload(cfg, def.formName, values), cfg.endpoint);
     form.sending = false;
     if (res.ok) {
-      pushConversion('contact_form', { name: form.values.name, email: form.values.email });
-      form.values = { name: '', email: '', message: '' };
-      successChannel = 'contact_form';
-      view = 'success';
+      pushConversion(def.id, { name: values.name, email: values.email, phone: values.phone });
+      form.values = {};
+      showFormSuccess(def);
     } else {
       form.sendFailed = true;
     }
@@ -145,6 +180,11 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
     if (msg) wa.message = msg.value.trim();
     const phone = container.querySelector<HTMLInputElement>('[data-wa="phone"]');
     if (phone) wa.phone = phone.value.trim();
+  }
+
+  function showWaSuccess(): void {
+    success = { title: cfg.texts.waSuccessTitle, body: cfg.texts.waSuccessBody, whatsapp: true };
+    view = 'success';
   }
 
   function openWhatsApp(text: string): void {
@@ -167,15 +207,14 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
     }
     wa.error = null;
     if (Date.now() - openedAt < MIN_OPEN_MS) {
-      successChannel = 'whatsapp';
-      view = 'success';
+      showWaSuccess();
       render();
       return;
     }
     wa.sending = true;
     render();
     const res = await sendLead(
-      buildLeadPayload(cfg, 'whatsapp', { phone: normalized || undefined, message: wa.message }),
+      buildLeadPayload(cfg, cfg.formNames.whatsapp, { phone: normalized || undefined, message: wa.message }),
       cfg.endpoint,
     );
     wa.sending = false;
@@ -201,8 +240,7 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
     wa.entered = false;
     wa.message = '';
     wa.phone = '';
-    successChannel = 'whatsapp';
-    view = 'success';
+    showWaSuccess();
     render();
   }
 
@@ -230,11 +268,6 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
         wa.error = null;
         form.errors = {};
         form.sendFailed = false;
-        render();
-        break;
-      case 'channel-contact_form':
-        pushChannelClick('contact_form');
-        view = 'contact_form';
         render();
         break;
       case 'channel-phone':
@@ -267,11 +300,23 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
       case 'wa-phone-send':
         void submitWhatsApp();
         break;
+      default:
+        // Elk ander kanaal is een formulier uit de config.
+        if (action.slice(0, 8) === 'channel-') openForm(action.slice(8));
     }
   });
 
   container.addEventListener('change', (e) => {
     const el = e.target as HTMLSelectElement;
+    const telField = el.getAttribute('data-cc');
+    if (telField) {
+      readFormInputs();
+      const country = countries.find((c) => c.code === el.value);
+      if (country) form.countries[telField] = country;
+      render();
+      container.querySelector<HTMLInputElement>(`[name="${telField}"]`)?.focus();
+      return;
+    }
     if (el.getAttribute('data-wa') === 'country') {
       readWaInputs();
       const country = countries.find((c) => c.code === el.value);
@@ -283,7 +328,7 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
 
   container.addEventListener('submit', (e) => {
     e.preventDefault();
-    if ((e.target as HTMLElement).getAttribute('data-form') === 'contact_form') void submitContactForm();
+    if ((e.target as HTMLElement).hasAttribute('data-form')) void submitForm();
   });
 
   container.addEventListener('input', (e) => {

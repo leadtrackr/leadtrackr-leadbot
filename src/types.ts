@@ -70,4 +70,8 @@ export interface LeadPayload {
   attributionData: AttributionData;
 }
 
-export type ChannelId = 'contact_form' | 'phone' | 'whatsapp';
+/**
+ * Kanaal-id: 'phone' en 'whatsapp' zijn gereserveerd, elk ander id is een
+ * formulier uit de config (waaronder het ingebouwde 'contact_form').
+ */
+export type ChannelId = string;

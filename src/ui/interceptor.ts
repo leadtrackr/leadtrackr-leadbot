@@ -140,7 +140,7 @@ export function mountWhatsAppInterceptor(cfg: LeadBotConfig): void {
     s.sending = true;
     render();
     const res = await sendLead(
-      buildLeadPayload(cfg, 'whatsapp', { phone: normalized || undefined, message: s.message }, 'whatsapp_interceptor'),
+      buildLeadPayload(cfg, cfg.formNames.whatsapp_interceptor, { phone: normalized || undefined, message: s.message }),
       cfg.endpoint,
     );
     s.sending = false;

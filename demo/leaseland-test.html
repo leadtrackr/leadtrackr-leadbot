@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leaseland — testpagina LeadBot 1.7.0</title>
+<style>
+  body { margin: 0; font-family: system-ui, sans-serif; color: #1F2937; background: #fff; }
+  header { padding: 16px 32px; border-bottom: 1px solid #E5E7EB; font-weight: 700; }
+  main { max-width: 760px; margin: 40px auto; padding: 0 24px 80px; }
+  a { color: #3E8762; }
+  pre { background: #F3F4F6; padding: 12px; border-radius: 8px; font-size: 12px; overflow: auto; max-height: 300px; }
+  .note { background: #EDF8F2; border-left: 3px solid #52B483; padding: 10px 14px; border-radius: 6px; font-size: 14px; }
+  .warn { background: #FFF4F4; border-left: 3px solid #FF6A6A; padding: 10px 14px; border-radius: 6px; font-size: 14px; }
+  h2 { margin-top: 32px; }
+  code { background: #F3F4F6; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<header>Leaseland (testpagina — niet de echte site)</header>
+<main>
+  <h1>LeadBot 1.7.0 — lokale build</h1>
+
+  <p class="note">
+    Deze pagina gebruikt de <strong>exacte Leaseland-config</strong> tegen de lokaal gebouwde
+    <code>/dist/lt-leadbot.min.js</code>. Leads gaan naar een mock-endpoint, dus er komt niets
+    in LeadTrackr terecht.
+  </p>
+
+  <h2>1. Nummervraag uit</h2>
+  <p>Klik op een WhatsApp-link hieronder. Verwacht: modal opent → je typt een bericht → verzenden →
+    <strong>direct</strong> de handoff-spinner, zonder dat er om een telefoonnummer gevraagd wordt.</p>
+  <ul>
+    <li><a href="https://wa.me/31612345678?text=Hoi%2C%20ik%20heb%20een%20vraag%20over%20private%20lease">Chat via WhatsApp (met voorafingevuld bericht)</a></li>
+    <li><a href="https://api.whatsapp.com/send?phone=31698765432">api.whatsapp.com-variant (ander nummer)</a></li>
+  </ul>
+
+  <h2>2. Betaalcheck uit</h2>
+  <p>Forceer een API-respons om te zien dat de flow niet meer blokkeert:</p>
+  <ul>
+    <li><a href="?force=403">Simuleer 403 (abonnement inactief)</a> — moet gewoon doorlopen naar WhatsApp</li>
+    <li><a href="?force=404">Simuleer 404 (project niet gevonden)</a> — idem</li>
+    <li><a href="?force=403&amp;check=on">403 mét betaalcheck aan</a> — ter vergelijking: moet wél blokkeren</li>
+    <li><a href="./leaseland-test.html">Terug naar normaal (mock 200)</a></li>
+  </ul>
+  <p id="mode" class="warn"></p>
+
+  <h2>Actieve config</h2>
+  <pre id="cfg-log"></pre>
+
+  <h2>Lead-POST naar de API</h2>
+  <pre id="post-log">(nog niets verstuurd)</pre>
+
+  <h2>dataLayer</h2>
+  <pre id="dl-log">(nog leeg)</pre>
+</main>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const force = params.get('force');
+  const checkOn = params.get('check') === 'on';
+
+  document.getElementById('mode').textContent = force
+    ? 'Actief: alle lead-POSTs krijgen een ' + force + '-respons. subscriptionCheck staat ' +
+      (checkOn ? 'AAN (vergelijking) — de flow hoort te blokkeren.' : 'UIT — de flow hoort door te lopen.')
+    : 'Actief: mock-endpoint geeft 200. Gebruik de links hierboven om een 403/404 te forceren.';
+
+  // dataLayer meelezen
+  window.dataLayer = window.dataLayer || [];
+  const origPush = window.dataLayer.push.bind(window.dataLayer);
+  window.dataLayer.push = function (entry) {
+    const out = window.dataLayer.concat([entry]);
+    document.getElementById('dl-log').textContent = JSON.stringify(out, null, 2);
+    return origPush(entry);
+  };
+
+  // Lead-POST meelezen en desgewenst een foutstatus forceren
+  const origFetch = window.fetch.bind(window);
+  window.fetch = function (url, init) {
+    if (init && init.body) {
+      try {
+        document.getElementById('post-log').textContent = JSON.stringify(JSON.parse(init.body), null, 2);
+      } catch (e) {
+        document.getElementById('post-log').textContent = String(init.body);
+      }
+    }
+    if (force) return Promise.resolve({ ok: false, status: Number(force) });
+    return origFetch(url, init);
+  };
+
+  // Exact de Leaseland-config, alleen het endpoint naar de mock
+  window.ltLeadBotConfig = {
+    projectId: 'kIz1GVIbX8-D',
+    companyName: 'Leaseland',
+    agentName: 'Isabelle',
+    agentPhoto: 'https://leaseland.nl/leaseland-advisor.png',
+    launcher: false,
+    whatsappInterceptor: true,
+    whatsappPhoneQuestion: false,
+    subscriptionCheck: checkOn,
+    callTracking: true,
+    branding: false,
+    endpoint: '/mock-lead',
+  };
+
+  document.getElementById('cfg-log').textContent = JSON.stringify(window.ltLeadBotConfig, null, 2);
+</script>
+<script src="/dist/lt-leadbot.min.js" async></script>
+</body>
+</html>

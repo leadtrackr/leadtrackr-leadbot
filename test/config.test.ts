@@ -103,3 +103,42 @@ describe('resolveConfig', () => {
     expect(typo.subscriptionCheck).toBe(true);
   });
 });
+
+describe('resolveConfig — forms', () => {
+  beforeEach(() => {
+    document.documentElement.lang = 'nl';
+  });
+
+  it('always resolves the built-in contact form', () => {
+    const cfg = resolveConfig('p1', undefined);
+    expect(cfg.forms.contact_form.fields.map((f) => f.key)).toEqual(['name', 'email', 'message']);
+    expect(cfg.forms.contact_form.formName).toBe('LeadBot — Contact form');
+  });
+
+  it('keeps a configured form as its own channel', () => {
+    const cfg = resolveConfig('p1', {
+      channels: ['callback', 'contact_form'],
+      forms: { callback: { title: 'Bel mij terug', fields: [{ key: 'phone', required: true }] } },
+    });
+    expect(cfg.channels).toEqual(['callback', 'contact_form']);
+    expect(cfg.forms.callback.title).toBe('Bel mij terug');
+  });
+
+  it('drops a channel that is neither a form nor a reachable number', () => {
+    const cfg = resolveConfig('p1', { channels: ['ghost', 'phone', 'whatsapp', 'contact_form'] });
+    expect(cfg.channels).toEqual(['contact_form']);
+  });
+
+  it('passes formNames.contact_form through to the built-in form', () => {
+    const cfg = resolveConfig('p1', { formNames: { contact_form: 'Eigen naam' } as never });
+    expect(cfg.forms.contact_form.formName).toBe('Eigen naam');
+  });
+
+  it('lets forms.contact_form win over formNames.contact_form', () => {
+    const cfg = resolveConfig('p1', {
+      formNames: { contact_form: 'Oude naam' } as never,
+      forms: { contact_form: { formName: 'Nieuwe naam' } },
+    });
+    expect(cfg.forms.contact_form.formName).toBe('Nieuwe naam');
+  });
+});

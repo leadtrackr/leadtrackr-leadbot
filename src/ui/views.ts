@@ -1,6 +1,7 @@
 import type { DynamicNumber } from '../calltracking';
 import type { LeadBotConfig } from '../config';
 import type { Country } from '../countries';
+import type { FormDef, FormField } from '../forms';
 import { icons } from './icons';
 
 export function esc(s: string): string {
@@ -75,7 +76,6 @@ export function panelView(cfg: LeadBotConfig, dynamicNumber: DynamicNumber | nul
   const t = cfg.texts;
   const buttons = cfg.channels
     .map((c) => {
-      if (c === 'contact_form') return channelButton('channel-contact_form', icons.chat(20), t.msgTitle, t.msgSub);
       if (c === 'phone') {
         const display = dynamicNumber?.display || cfg.phone;
         if (!display) return '';
@@ -84,7 +84,11 @@ export function panelView(cfg: LeadBotConfig, dynamicNumber: DynamicNumber | nul
           : 'tel:' + (cfg.phone || '').replace(/[\s-]/g, '');
         return channelButton('channel-phone', icons.phone(20), t.callTitle, display, href);
       }
-      return channelButton('channel-whatsapp', icons.whatsapp(20), t.waTitle, t.waSub);
+      if (c === 'whatsapp') return channelButton('channel-whatsapp', icons.whatsapp(20), t.waTitle, t.waSub);
+      // Elk ander kanaal is een formulier uit de config.
+      const form = cfg.forms[c];
+      if (!form) return '';
+      return channelButton('channel-' + c, icons[form.icon](20), form.title, form.sub);
     })
     .join('');
   return `
@@ -105,36 +109,85 @@ export function panelView(cfg: LeadBotConfig, dynamicNumber: DynamicNumber | nul
 }
 
 export interface FormState {
-  values: { name: string; email: string; message: string };
+  def: FormDef;
+  /** Ingevulde waarden op veld-key. */
+  values: Record<string, string>;
+  /** Gekozen land per tel-veld; los per veld, want een formulier mag er meer hebben. */
+  countries: Record<string, Country>;
   errors: Record<string, string>;
   sending: boolean;
   sendFailed: boolean;
 }
 
-function field(id: string, label: string, control: string, error: string | undefined): string {
+function field(id: string, label: string, optional: string, control: string, error: string | undefined): string {
   return `<div class="ltb-field${error ? ' ltb-invalid' : ''}">
-    <label for="${id}">${esc(label)}</label>
+    <label for="${id}">${esc(label)}${optional ? ` <span class="ltb-optional">${esc(optional)}</span>` : ''}</label>
     ${control}
     ${error ? `<p class="ltb-error" role="alert">${icons.errorInfo(13)} ${esc(error)}</p>` : ''}
   </div>`;
 }
 
-export function messageView(cfg: LeadBotConfig, s: FormState): string {
+// Landcode-chip met native <select> eronder — dezelfde systeem-picker als de
+// WhatsApp-flow, hier in de vormgeving van een formulierveld.
+function countryChip(key: string, country: Country, countries: Country[], label: string): string {
+  const options = countries
+    .map(
+      (c) =>
+        `<option value="${c.code}"${c.code === country.code ? ' selected' : ''}>${esc(c.name)} (${c.dial})</option>`,
+    )
+    .join('');
+  return `<span class="ltb-cc">
+      <span class="ltb-cc-label">${country.flag}&nbsp;${country.dial}</span>
+      ${icons.chevronDown(12)}
+      <select class="ltb-cc-select" data-cc="${esc(key)}" aria-label="${esc(label)}">${options}</select>
+    </span>`;
+}
+
+function formControl(f: FormField, s: FormState, cfg: LeadBotConfig, countries: Country[]): string {
+  const id = 'ltb-f-' + f.key;
+  const name = esc(f.key);
+  const value = esc(s.values[f.key] || '');
+  const ph = esc(f.placeholder);
+  if (f.type === 'textarea') {
+    return `<textarea class="ltb-textarea" id="${id}" name="${name}" rows="3" placeholder="${ph}">${value}</textarea>`;
+  }
+  if (f.type === 'tel') {
+    const country = s.countries[f.key] || countries[0];
+    return `<div class="ltb-telwrap">
+      ${countryChip(f.key, country, countries, cfg.texts.waCountryLabel)}
+      <span class="ltb-cc-divider"></span>
+      <input class="ltb-tel" id="${id}" name="${name}" type="tel" autocomplete="tel-national" placeholder="${ph}" value="${value}">
+    </div>`;
+  }
+  return `<input class="ltb-input" id="${id}" name="${name}" type="${f.type}" placeholder="${ph}" value="${value}">`;
+}
+
+export function formView(cfg: LeadBotConfig, s: FormState, countries: Country[]): string {
   const t = cfg.texts;
+  const def = s.def;
+  const fields = def.fields
+    .map((f) =>
+      field(
+        'ltb-f-' + f.key,
+        f.label,
+        f.required ? '' : t.optional,
+        formControl(f, s, cfg, countries),
+        s.errors[f.key],
+      ),
+    )
+    .join('');
   return `
   <div class="ltb-handle"><span></span></div>
   <div class="ltb-viewhead">
     <button class="ltb-back" data-action="back" aria-label="${esc(t.back)}">${icons.back(18)}</button>
     ${avatar(cfg, 'ltb-avatar-fallback')}
-    <p class="ltb-viewhead-title">${esc(t.formTitle)}</p>
+    <p class="ltb-viewhead-title">${esc(def.formTitle)}</p>
   </div>
-  <form class="ltb-form" data-form="contact_form" novalidate>
+  <form class="ltb-form" data-form="${esc(def.id)}" novalidate>
     ${s.sendFailed ? `<div class="ltb-sendfail" role="alert">${esc(t.errorSend)}</div>` : ''}
-    ${field('ltb-name', t.nameLabel, `<input class="ltb-input" id="ltb-name" name="name" type="text" placeholder="${esc(t.namePlaceholder)}" value="${esc(s.values.name)}">`, s.errors.name)}
-    ${field('ltb-email', t.emailLabel, `<input class="ltb-input" id="ltb-email" name="email" type="email" placeholder="${esc(t.emailPlaceholder)}" value="${esc(s.values.email)}">`, s.errors.email)}
-    ${field('ltb-message', t.messageLabel, `<textarea class="ltb-textarea" id="ltb-message" name="message" rows="3" placeholder="${esc(t.messagePlaceholder)}">${esc(s.values.message)}</textarea>`, s.errors.message)}
+    ${fields}
     <div class="ltb-hp" aria-hidden="true"><input name="ltb_website" type="text" tabindex="-1" autocomplete="off"></div>
-    <button class="ltb-submit" type="submit"${s.sending ? ' disabled' : ''}>${esc(s.sending ? '…' : t.submit)}</button>
+    <button class="ltb-submit" type="submit"${s.sending ? ' disabled' : ''}>${esc(s.sending ? '…' : def.submit)}</button>
   </form>
   ${brandFooter(cfg)}`;
 }
@@ -308,10 +361,9 @@ export function interceptorView(cfg: LeadBotConfig, s: WiState, countries: Count
   </div>`;
 }
 
-export function successView(cfg: LeadBotConfig, channel: 'contact_form' | 'whatsapp'): string {
+export function successView(cfg: LeadBotConfig, o: { title: string; body: string; whatsapp: boolean }): string {
   const t = cfg.texts;
-  const title = channel === 'whatsapp' ? t.waSuccessTitle : t.successTitle;
-  const body = channel === 'whatsapp' ? t.waSuccessBody : t.successBody;
+  const { title, body } = o;
   return `
   <div class="ltb-handle"><span></span></div>
   <div style="position:relative">
@@ -319,7 +371,7 @@ export function successView(cfg: LeadBotConfig, channel: 'contact_form' | 'whats
     <div class="ltb-success">
       <div class="ltb-success-avatar">
         ${avatar(cfg, 'ltb-avatar-fallback')}
-        <span class="ltb-success-badge">${channel === 'whatsapp' ? icons.whatsapp(14) : icons.check(13)}</span>
+        <span class="ltb-success-badge">${o.whatsapp ? icons.whatsapp(14) : icons.check(13)}</span>
       </div>
       <p class="ltb-success-title">${esc(title)}</p>
       <p class="ltb-success-body">${esc(body)}</p>

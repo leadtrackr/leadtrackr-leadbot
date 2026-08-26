@@ -81,6 +81,8 @@ input, textarea, select { font: inherit; color: var(--tx); }
 
 /* Kanaal-knoppen */
 .ltb-channels { padding: 18px 20px 6px; display: flex; flex-direction: column; gap: 10px; }
+/* Zonder brandingfooter is dit het einde van het panel en moet de ruimte eronder vandaan komen. */
+.ltb-channels:last-child { padding-bottom: 20px; }
 .ltb-channel { display: flex; align-items: center; gap: 13px; min-height: 58px; padding: 8px 14px; border: 1px solid var(--bd); border-radius: 12px; background: var(--bg); transition: border-color .2s ease-out, background .2s ease-out, transform .2s ease-out; width: 100%; text-align: left; }
 .ltb-channel:hover { border-color: var(--p); background: var(--tint); transform: translateY(-1px); }
 .ltb-channel:focus-visible { outline: 2px solid var(--p); outline-offset: 2px; }
@@ -109,6 +111,17 @@ input, textarea, select { font: inherit; color: var(--tx); }
 .ltb-textarea { padding: 11px 14px; line-height: 1.5; resize: none; }
 .ltb-input:focus, .ltb-textarea:focus { border-color: var(--p); box-shadow: 0 0 0 3px rgba(var(--p-rgb), .15); }
 .ltb-field.ltb-invalid .ltb-input, .ltb-field.ltb-invalid .ltb-textarea { border-color: var(--err); background: #FFF7F7; box-shadow: 0 0 0 3px rgba(255,106,106,.12); }
+.ltb-optional { font-weight: 400; color: var(--mut); }
+.ltb-telwrap { display: flex; align-items: center; height: 46px; border: 1.5px solid var(--bd); border-radius: 8px; background: #fff; transition: border-color .2s ease-out, box-shadow .2s ease-out; }
+.ltb-telwrap:focus-within { border-color: var(--p); box-shadow: 0 0 0 3px rgba(var(--p-rgb), .15); }
+.ltb-cc { position: relative; display: flex; align-items: center; gap: 5px; height: 100%; padding: 0 10px 0 13px; font-weight: 600; font-size: 15px; flex-shrink: 0; color: var(--tx); border-radius: 6px 0 0 6px; cursor: pointer; transition: background .2s ease-out; }
+.ltb-cc:hover { background: #F7F8FA; }
+.ltb-cc-label { white-space: nowrap; }
+.ltb-cc-select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; appearance: none; -webkit-appearance: none; border: none; }
+.ltb-cc-divider { width: 1px; height: 24px; background: var(--bd); flex-shrink: 0; }
+.ltb-tel { flex: 1; min-width: 0; height: 100%; border: none; padding: 0 14px 0 10px; background: transparent; font-size: 15px; outline: none; border-radius: 0 6px 6px 0; }
+.ltb-field.ltb-invalid .ltb-telwrap { border-color: var(--err); background: #FFF7F7; box-shadow: 0 0 0 3px rgba(255,106,106,.12); }
+.ltb-field.ltb-invalid .ltb-telwrap .ltb-tel, .ltb-field.ltb-invalid .ltb-telwrap .ltb-cc { background: transparent; }
 .ltb-error { margin-top: 6px; font-weight: 600; font-size: 12.5px; color: #C23B3B; display: flex; align-items: center; gap: 5px; }
 .ltb-submit { width: 100%; height: 48px; border-radius: 8px; background: var(--p); color: #fff; font-weight: 700; font-size: 15px; transition: all .2s ease-out; margin-top: 2px; }
 .ltb-submit:hover { background: var(--ph); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(var(--p-rgb), .3); }
@@ -214,7 +227,7 @@ input, textarea, select { font: inherit; color: var(--tx); }
 
 /* iOS zoomt in op velden met een font < 16px — op mobiel dus altijd 16px. */
 @media (max-width: 640px) {
-  .ltb-input, .ltb-textarea, .ltb-wa-input, .ltb-wa-phone, .ltb-wa-cc-select { font-size: 16px; }
+  .ltb-input, .ltb-textarea, .ltb-wa-input, .ltb-wa-phone, .ltb-wa-cc-select, .ltb-tel, .ltb-cc-select { font-size: 16px; }
 }
 
 /* ── Mobiel: bottom sheet ── */

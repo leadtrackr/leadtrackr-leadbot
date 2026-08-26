@@ -1,8 +1,9 @@
 # LeadTrackr LeadBot
 
-Lightweight leadgeneratie-bot voor klantwebsites. Eén script-tag, rechtsonder op de site, drie contactkanalen — **contactformulier**, **bellen** en **WhatsApp** — en elke lead gaat mét volledige attributie (channel flow, gclid/wbraid, fbc/fbp, GA4 client-id) naar LeadTrackr via hetzelfde contract als de officiële [GTM-tag](https://github.com/leadtrackr/gtm-leadtrackr-tag).
+Lightweight leadgeneratie-bot voor klantwebsites. Eén script-tag, rechtsonder op de site, contactkanalen naar keuze — **bellen**, **WhatsApp** en zoveel **formulieren** als je wilt — en elke lead gaat mét volledige attributie (channel flow, gclid/wbraid, fbc/fbp, GA4 client-id) naar LeadTrackr via hetzelfde contract als de officiële [GTM-tag](https://github.com/leadtrackr/gtm-leadtrackr-tag).
 
-- **Geen dependencies** — één IIFE-bundle van ±13 KB gzip
+- **Geen dependencies** — één IIFE-bundle van ±20 KB gzip
+- **Formulieren uit de config** — velden en kanalen stel je samen op de site zelf (bijv. een GTM Custom HTML-tag), zonder repo-wijziging
 - **Shadow DOM** — geen CSS-conflicten met de klantsite, geen iframe
 - **GTM-tag-compatibel** — zelfde `lt_channelflow`-cookie, zelfde `createLead`-payload; LeadBot en GTM-tag kunnen naast elkaar draaien
 - **Meertalig** — taal volgt automatisch het `lang`-attribuut van de pagina (`nl`/`en`, fallback `en`); alle teksten komen uit taalbestanden en zijn per key overridebaar
@@ -40,7 +41,8 @@ Alle opties op `window.ltLeadBotConfig` (vóór het script-tag zetten):
 | `greeting` | per taal | Begroeting in teaser, panel en WhatsApp-chat |
 | `phone` | `null` | Telefoonnummer voor het bel-kanaal; `null` verbergt het kanaal |
 | `whatsapp` | `null` | WhatsApp-nummer (wa.me-doel); `null` verbergt het kanaal |
-| `channels` | `["contact_form","phone","whatsapp"]` | Volgorde = weergavevolgorde; subset mogelijk |
+| `channels` | `["contact_form","phone","whatsapp"]` | Volgorde = weergavevolgorde; elk id dat geen `phone`/`whatsapp` is moet in `forms` staan |
+| `forms` | ingebouwd `contact_form` | Eigen formulieren met eigen velden, zie hieronder |
 | `launcher` | `true` | `false` verbergt de LeadBot-launcher volledig (bijv. voor interceptor-only) |
 | `whatsappInterceptor` | `false` | `true` onderschept kliks op bestaande wa.me-/WhatsApp-links en opent de LeadBot-modal; zie hieronder |
 | `position` | `"right"` | `"right"` of `"left"` |
@@ -54,6 +56,40 @@ Alle opties op `window.ltLeadBotConfig` (vóór het script-tag zetten):
 | `formNames` | `LeadBot — Contact form` / `LeadBot — WhatsApp` | `formData.formName` per kanaal |
 | `texts` | taalbestand | Elke UI-string overridebaar per key |
 | `endpoint` | LeadTrackr createLead | Alleen voor testen overriden |
+
+### Formulieren
+
+Elk formulier is een eigen kanaal met een eigen id. Dat id staat in `channels` (bepaalt of en waar de knop staat) en in `forms` (bepaalt wat erachter zit). Zonder `forms` blijft `contact_form` precies wat het altijd was: naam, e-mailadres en bericht.
+
+```js
+channels: ['callback', 'contact_form', 'phone', 'whatsapp'],
+forms: {
+  callback: {
+    title: 'Bel mij terug',                  // knop in het paneel
+    sub: 'Ik bel je zo snel mogelijk terug', // regel eronder
+    icon: 'phone',                           // chat | phone | mail | whatsapp
+    formName: 'LeadBot — Terugbelverzoek',   // formData.formName in LeadTrackr
+    successTitle: 'Yes, gelukt!',
+    successBody: 'We bellen je zo snel mogelijk terug.',
+    fields: [
+      { key: 'name', required: true },
+      { key: 'company', label: 'Bedrijfsnaam', required: true },
+      { key: 'phone', required: true },
+      { key: 'message', placeholder: 'Waar gaat je vraag over?' }
+    ]
+  }
+}
+```
+
+Een veld is `{ key, label, type, required, placeholder }`; alleen `key` is verplicht. Keys mogen letters, cijfers, `_` en `-` bevatten — een veld met een andere key wordt overgeslagen. Types: `text` (default), `email`, `tel` en `textarea`. Een `tel`-veld krijgt dezelfde native landcode-selector als de WhatsApp-flow en levert een E.164-nummer op; `email` wordt gevalideerd. Velden zonder `required: true` zijn optioneel en krijgen dat er zichtbaar bij.
+
+**Gereserveerde keys.** `name`, `email`, `phone` en `message` hebben een vaste betekenis: die gaan naar `userData` (LeadTrackr) en `user_data` (Enhanced Conversions). Elke andere key gaat als vrij veld mee in `formFields`. Voor die vier hoef je verder niets in te vullen — label, type en placeholder komen uit het taalbestand:
+
+```js
+fields: [{ key: 'name' }, { key: 'email' }, { key: 'message' }]  // = het ingebouwde formulier
+```
+
+Alles wat je weglaat valt terug op de taal van de pagina, dus `{ title, fields }` is genoeg. Wil je het ingebouwde formulier aanpassen, zet dan `contact_form` in `forms` — dan wint die definitie. Een formulier zonder bruikbaar veld krijgt geen knop.
 
 ### Theme
 
@@ -75,7 +111,7 @@ Drie events, altijd plat — alleen `event`, `channel` en `user_data`:
 // LeadBot geopend
 window.dataLayer.push({ event: "leadtrackr_leadbot_open" });
 
-// Kanaal geselecteerd (contact_form | phone | whatsapp)
+// Kanaal geselecteerd (phone | whatsapp | id van een formulier)
 window.dataLayer.push({ event: "leadtrackr_leadbot_channel_click", channel: "whatsapp" });
 
 // Conversie — user_data afhankelijk van het kanaal
@@ -95,7 +131,7 @@ window.dataLayer.push({
 });
 ```
 
-Kanaalnamen zijn overal identiek (config, code en dataLayer). Een klik op het bel-kanaal geeft een `channel_click` met `channel: "phone"` plus een conversie-event met lege `user_data` — **behalve** wanneer `callTracking: true` aan staat: dan meet call tracking het daadwerkelijke gesprek en wordt de klik-conversie onderdrukt om dubbeltelling te voorkomen.
+Kanaalnamen zijn overal identiek (config, code en dataLayer) — het id dat je een formulier in `forms` geeft, is precies het id dat in `channel` terechtkomt. Zo kun je in GTM apart op een terugbelverzoek triggeren. Een klik op het bel-kanaal geeft een `channel_click` met `channel: "phone"` plus een conversie-event met lege `user_data` — **behalve** wanneer `callTracking: true` aan staat: dan meet call tracking het daadwerkelijke gesprek en wordt de klik-conversie onderdrukt om dubbeltelling te voorkomen.
 
 ## Call tracking (dynamic number insertion)
 

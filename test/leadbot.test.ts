@@ -491,3 +491,143 @@ describe('whatsapp flow', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('configured forms', () => {
+  const DIKS = {
+    channels: ['callback', 'contact_form', 'whatsapp', 'phone'],
+    forms: {
+      callback: {
+        title: 'Bel mij terug',
+        sub: 'Ik bel je zo snel mogelijk terug',
+        icon: 'phone',
+        formName: 'LeadBot — Terugbelverzoek',
+        successTitle: 'Yes, gelukt!',
+        successBody: 'We bellen je zo snel mogelijk terug.',
+        fields: [
+          { key: 'name', required: true },
+          { key: 'company', label: 'Bedrijfsnaam', required: true },
+          { key: 'phone', required: true },
+          { key: 'message', placeholder: 'Waar gaat je vraag over?' },
+        ],
+      },
+    },
+  } as never;
+
+  const openCallback = () => {
+    const m = freshMount(DIKS);
+    click(m.root, 'open');
+    click(m.root, 'channel-callback');
+    return m;
+  };
+  const fill = (root: ShadowRoot, name: string, value: string) => {
+    (root.querySelector(`[name="${name}"]`) as HTMLInputElement).value = value;
+  };
+  const submit = (root: ShadowRoot) =>
+    root.querySelector('[data-form="callback"]')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+  beforeEach(() => {
+    document.getElementById('lt-leadbot-host')?.remove();
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(1_000_000);
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('shows the configured form as its own channel, next to the built-in one', () => {
+    const { root } = freshMount(DIKS);
+    click(root, 'open');
+    const callback = q(root, '[data-action="channel-callback"]')!;
+    expect(callback.querySelector('.ltb-channel-title')!.textContent).toBe('Bel mij terug');
+    expect(callback.querySelector('.ltb-channel-sub')!.textContent).toBe('Ik bel je zo snel mogelijk terug');
+    expect(q(root, '[data-action="channel-contact_form"]')).toBeTruthy();
+  });
+
+  it('pushes a channel_click with the form id and renders every configured field', () => {
+    const { root } = openCallback();
+    expect(window.dataLayer).toContainEqual({
+      event: 'leadtrackr_leadbot_channel_click',
+      channel: 'callback',
+    });
+    expect(q(root, '.ltb-viewhead-title')!.textContent).toBe('Bel mij terug');
+    expect([...root.querySelectorAll('.ltb-form [name]')].map((el) => el.getAttribute('name'))).toEqual([
+      'name',
+      'company',
+      'phone',
+      'message',
+      'ltb_website',
+    ]);
+    expect(q(root, '.ltb-telwrap')).toBeTruthy();
+    expect(root.querySelectorAll('.ltb-optional')).toHaveLength(1); // alleen 'message'
+  });
+
+  it('rejects an unusable phone number', async () => {
+    const { root } = openCallback();
+    fill(root, 'name', 'Jessica');
+    fill(root, 'company', 'Diks');
+    fill(root, 'phone', '12');
+    submit(root);
+    await Promise.resolve();
+    expect(q(root, '.ltb-field.ltb-invalid .ltb-telwrap')).toBeTruthy();
+    expect(q(root, '.ltb-error')!.textContent).toContain('geldig telefoonnummer');
+  });
+
+  it('sends reserved keys as user data and everything else as form fields', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+    const { root } = openCallback();
+    vi.setSystemTime(1_000_000 + 5000);
+    fill(root, 'name', 'Jessica de Vries');
+    fill(root, 'company', 'Diks Process Support');
+    fill(root, 'phone', '6 12345678');
+    fill(root, 'message', 'Graag terugbellen');
+    submit(root);
+    await vi.waitFor(() => expect(q(root, '.ltb-success')).toBeTruthy());
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.formData.formName).toBe('LeadBot — Terugbelverzoek');
+    expect(body.userData).toEqual({
+      firstName: 'Jessica',
+      lastName: 'de Vries',
+      phone: '+31612345678',
+    });
+    expect(body.formData.formFields.company).toBe('Diks Process Support');
+    expect(body.formData.formFields.message).toBe('Graag terugbellen');
+    expect(window.dataLayer).toContainEqual({
+      event: 'leadtrackr_leadbot_conversion',
+      channel: 'callback',
+      user_data: { phone_number: '+31612345678', first_name: 'Jessica', last_name: 'de Vries' },
+    });
+    expect(q(root, '.ltb-success-title')!.textContent).toBe('Yes, gelukt!');
+    expect(q(root, '.ltb-success-body')!.textContent).toBe('We bellen je zo snel mogelijk terug.');
+  });
+
+  it('normalises the number against the country picked in that field', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+    const { root } = openCallback();
+    vi.setSystemTime(1_000_000 + 5000);
+    fill(root, 'name', 'Jessica');
+    fill(root, 'company', 'Diks');
+    const select = root.querySelector('[data-cc="phone"]') as HTMLSelectElement;
+    select.value = 'BE';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    fill(root, 'phone', '470 12 34 56');
+    submit(root);
+    await vi.waitFor(() => expect(q(root, '.ltb-success')).toBeTruthy());
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).userData.phone).toBe('+32470123456');
+  });
+
+  it('leaves an empty optional field out of the payload', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+    const { root } = openCallback();
+    vi.setSystemTime(1_000_000 + 5000);
+    fill(root, 'name', 'Jessica');
+    fill(root, 'company', 'Diks');
+    fill(root, 'phone', '612345678');
+    submit(root);
+    await vi.waitFor(() => expect(q(root, '.ltb-success')).toBeTruthy());
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).formData.formFields).not.toHaveProperty('message');
+  });
+});

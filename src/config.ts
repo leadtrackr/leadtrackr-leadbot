@@ -1,4 +1,5 @@
 import { regionFromLocale } from './countries';
+import { normalizeForms, type FormDef, type UserFormDef } from './forms';
 import { detectLanguage, PERSONAL_TEXTS, TEXTS, type Language, type LeadBotTexts } from './i18n';
 import type { ChannelId } from './types';
 
@@ -45,6 +46,8 @@ export interface LeadBotConfig {
   // klanten met een expliciete vrijstelling — niet in de README zetten.
   subscriptionCheck: boolean;
   channels: ChannelId[];
+  /** Formulierkanalen op id. `contact_form` bestaat altijd. */
+  forms: Record<string, FormDef>;
   position: 'right' | 'left';
   offset: { bottom: number; side: number };
   teaser: boolean;
@@ -59,6 +62,15 @@ export interface LeadBotConfig {
   texts: LeadBotTexts;
   endpoint: string;
 }
+
+/**
+ * Wat de site zelf mag meegeven op `window.ltLeadBotConfig`. Losser dan de
+ * opgeloste config: formulieren en call tracking mogen hier onvolledig zijn.
+ */
+export type UserConfig = Omit<Partial<LeadBotConfig>, 'forms' | 'callTracking'> & {
+  forms?: Record<string, UserFormDef>;
+  callTracking?: boolean | { prefix?: string; swapGroup?: number };
+};
 
 export const DEFAULT_ENDPOINT = 'https://app.leadtrackr.io/api/leads/createLead';
 
@@ -78,25 +90,32 @@ const DEFAULT_THEME: LeadBotTheme = {
   radius: 16,
 };
 
-export function resolveConfig(projectId: string, user: Partial<LeadBotConfig> | undefined): LeadBotConfig {
+export function resolveConfig(projectId: string, user: UserConfig | undefined): LeadBotConfig {
   const u = user || {};
   const language = detectLanguage(u.language || document.documentElement.lang);
   // With an agent on top, the copy speaks as "I"; without one, as "we".
   const personal = u.agentName ? PERSONAL_TEXTS[language] : {};
   const texts: LeadBotTexts = { ...TEXTS[language], ...personal, ...(u.texts || {}) };
   if (u.responseTimeText) texts.responseTime = u.responseTimeText;
-  const ctInput = u.callTracking as unknown as boolean | { prefix?: string; swapGroup?: number } | undefined;
+  const ctInput = u.callTracking;
   const callTracking: false | { prefix: string; swapGroup: number } = ctInput
     ? {
         prefix: (typeof ctInput === 'object' && ctInput.prefix) || 'yeswetrack_',
         swapGroup: (typeof ctInput === 'object' && ctInput.swapGroup) || 0,
       }
     : false;
+  const formNames = {
+    contact_form: 'LeadBot — Contact form',
+    whatsapp: 'LeadBot — WhatsApp',
+    whatsapp_interceptor: 'LeadBot — WhatsApp Interceptor',
+    ...(u.formNames || {}),
+  };
+  const forms = normalizeForms(u.forms, texts, formNames.contact_form);
   const requested: ChannelId[] = u.channels && u.channels.length ? u.channels : ['contact_form', 'phone', 'whatsapp'];
   const channels = requested.filter((c) => {
     if (c === 'phone') return Boolean(u.phone) || Boolean(callTracking);
     if (c === 'whatsapp') return Boolean(u.whatsapp);
-    return c === 'contact_form';
+    return Boolean(forms[c]);
   });
   return {
     projectId,
@@ -112,6 +131,7 @@ export function resolveConfig(projectId: string, user: Partial<LeadBotConfig> | 
     whatsappPhoneQuestion: u.whatsappPhoneQuestion !== false,
     subscriptionCheck: u.subscriptionCheck !== false,
     channels,
+    forms,
     position: u.position === 'left' ? 'left' : 'right',
     offset: { bottom: u.offset?.bottom ?? 20, side: u.offset?.side ?? 20 },
     teaser: u.teaser !== false,
@@ -122,12 +142,7 @@ export function resolveConfig(projectId: string, user: Partial<LeadBotConfig> | 
     responseTimeText: u.responseTimeText || null,
     callTracking,
     theme: { ...DEFAULT_THEME, ...(u.theme || {}) },
-    formNames: {
-      contact_form: 'LeadBot — Contact form',
-      whatsapp: 'LeadBot — WhatsApp',
-      whatsapp_interceptor: 'LeadBot — WhatsApp Interceptor',
-      ...(u.formNames || {}),
-    },
+    formNames,
     texts,
     endpoint: u.endpoint || DEFAULT_ENDPOINT,
   };

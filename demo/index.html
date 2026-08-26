@@ -57,9 +57,31 @@
     agentPhoto: '/demo/avatar.png',
     phone: '+31 20 123 4567',
     whatsapp: '+31612345678',
+    // Demo van de configureerbare formulieren: een terugbelverzoek naast het
+    // ingebouwde contactformulier.
+    channels: ['callback', 'contact_form', 'phone', 'whatsapp'],
+    forms: {
+      callback: {
+        title: 'Bel mij terug',
+        sub: 'We bellen je zo snel mogelijk terug',
+        icon: 'phone',
+        formName: 'LeadBot — Terugbelverzoek',
+        submit: 'Versturen',
+        successTitle: 'Yes, gelukt!',
+        successBody: 'We bellen je zo snel mogelijk terug.',
+        fields: [
+          { key: 'name', required: true },
+          { key: 'company', label: 'Bedrijfsnaam', required: true },
+          { key: 'phone', required: true },
+          { key: 'message', placeholder: 'Waar gaat je vraag over?' }
+        ]
+      }
+    },
     // Demo: interceptor standaard aan (productie-default is uit).
     whatsappInterceptor: params.get('interceptor') !== '0',
     launcher: params.get('launcher') !== '0',
+    // Promotie in de voettekst uit met ?branding=0.
+    branding: params.get('branding') !== '0',
     // Zonder ?projectId= gaan leads naar de lokale mock; mét projectId naar
     // het echte LeadTrackr-endpoint (default in de LeadBot zelf).
     endpoint: projectId ? null : '/mock-lead'

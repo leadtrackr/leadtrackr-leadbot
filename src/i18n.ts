@@ -30,10 +30,13 @@ export interface LeadBotTexts {
   nameLabel: string;
   namePlaceholder: string;
   emailLabel: string;
+  phoneLabel: string;
+  phonePlaceholder: string;
   emailPlaceholder: string;
   messageLabel: string;
   messagePlaceholder: string;
   submit: string;
+  optional: string;
   successTitle: string;
   successBody: string;
   waSuccessTitle: string;
@@ -92,9 +95,12 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     namePlaceholder: 'Your name',
     emailLabel: 'Email address',
     emailPlaceholder: 'name@company.com',
+    phoneLabel: 'Phone number',
+    phonePlaceholder: '6 12345678',
     messageLabel: 'Message',
     messagePlaceholder: 'How can we help?',
     submit: 'Send message',
+    optional: '(optional)',
     successTitle: 'Message sent!',
     successBody: 'We will get back to you as soon as possible.',
     waSuccessTitle: 'WhatsApp opened',
@@ -130,9 +136,12 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     namePlaceholder: 'Je naam',
     emailLabel: 'E-mailadres',
     emailPlaceholder: 'naam@bedrijf.nl',
+    phoneLabel: 'Telefoonnummer',
+    phonePlaceholder: '6 12345678',
     messageLabel: 'Bericht',
     messagePlaceholder: 'Waar kunnen we je mee helpen?',
     submit: 'Verstuur bericht',
+    optional: '(optioneel)',
     successTitle: 'Bericht verzonden!',
     successBody: 'We nemen zo snel mogelijk contact met je op.',
     waSuccessTitle: 'WhatsApp geopend',

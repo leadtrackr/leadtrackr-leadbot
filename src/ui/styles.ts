@@ -112,6 +112,11 @@ input, textarea, select { font: inherit; color: var(--tx); }
 .ltb-input:focus, .ltb-textarea:focus { border-color: var(--p); box-shadow: 0 0 0 3px rgba(var(--p-rgb), .15); }
 .ltb-field.ltb-invalid .ltb-input, .ltb-field.ltb-invalid .ltb-textarea { border-color: var(--err); background: #FFF7F7; box-shadow: 0 0 0 3px rgba(255,106,106,.12); }
 .ltb-optional { font-weight: 400; color: var(--mut); }
+.ltb-checks-label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 8px; color: var(--ht); }
+.ltb-checks { display: flex; flex-direction: column; gap: 9px; }
+.ltb-check { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.4; cursor: pointer; }
+.ltb-check input { width: 17px; height: 17px; margin: 1px 0 0; flex-shrink: 0; accent-color: var(--p); cursor: pointer; }
+.ltb-field.ltb-invalid .ltb-checks { border-left: 2px solid var(--err); padding-left: 10px; }
 .ltb-telwrap { display: flex; align-items: center; height: 46px; border: 1.5px solid var(--bd); border-radius: 8px; background: #fff; transition: border-color .2s ease-out, box-shadow .2s ease-out; }
 .ltb-telwrap:focus-within { border-color: var(--p); box-shadow: 0 0 0 3px rgba(var(--p-rgb), .15); }
 .ltb-cc { position: relative; display: flex; align-items: center; gap: 5px; height: 100%; padding: 0 10px 0 13px; font-weight: 600; font-size: 15px; flex-shrink: 0; color: var(--tx); border-radius: 6px 0 0 6px; cursor: pointer; transition: background .2s ease-out; }

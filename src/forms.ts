@@ -7,8 +7,34 @@ import type { LeadBotTexts } from './i18n';
  * terugbelverzoek naast een e-mailaanvraag.
  */
 
-export type FieldType = 'text' | 'email' | 'tel' | 'textarea' | 'number' | 'date';
-const FIELD_TYPES: FieldType[] = ['text', 'email', 'tel', 'textarea', 'number', 'date'];
+export type FieldType = 'text' | 'email' | 'tel' | 'textarea' | 'number' | 'date' | 'checkbox';
+const FIELD_TYPES: FieldType[] = ['text', 'email', 'tel', 'textarea', 'number', 'date', 'checkbox'];
+
+/**
+ * Een keuze bewaart een stabiele `value` naast een `label` dat vertaald mag
+ * worden. Zou een taallaag de hele optie vervangen, dan sloeg een Duitse lead
+ * een andere waarde op dan een Nederlandse voor dezelfde keuze, en dan is er
+ * niet meer overheen te rapporteren.
+ */
+export interface FormOption {
+  value: string;
+  label: string;
+}
+
+export type UserFormOption = string | { value: string; label?: string };
+
+function normalizeOptions(list: UserFormOption[] | undefined): FormOption[] | undefined {
+  if (!list || !list.length) return undefined;
+  const out: FormOption[] = [];
+  for (const o of list) {
+    if (typeof o === 'string') {
+      if (o) out.push({ value: o, label: o });
+      continue;
+    }
+    if (o && o.value) out.push({ value: o.value, label: o.label || o.value });
+  }
+  return out.length ? out : undefined;
+}
 
 export type FormIcon = 'chat' | 'phone' | 'mail' | 'whatsapp';
 const FORM_ICONS: FormIcon[] = ['chat', 'phone', 'mail', 'whatsapp'];
@@ -34,6 +60,8 @@ export interface FormField {
   /** Alleen op `number`: onder- en bovengrens van de toegestane waarde. */
   min?: number;
   max?: number;
+  /** Alleen op `checkbox`: zonder opties is het één vinkje. */
+  options?: FormOption[];
 }
 
 export interface FormDef {
@@ -60,6 +88,7 @@ export interface UserFormField {
   placeholder?: string;
   min?: number;
   max?: number;
+  options?: UserFormOption[];
 }
 
 export type UserFormDef = Partial<Omit<FormDef, 'id' | 'fields'>> & { fields?: UserFormField[] };
@@ -86,6 +115,7 @@ function normalizeField(u: UserFormField, t: LeadBotTexts): FormField | null {
   // Grenzen slaan alleen ergens op bij een getal; op een tekstveld zouden ze
   // stil niets doen, en dan is weglaten eerlijker dan bewaren.
   const bounded = type === 'number';
+  const options = type === 'checkbox' ? normalizeOptions(u.options) : undefined;
   return {
     key,
     label: u.label || base.label,
@@ -94,6 +124,7 @@ function normalizeField(u: UserFormField, t: LeadBotTexts): FormField | null {
     placeholder: u.placeholder !== undefined ? u.placeholder : base.placeholder,
     ...(bounded && typeof u.min === 'number' ? { min: u.min } : {}),
     ...(bounded && typeof u.max === 'number' ? { max: u.max } : {}),
+    ...(options ? { options } : {}),
   };
 }
 

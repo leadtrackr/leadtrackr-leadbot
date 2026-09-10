@@ -698,3 +698,111 @@ describe('veldtypes number en date', () => {
     expect(root.textContent).not.toContain('geldig getal');
   });
 });
+
+describe('veldtype checkbox', () => {
+  beforeEach(() => {
+    document.getElementById('lt-leadbot-host')?.remove();
+    vi.useFakeTimers();
+    vi.setSystemTime(1_000_000);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  function groupForm(required = false) {
+    const { root } = freshMount({
+      channels: ['offerte'],
+      forms: {
+        offerte: {
+          title: 'Offerte',
+          fields: [
+            {
+              key: 'opties', label: 'Optioneel', type: 'checkbox', required,
+              options: [
+                { value: 'boodschap', label: 'Met persoonlijke boodschap' },
+                { value: 'multi-adres', label: 'Verzending naar meerdere adressen' },
+              ],
+            },
+          ],
+        },
+      },
+    });
+    click(root, 'open');
+    click(root, 'channel-offerte');
+    return root;
+  }
+
+  const submitForm = (root: ShadowRoot) =>
+    (q(root, 'form') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }));
+
+  it('renders one tick box per option, labelled as a group', () => {
+    const root = groupForm();
+    const boxes = root.querySelectorAll('input[type="checkbox"][name="opties"]');
+    expect(boxes).toHaveLength(2);
+    expect(q(root, '.ltb-checks')!.getAttribute('role')).toBe('group');
+    expect(root.textContent).toContain('Met persoonlijke boodschap');
+  });
+
+  it('sends the values of the ticked options, joined, not the labels', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+    const root = groupForm();
+    vi.setSystemTime(1_000_000 + 5000);
+    const boxes = root.querySelectorAll<HTMLInputElement>('input[type="checkbox"][name="opties"]');
+    boxes[0].checked = true;
+    boxes[1].checked = true;
+    submitForm(root);
+    await vi.waitFor(() => expect(q(root, '.ltb-success')).toBeTruthy());
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.formData.formFields.opties).toBe('boodschap, multi-adres');
+  });
+
+  it('leaves an untouched optional group out of the payload entirely', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+    const root = groupForm();
+    vi.setSystemTime(1_000_000 + 5000);
+    submitForm(root);
+    await vi.waitFor(() => expect(q(root, '.ltb-success')).toBeTruthy());
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect('opties' in body.formData.formFields).toBe(false);
+  });
+
+  it('treats a required group with nothing ticked as empty', () => {
+    const root = groupForm(true);
+    submitForm(root);
+    expect(root.textContent).toContain('Dit veld is verplicht');
+  });
+
+  it('keeps the ticked options when another field fails validation', () => {
+    const { root } = freshMount({
+      channels: ['offerte'],
+      forms: {
+        offerte: {
+          title: 'Offerte',
+          fields: [
+            { key: 'name', required: true },
+            {
+              key: 'opties', label: 'Optioneel', type: 'checkbox',
+              options: [
+                { value: 'boodschap', label: 'Met persoonlijke boodschap' },
+                { value: 'multi-adres', label: 'Verzending naar meerdere adressen' },
+              ],
+            },
+          ],
+        },
+      },
+    });
+    click(root, 'open');
+    click(root, 'channel-offerte');
+    const boxes = root.querySelectorAll<HTMLInputElement>('input[type="checkbox"][name="opties"]');
+    boxes[1].checked = true;
+    submitForm(root);  // naam is leeg, dus dit faalt en het formulier hertekent
+    expect(root.textContent).toContain('Dit veld is verplicht');
+    const after = root.querySelectorAll<HTMLInputElement>('input[type="checkbox"][name="opties"]');
+    expect(after[1].checked).toBe(true);
+    expect(after[0].checked).toBe(false);
+  });
+});

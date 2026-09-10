@@ -108,3 +108,47 @@ describe('applyLanguageOverlay', () => {
     expect(base.forms!.offerte.fields![1].label).toBe('Aantal producten');
   });
 });
+
+describe('taallaag en keuze-opties', () => {
+  it('translates option labels without moving the stored value', () => {
+    const cfg: UserConfig = {
+      forms: {
+        offerte: {
+          fields: [
+            {
+              key: 'opties', type: 'checkbox',
+              options: [
+                { value: 'boodschap', label: 'Met persoonlijke boodschap' },
+                { value: 'multi-adres', label: 'Verzending naar meerdere adressen' },
+              ],
+            },
+          ],
+        },
+      },
+      byLanguage: {
+        de: {
+          forms: {
+            offerte: {
+              fields: [{ key: 'opties', options: [{ value: 'boodschap', label: 'Mit persönlicher Botschaft' }] }],
+            },
+          },
+        },
+      },
+    };
+    const options = applyLanguageOverlay(cfg, 'de')!.forms!.offerte.fields![0].options!;
+    expect(options).toEqual([
+      { value: 'boodschap', label: 'Mit persönlicher Botschaft' },
+      { value: 'multi-adres', label: 'Verzending naar meerdere adressen' },
+    ]);
+  });
+
+  it('leaves a field without options alone', () => {
+    const cfg: UserConfig = {
+      forms: { f: { fields: [{ key: 'naam', label: 'Naam' }] } },
+      byLanguage: { de: { forms: { f: { fields: [{ key: 'naam', label: 'Name' }] } } } },
+    };
+    const field = applyLanguageOverlay(cfg, 'de')!.forms!.f.fields![0];
+    expect(field.label).toBe('Name');
+    expect('options' in field).toBe(false);
+  });
+});

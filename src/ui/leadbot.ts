@@ -104,6 +104,19 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
 
   function readFormInputs(): void {
     for (const f of form.def.fields) {
+      // Een keuzegroep is meer dan één input; de aangevinkte values samen
+      // vormen de waarde. Niets aangevinkt geeft een lege string, en die valt
+      // verderop vanzelf in de verplicht-controle.
+      if (f.type === 'checkbox') {
+        const boxes = Array.from(
+          container.querySelectorAll<HTMLInputElement>(`input[type="checkbox"][name="${f.key}"]`),
+        );
+        form.values[f.key] = boxes
+          .filter((b) => b.checked)
+          .map((b) => b.value)
+          .join(', ');
+        continue;
+      }
       const el = container.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[name="${f.key}"]`);
       if (el) form.values[f.key] = el.value.trim();
     }

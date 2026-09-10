@@ -1,5 +1,5 @@
 import type { UserConfig } from './config';
-import type { UserFormDef, UserFormField } from './forms';
+import type { UserFormDef, UserFormField, UserFormOption } from './forms';
 import type { Language } from './i18n';
 
 /**
@@ -13,6 +13,31 @@ import type { Language } from './i18n';
 // Deze sleutels bevatten losse teksten of losse waarden; daar wil je per taal
 // alleen de regels overschrijven die je vertaalt, niet het hele blok.
 const MERGED_KEYS = ['texts', 'formNames', 'theme', 'offset'];
+
+/**
+ * Opties volgen dezelfde regel als velden: de basis bepaalt welke er zijn en in
+ * welke volgorde, de taallaag levert alleen het vertaalde label. De `value`
+ * blijft daardoor in elke taal gelijk, dus leads zijn over talen heen te
+ * vergelijken.
+ */
+function mergeOptions(
+  base: UserFormOption[] | undefined,
+  overlay: UserFormOption[] | undefined,
+): UserFormOption[] | undefined {
+  if (!overlay) return base;
+  if (!base) return overlay;
+  const valueOf = (o: UserFormOption): string => (typeof o === 'string' ? o : o.value);
+  const byValue = new Map(overlay.map((o) => [valueOf(o), o]));
+  const merged = base.map((o) => {
+    const value = valueOf(o);
+    const translated = byValue.get(value);
+    byValue.delete(value);
+    if (!translated) return o;
+    const label = typeof translated === 'string' ? translated : translated.label;
+    return { value, label: label || value };
+  });
+  return [...merged, ...overlay.filter((o) => byValue.has(valueOf(o)))];
+}
 
 /**
  * Velden volgen de basis: die bepaalt welke velden er zijn, in welke volgorde
@@ -30,7 +55,9 @@ function mergeFields(
   const merged = base.map((f) => {
     const translated = byKey.get(f.key);
     byKey.delete(f.key);
-    return translated ? { ...f, ...translated } : f;
+    if (!translated) return f;
+    const options = mergeOptions(f.options, translated.options);
+    return { ...f, ...translated, ...(options ? { options } : {}) };
   });
   return [...merged, ...overlay.filter((f) => byKey.has(f.key))];
 }

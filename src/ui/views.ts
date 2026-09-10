@@ -143,7 +143,27 @@ function countryChip(key: string, country: Country, countries: Country[], label:
     </span>`;
 }
 
+// Een keuzegroep bewaart zijn waarde als de aangevinkte values, gescheiden door
+// ", " — hetzelfde formaat dat naar LeadTrackr gaat, zodat er nergens een
+// tweede representatie ontstaat.
+function checkboxControl(f: FormField, s: FormState): string {
+  const chosen = (s.values[f.key] || '').split(', ').filter(Boolean);
+  const options = f.options || [{ value: 'true', label: f.label }];
+  const boxes = options
+    .map((o, i) => {
+      const id = `ltb-f-${f.key}-${i}`;
+      const checked = chosen.indexOf(o.value) !== -1 ? ' checked' : '';
+      return `<label class="ltb-check" for="${id}">
+      <input type="checkbox" id="${id}" name="${esc(f.key)}" value="${esc(o.value)}"${checked}>
+      <span>${esc(o.label)}</span>
+    </label>`;
+    })
+    .join('');
+  return `<div class="ltb-checks" role="group" aria-label="${esc(f.label)}">${boxes}</div>`;
+}
+
 function formControl(f: FormField, s: FormState, cfg: LeadBotConfig, countries: Country[]): string {
+  if (f.type === 'checkbox') return checkboxControl(f, s);
   const id = 'ltb-f-' + f.key;
   const name = esc(f.key);
   const value = esc(s.values[f.key] || '');
@@ -170,15 +190,20 @@ export function formView(cfg: LeadBotConfig, s: FormState, countries: Country[])
   const t = cfg.texts;
   const def = s.def;
   const fields = def.fields
-    .map((f) =>
-      field(
-        'ltb-f-' + f.key,
-        f.label,
-        f.required ? '' : t.optional,
-        formControl(f, s, cfg, countries),
-        s.errors[f.key],
-      ),
-    )
+    .map((f) => {
+      const control = formControl(f, s, cfg, countries);
+      const error = s.errors[f.key];
+      // Een keuzegroep heeft geen enkel invoerveld om een <label for> aan te
+      // hangen; die krijgt een kop en een role="group" in plaats daarvan.
+      if (f.type === 'checkbox' && f.options) {
+        return `<div class="ltb-field${error ? ' ltb-invalid' : ''}">
+    <p class="ltb-checks-label">${esc(f.label)}${f.required ? '' : ` <span class="ltb-optional">${esc(t.optional)}</span>`}</p>
+    ${control}
+    ${error ? `<p class="ltb-error" role="alert">${icons.errorInfo(13)} ${esc(error)}</p>` : ''}
+  </div>`;
+      }
+      return field('ltb-f-' + f.key, f.label, f.required ? '' : t.optional, control, error);
+    })
     .join('');
   return `
   <div class="ltb-handle"><span></span></div>

@@ -108,3 +108,42 @@ describe('veldtypes number en date', () => {
     expect(f[0].min).toBeUndefined();
   });
 });
+
+describe('veldtype checkbox', () => {
+  it('normalizes options, accepting a bare string as value and label', () => {
+    const [field] = forms({
+      offerte: {
+        fields: [
+          {
+            key: 'opties', label: 'Optioneel', type: 'checkbox',
+            options: [{ value: 'boodschap', label: 'Met persoonlijke boodschap' }, 'multi-adres'],
+          },
+        ],
+      },
+    }).offerte.fields;
+    expect(field.type).toBe('checkbox');
+    expect(field.options).toEqual([
+      { value: 'boodschap', label: 'Met persoonlijke boodschap' },
+      { value: 'multi-adres', label: 'multi-adres' },
+    ]);
+  });
+
+  it('keeps a checkbox without options as a single tick box', () => {
+    const [field] = forms({
+      f: { fields: [{ key: 'nieuwsbrief', label: 'Houd mij op de hoogte', type: 'checkbox' }] },
+    }).f.fields;
+    expect(field.type).toBe('checkbox');
+    expect(field.options).toBeUndefined();
+  });
+
+  it('drops options without a value and ignores them on other types', () => {
+    const [group] = forms({
+      f: { fields: [{ key: 'x', type: 'checkbox', options: ['', { value: '' }, 'ok'] as never }] },
+    }).f.fields;
+    expect(group.options).toEqual([{ value: 'ok', label: 'ok' }]);
+    const [text] = forms({
+      f: { fields: [{ key: 'y', type: 'text', options: ['a'] as never }] },
+    }).f.fields;
+    expect(text.options).toBeUndefined();
+  });
+});

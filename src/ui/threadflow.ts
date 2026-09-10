@@ -19,19 +19,33 @@ export function channelChip(cfg: LeadBotConfig, id: string): ThreadChip | null {
   return faq ? { id, label: faq.title } : null;
 }
 
+/** De kanalen als keuzechips, in de volgorde van `channels`. */
+export function menuChips(cfg: LeadBotConfig): ThreadChip[] {
+  return cfg.channels
+    .map((id) => channelChip(cfg, id))
+    .filter((c): c is ThreadChip => c !== null)
+    // WhatsApp is het kanaal met de hoogste doorstroom en staat daarom uitgelicht.
+    .map((c) => (c.id === 'whatsapp' ? { ...c, style: 'featured' as const } : c));
+}
+
 /** Het hoofdmenu als gesprek: een begroeting met een chip per kanaal. */
 export function menuThread(cfg: LeadBotConfig): ThreadState {
   return {
     channel: null,
     messages: [{ from: 'bot', text: cfg.greeting }],
-    chips: cfg.channels
-      .map((id) => channelChip(cfg, id))
-      .filter((c): c is ThreadChip => c !== null)
-      // WhatsApp is het kanaal met de hoogste doorstroom en staat daarom uitgelicht.
-      .map((c) => (c.id === 'whatsapp' ? { ...c, style: 'featured' as const } : c)),
+    chips: menuChips(cfg),
     typing: false,
     entered: false,
   };
+}
+
+/**
+ * Terug naar het menu binnen een lopend gesprek. De berichten blijven staan —
+ * een gesprek is een verslag, en dat opnieuw beginnen zou de bezoeker zijn
+ * eigen vragen en antwoorden afnemen.
+ */
+export function backToMenu(cfg: LeadBotConfig, state: ThreadState): ThreadState {
+  return { ...state, channel: null, chips: menuChips(cfg), typing: false, entered: false };
 }
 
 export function openFaq(cfg: LeadBotConfig, def: FaqDef): ThreadState {

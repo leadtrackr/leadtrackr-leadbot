@@ -35,6 +35,9 @@ export interface LeadBotConfig {
   whatsapp: string | null;
   // false verbergt de LeadBot-launcher volledig (bijv. voor interceptor-only).
   launcher: boolean;
+  // true opent de launcher direct een gesprek: de kanalen worden chips in de
+  // thread in plaats van knoppen in een lijst.
+  conversational: boolean;
   // Ongedocumenteerd: false verbergt de "Better leads start with LeadTrackr.io"-footer.
   branding: boolean;
   // true onderschept kliks op bestaande wa.me-/WhatsApp-links op de pagina en
@@ -152,6 +155,7 @@ export function resolveConfig(projectId: string, user: UserConfig | undefined): 
     phone: u.phone || null,
     whatsapp: u.whatsapp || null,
     launcher: u.launcher !== false,
+    conversational: u.conversational === true,
     branding: u.branding !== false,
     whatsappInterceptor: u.whatsappInterceptor === true,
     whatsappPhoneQuestion: u.whatsappPhoneQuestion !== false,

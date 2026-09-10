@@ -12,7 +12,7 @@ import type { FormDef } from '../forms';
 import type { FormState, WaState } from './views';
 import { autoGrowMessage, formView, launcherView, panelView, successView, whatsappView } from './views';
 import { threadView, type ThreadState } from './thread';
-import { answerQuestion, openFaq } from './threadflow';
+import { answerQuestion, backToMenu, menuThread, openFaq } from './threadflow';
 
 type View = 'closed' | 'panel' | 'form' | 'whatsapp' | 'success' | 'thread';
 
@@ -105,7 +105,19 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
   }
 
   function open(): void {
-    view = 'panel';
+    // In gespreksmodus is de thread de ingang; `returnTo` wijst daarom naar de
+    // thread, zodat 'terug' uit een formulier in het gesprek uitkomt en er
+    // bovenin geen terugknop naar een lijst staat die niet bestaat.
+    view = cfg.conversational ? 'thread' : 'panel';
+    returnTo = view;
+    if (cfg.conversational) {
+      thread = menuThread(cfg);
+      openedAt = Date.now();
+      pushOpen();
+      render();
+      thread = { ...thread, entered: true };
+      return;
+    }
     openedAt = Date.now();
     pushOpen();
     render();
@@ -424,11 +436,13 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
         if (action.slice(0, 5) !== 'chip-') break;
         const chip = action.slice(5);
         if (chip === 'restart') {
-          // Terug naar waar het gesprek begon: het menu in gespreksmodus, de
-          // vragenlijst als de thread een FAQ is.
+          // Terug naar waar het gesprek begon. In gespreksmodus is dat het
+          // menu; in lijstmodus bestaat dat menu niet in de thread, dus daar
+          // is het de vragenlijst van de FAQ zelf.
           const faq = thread.channel ? cfg.faqs[thread.channel] : null;
-          if (faq) withTyping(() => openFaq(cfg, faq));
-          else if (returnTo === 'panel') {
+          if (cfg.conversational) withTyping(() => backToMenu(cfg, thread));
+          else if (faq) withTyping(() => openFaq(cfg, faq));
+          else {
             view = 'panel';
             render();
           }

@@ -966,3 +966,96 @@ describe('faqs-kanaal in het gesprek', () => {
     expect(q(root, '.ltb-thread')).toBeNull();
   });
 });
+
+describe('gespreksmodus', () => {
+  beforeEach(() => {
+    document.getElementById('lt-leadbot-host')?.remove();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function conversation(extra: Record<string, unknown> = {}) {
+    const { root } = freshMount({
+      conversational: true,
+      greeting: 'Waar kan ik je mee helpen?',
+      channels: ['whatsapp', 'contact_form', 'winkels'],
+      links: {
+        winkels: {
+          title: 'Winkels',
+          message: '**Onze winkels**\n\nKom gerust langs.',
+          button: { label: 'Zoek een winkel', url: '/winkels' },
+        },
+      },
+      ...extra,
+    });
+    click(root, 'open');
+    return root;
+  }
+
+  it('opens straight into a conversation instead of a channel list', () => {
+    const root = conversation();
+    expect(q(root, '.ltb-thread')).toBeTruthy();
+    expect(q(root, '.ltb-channels')).toBeNull();
+    expect(root.textContent).toContain('Waar kan ik je mee helpen?');
+  });
+
+  it('turns every channel into a chip, WhatsApp featured', () => {
+    const root = conversation();
+    expect(q(root, '[data-action="chip-whatsapp"]')).toBeTruthy();
+    expect(q(root, '[data-action="chip-contact_form"]')).toBeTruthy();
+    expect(q(root, '[data-action="chip-winkels"]')).toBeTruthy();
+    expect(q(root, '[data-action="chip-whatsapp"]')!.className).toContain('ltb-opt--featured');
+  });
+
+  it('has no back button at the root of the conversation', () => {
+    expect(q(conversation(), '[data-action="back"]')).toBeNull();
+  });
+
+  it('shows a link channel as a message with a button instead of navigating', () => {
+    const root = conversation();
+    click(root, 'chip-winkels');
+    vi.advanceTimersByTime(700);
+    expect(root.innerHTML).toContain('<strong>Onze winkels</strong>');
+    const card = q(root, '.ltb-cardbtn') as HTMLAnchorElement;
+    expect(card.getAttribute('href')).toBe('/winkels');
+    const dl = window.dataLayer || [];
+    expect(dl[dl.length - 1]).toEqual({ event: 'leadtrackr_leadbot_channel_click', channel: 'winkels' });
+  });
+
+  it('opens a form from a chip and returns into the same conversation', () => {
+    const root = conversation();
+    click(root, 'chip-winkels');
+    vi.advanceTimersByTime(700);
+    click(root, 'chip-restart');
+    vi.advanceTimersByTime(700);
+    click(root, 'chip-contact_form');
+    expect(q(root, 'form')).toBeTruthy();
+    click(root, 'back');
+    expect(q(root, '.ltb-thread')).toBeTruthy();
+    expect(q(root, '.ltb-channels')).toBeNull();
+    // het gesprek staat er nog zoals het was
+    expect(root.innerHTML).toContain('<strong>Onze winkels</strong>');
+  });
+
+  it('returns to the menu on the quiet closing chip, keeping the conversation', () => {
+    const root = conversation();
+    click(root, 'chip-winkels');
+    vi.advanceTimersByTime(700);
+    click(root, 'chip-restart');
+    vi.advanceTimersByTime(700);
+    expect(q(root, '[data-action="chip-winkels"]')).toBeTruthy();
+    expect(q(root, '[data-action="chip-contact_form"]')).toBeTruthy();
+    // het gesprek wordt niet gewist, alleen aangevuld
+    expect(root.innerHTML).toContain('<strong>Onze winkels</strong>');
+  });
+
+  it('keeps the channel list when conversational is off', () => {
+    const { root } = freshMount({ channels: ['whatsapp', 'contact_form'] });
+    click(root, 'open');
+    expect(q(root, '.ltb-channels')).toBeTruthy();
+    expect(q(root, '.ltb-thread')).toBeNull();
+  });
+});

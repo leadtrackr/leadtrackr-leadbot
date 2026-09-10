@@ -136,15 +136,19 @@ export function resolveConfig(projectId: string, user: UserConfig | undefined): 
   const links = normalizeLinks(u.links);
   const faqs = normalizeFaqs(u.faqs, u.greeting || texts.greeting);
   const requested: ChannelId[] = u.channels && u.channels.length ? u.channels : ['contact_form', 'phone', 'whatsapp'];
-  const channels = requested.filter((c) => {
+  // Bestaat dit kanaal? Een nummer voor bellen of WhatsApp, of een definitie
+  // in een van de kanaalmaps.
+  const exists = (c: string): boolean => {
     if (c === 'phone') return Boolean(u.phone) || Boolean(callTracking);
     if (c === 'whatsapp') return Boolean(u.whatsapp);
     return Boolean(forms[c]) || Boolean(links[c]) || Boolean(faqs[c]);
-  });
-  // Doorlopen kunnen alleen naar kanalen die er ook echt zijn; een verwijzing
-  // naar een kanaal zonder nummer of definitie zou een dode chip opleveren.
+  };
+  const channels = requested.filter(exists);
+  // Een doorloop hoeft niet in het menu te staan — bellen is een prima vervolg
+  // op een antwoord zonder dat het een menukeuze is. Alleen kanalen die
+  // helemaal niet bestaan vallen weg, want die zouden een dode chip opleveren.
   for (const id of Object.keys(faqs)) {
-    faqs[id].followUp = faqs[id].followUp.filter((c) => channels.indexOf(c) !== -1);
+    faqs[id].followUp = faqs[id].followUp.filter(exists);
   }
   return {
     projectId,

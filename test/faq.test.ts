@@ -50,3 +50,25 @@ describe('faqs in de config', () => {
     document.documentElement.lang = 'nl';
   });
 });
+
+describe('doorloopkanalen die niet in het menu staan', () => {
+  it('keeps a follow-up channel that exists but is not a menu item', () => {
+    const cfg = resolveConfig('p1', {
+      phone: '+31 341 411 624',
+      whatsapp: '+31612345678',
+      // phone staat bewust niet in channels: het is geen menukeuze, wel een
+      // geldige doorloop vanuit een antwoord
+      channels: ['faq', 'whatsapp'],
+      faqs: { faq: { questions: [{ q: 'A?', a: 'B' }], followUp: ['whatsapp', 'phone'] } },
+    } as never);
+    expect(cfg.faqs.faq.followUp).toEqual(['whatsapp', 'phone']);
+  });
+
+  it('still drops a follow-up to a channel that cannot exist', () => {
+    const cfg = resolveConfig('p1', {
+      channels: ['faq'],
+      faqs: { faq: { questions: [{ q: 'A?', a: 'B' }], followUp: ['phone', 'verzonnen'] } },
+    } as never);
+    expect(cfg.faqs.faq.followUp).toEqual([]);
+  });
+});

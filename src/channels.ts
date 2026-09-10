@@ -1,10 +1,12 @@
 import type { LeadBotConfig } from './config';
+import type { FaqDef } from './faq';
 import type { FormDef } from './forms';
 import type { LinkDef } from './links';
 
 export type ResolvedChannel =
   | { kind: 'form'; def: FormDef }
   | { kind: 'link'; def: LinkDef }
+  | { kind: 'faq'; def: FaqDef }
   | { kind: 'phone' }
   | { kind: 'whatsapp' };
 
@@ -18,5 +20,6 @@ export function resolveChannel(cfg: LeadBotConfig, id: string): ResolvedChannel 
   if (id === 'whatsapp') return { kind: 'whatsapp' };
   if (cfg.forms[id]) return { kind: 'form', def: cfg.forms[id] };
   if (cfg.links[id]) return { kind: 'link', def: cfg.links[id] };
+  if (cfg.faqs[id]) return { kind: 'faq', def: cfg.faqs[id] };
   return null;
 }

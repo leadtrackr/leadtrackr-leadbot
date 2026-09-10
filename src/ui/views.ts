@@ -93,6 +93,8 @@ export function panelView(cfg: LeadBotConfig, dynamicNumber: DynamicNumber | nul
       if (link) {
         return channelButton('channel-' + c, icons[link.icon](20), link.title, link.sub, link.button.url);
       }
+      const faq = cfg.faqs[c];
+      if (faq) return channelButton('channel-' + c, icons[faq.icon](20), faq.title, faq.sub);
       return '';
     })
     .join('');

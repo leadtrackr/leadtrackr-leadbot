@@ -853,3 +853,116 @@ describe('links-kanaal in de kanalenlijst', () => {
     expect(q(root, '.ltb-channels')).toBeTruthy();
   });
 });
+
+describe('faqs-kanaal in het gesprek', () => {
+  beforeEach(() => {
+    document.getElementById('lt-leadbot-host')?.remove();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function withFaq() {
+    const { root } = freshMount({
+      channels: ['faq', 'whatsapp'],
+      faqs: {
+        faq: {
+          title: 'Veelgestelde vragen',
+          sub: 'Direct antwoord',
+          intro: 'Waar kan ik je mee helpen?',
+          questions: [
+            { q: 'Openingstijden?', a: 'Kijk op de **winkelpagina**.', button: { label: 'Winkelpagina', url: '/winkels' } },
+            { q: 'Levertijd?', a: 'Voor 23:00 besteld, morgen in huis.' },
+          ],
+          followUp: ['whatsapp'],
+        },
+      },
+    });
+    click(root, 'open');
+    return root;
+  }
+
+  it('shows the faq as a channel button and opens a thread', () => {
+    const root = withFaq();
+    expect(q(root, '[data-action="channel-faq"]')).toBeTruthy();
+    click(root, 'channel-faq');
+    expect(q(root, '.ltb-thread')).toBeTruthy();
+    expect(root.textContent).toContain('Waar kan ik je mee helpen?');
+    expect(q(root, '[data-action="chip-q0"]')).toBeTruthy();
+    expect(q(root, '[data-action="chip-q1"]')).toBeTruthy();
+  });
+
+  it('measures opening the faq as a channel click on its own id', () => {
+    const root = withFaq();
+    click(root, 'channel-faq');
+    const dl = window.dataLayer || [];
+    expect(dl[dl.length - 1]).toEqual({ event: 'leadtrackr_leadbot_channel_click', channel: 'faq' });
+  });
+
+  it('echoes the question, types, then answers it with its button', () => {
+    const root = withFaq();
+    click(root, 'channel-faq');
+    click(root, 'chip-q0');
+    expect(root.textContent).toContain('Openingstijden?');
+    expect(q(root, '.ltb-typing')).toBeTruthy();
+    vi.advanceTimersByTime(700);
+    expect(q(root, '.ltb-typing')).toBeNull();
+    expect(root.innerHTML).toContain('<strong>winkelpagina</strong>');
+    const card = q(root, '.ltb-cardbtn') as HTMLAnchorElement;
+    expect(card.getAttribute('href')).toBe('/winkels');
+  });
+
+  it('drops an answered question from the chips and offers the follow-up channel', () => {
+    const root = withFaq();
+    click(root, 'channel-faq');
+    click(root, 'chip-q0');
+    vi.advanceTimersByTime(700);
+    expect(q(root, '[data-action="chip-q0"]')).toBeNull();
+    expect(q(root, '[data-action="chip-q1"]')).toBeTruthy();
+    expect(q(root, '[data-action="chip-whatsapp"]')).toBeTruthy();
+    expect(q(root, '[data-action="chip-restart"]')).toBeTruthy();
+  });
+
+  it('routes a follow-up chip through the same path as a channel button', () => {
+    const root = withFaq();
+    click(root, 'channel-faq');
+    click(root, 'chip-q0');
+    vi.advanceTimersByTime(700);
+    window.dataLayer = [];
+    click(root, 'chip-whatsapp');
+    expect(window.dataLayer).toEqual([{ event: 'leadtrackr_leadbot_channel_click', channel: 'whatsapp' }]);
+    expect(q(root, '.ltb-wa-chat')).toBeTruthy();
+  });
+
+  it('comes back to the conversation from a follow-up channel', () => {
+    const root = withFaq();
+    click(root, 'channel-faq');
+    click(root, 'chip-q0');
+    vi.advanceTimersByTime(700);
+    click(root, 'chip-whatsapp');
+    click(root, 'back');
+    expect(q(root, '.ltb-thread')).toBeTruthy();
+    expect(root.textContent).toContain('Openingstijden?');
+  });
+
+  it('restarts the question list on the quiet closing chip', () => {
+    const root = withFaq();
+    click(root, 'channel-faq');
+    click(root, 'chip-q0');
+    vi.advanceTimersByTime(700);
+    click(root, 'chip-restart');
+    vi.advanceTimersByTime(700);
+    expect(q(root, '[data-action="chip-q0"]')).toBeTruthy();
+    expect(q(root, '[data-action="chip-q1"]')).toBeTruthy();
+  });
+
+  it('goes back to the channel list from the faq thread', () => {
+    const root = withFaq();
+    click(root, 'channel-faq');
+    click(root, 'back');
+    expect(q(root, '.ltb-channels')).toBeTruthy();
+    expect(q(root, '.ltb-thread')).toBeNull();
+  });
+});

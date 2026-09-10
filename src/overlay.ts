@@ -1,5 +1,6 @@
 import type { UserConfig } from './config';
 import type { UserFormDef, UserFormField, UserFormOption } from './forms';
+import type { UserFaqDef } from './faq';
 import type { UserLinkDef } from './links';
 import type { Language } from './i18n';
 
@@ -102,6 +103,23 @@ function mergeLinks(
   return out;
 }
 
+/**
+ * FAQ's voegen per id samen. De vragenlijst zelf gaat als geheel mee: vraag en
+ * antwoord horen bij elkaar, en per index samenvoegen zou een half vertaalde
+ * lijst opleveren zodra de volgorde in één taal afwijkt.
+ */
+function mergeFaqs(
+  base: Record<string, UserFaqDef> | undefined,
+  overlay: Record<string, UserFaqDef>,
+): Record<string, UserFaqDef> {
+  if (!base) return overlay;
+  const out: Record<string, UserFaqDef> = { ...base };
+  for (const id of Object.keys(overlay)) {
+    out[id] = base[id] ? { ...base[id], ...overlay[id] } : overlay[id];
+  }
+  return out;
+}
+
 export function applyLanguageOverlay(
   user: UserConfig | undefined,
   language: Language,
@@ -118,6 +136,8 @@ export function applyLanguageOverlay(
       out.forms = mergeForms(base.forms, value as Record<string, UserFormDef>);
     } else if (key === 'links') {
       out.links = mergeLinks(base.links, value as Record<string, UserLinkDef>);
+    } else if (key === 'faqs') {
+      out.faqs = mergeFaqs(base.faqs, value as Record<string, UserFaqDef>);
     } else if (MERGED_KEYS.indexOf(key) !== -1) {
       out[key] = { ...((base as Record<string, unknown>)[key] as object), ...(value as object) };
     } else {

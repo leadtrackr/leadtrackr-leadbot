@@ -1,5 +1,6 @@
 import { regionFromLocale } from './countries';
 import { normalizeForms, type FormDef, type UserFormDef } from './forms';
+import { normalizeFaqs, type FaqDef, type UserFaqDef } from './faq';
 import { normalizeLinks, type LinkDef, type UserLinkDef } from './links';
 import { detectLanguage, PERSONAL_TEXTS, TEXTS, type Language, type LeadBotTexts } from './i18n';
 import { applyLanguageOverlay } from './overlay';
@@ -52,6 +53,8 @@ export interface LeadBotConfig {
   forms: Record<string, FormDef>;
   /** Infokaart-kanalen op id: een bericht met een knop, zonder lead. */
   links: Record<string, LinkDef>;
+  /** Vraag-en-antwoord-kanalen op id. */
+  faqs: Record<string, FaqDef>;
   position: 'right' | 'left';
   offset: { bottom: number; side: number };
   teaser: boolean;
@@ -71,9 +74,10 @@ export interface LeadBotConfig {
  * Wat de site zelf mag meegeven op `window.ltLeadBotConfig`. Losser dan de
  * opgeloste config: formulieren en call tracking mogen hier onvolledig zijn.
  */
-export type UserConfig = Omit<Partial<LeadBotConfig>, 'forms' | 'links' | 'callTracking'> & {
+export type UserConfig = Omit<Partial<LeadBotConfig>, 'forms' | 'links' | 'faqs' | 'callTracking'> & {
   forms?: Record<string, UserFormDef>;
   links?: Record<string, UserLinkDef>;
+  faqs?: Record<string, UserFaqDef>;
   callTracking?: boolean | { prefix?: string; swapGroup?: number };
   /** Per taal een laag over de basisconfig heen; zie `applyLanguageOverlay`. */
   byLanguage?: Record<string, LanguageOverlay>;
@@ -127,12 +131,18 @@ export function resolveConfig(projectId: string, user: UserConfig | undefined): 
   };
   const forms = normalizeForms(u.forms, texts, formNames.contact_form);
   const links = normalizeLinks(u.links);
+  const faqs = normalizeFaqs(u.faqs, u.greeting || texts.greeting);
   const requested: ChannelId[] = u.channels && u.channels.length ? u.channels : ['contact_form', 'phone', 'whatsapp'];
   const channels = requested.filter((c) => {
     if (c === 'phone') return Boolean(u.phone) || Boolean(callTracking);
     if (c === 'whatsapp') return Boolean(u.whatsapp);
-    return Boolean(forms[c]) || Boolean(links[c]);
+    return Boolean(forms[c]) || Boolean(links[c]) || Boolean(faqs[c]);
   });
+  // Doorlopen kunnen alleen naar kanalen die er ook echt zijn; een verwijzing
+  // naar een kanaal zonder nummer of definitie zou een dode chip opleveren.
+  for (const id of Object.keys(faqs)) {
+    faqs[id].followUp = faqs[id].followUp.filter((c) => channels.indexOf(c) !== -1);
+  }
   return {
     projectId,
     companyName: u.companyName || '',
@@ -149,6 +159,7 @@ export function resolveConfig(projectId: string, user: UserConfig | undefined): 
     channels,
     forms,
     links,
+    faqs,
     position: u.position === 'left' ? 'left' : 'right',
     offset: { bottom: u.offset?.bottom ?? 20, side: u.offset?.side ?? 20 },
     teaser: u.teaser !== false,

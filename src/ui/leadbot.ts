@@ -11,8 +11,14 @@ import { trackVisualViewport } from './viewport';
 import type { FormDef } from '../forms';
 import type { FormState, WaState } from './views';
 import { autoGrowMessage, formView, launcherView, panelView, successView, whatsappView } from './views';
+import { threadView, type ThreadState } from './thread';
+import { answerQuestion, openFaq } from './threadflow';
 
-type View = 'closed' | 'panel' | 'form' | 'whatsapp' | 'success';
+type View = 'closed' | 'panel' | 'form' | 'whatsapp' | 'success' | 'thread';
+
+// Hoe lang de bot "typt" voordat een antwoord verschijnt. Vaste waarde: lang
+// genoeg om als antwoord te lezen, kort genoeg om niet te vertragen.
+const TYPING_MS = 620;
 
 const TEASER_KEY = 'ltb_teaser_dismissed';
 const MIN_OPEN_MS = 2000;
@@ -38,6 +44,10 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
   let view: View = 'closed';
   let success = { title: '', body: '', whatsapp: false };
   let openedAt = 0;
+  // Waar 'terug' naartoe gaat vanuit een formulier of de WhatsApp-flow.
+  let returnTo: View = 'panel';
+  let thread: ThreadState = { channel: null, messages: [], chips: [], typing: false, entered: true };
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function blankForm(def: FormDef): FormState {
     const forCountries: Record<string, Country> = {};
@@ -80,13 +90,17 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
           ? formView(cfg, form, countries)
           : view === 'whatsapp'
             ? whatsappView(cfg, wa, countries)
-            : successView(cfg, success);
+            : view === 'thread'
+              ? threadView(cfg, thread, { back: returnTo === 'panel' })
+              : successView(cfg, success);
     container.innerHTML = `<div class="ltb-root${sideClass}"><div class="ltb-overlay" data-action="close"></div><div class="ltb-panel" role="dialog" aria-modal="true"><div class="ltb-view">${inner}</div></div></div>`;
     const msg = container.querySelector<HTMLTextAreaElement>('textarea[data-wa="message"]');
     if (msg) autoGrowMessage(msg);
     // Nieuwste bubbel (bijv. de nummer-vraag) altijd in beeld
     const chat = container.querySelector<HTMLElement>('.ltb-wa-chat');
     if (chat) chat.scrollTop = chat.scrollHeight;
+    const thread$ = container.querySelector<HTMLElement>('.ltb-thread');
+    if (thread$) thread$.scrollTop = thread$.scrollHeight;
     container.querySelector<HTMLElement>('.ltb-panel .ltb-close, .ltb-panel .ltb-back')?.focus();
   }
 
@@ -135,6 +149,88 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
     form = blankForm(def);
     view = 'form';
     render();
+  }
+
+  /** Laat de bot even typen en toon daarna de volgende toestand. */
+  function withTyping(next: () => ThreadState): void {
+    thread = { ...thread, typing: true, entered: true };
+    render();
+    const show = (): void => {
+      thread = next();
+      render();
+      // Vanaf de volgende render staat alles stil; de animatie speelt één keer.
+      thread = { ...thread, entered: true };
+    };
+    if (reducedMotion) show();
+    else setTimeout(show, TYPING_MS);
+  }
+
+  /**
+   * Eén pad voor het kiezen van een kanaal, of dat nu via een knop in het
+   * paneel gebeurt of via een chip in het gesprek. Zo kan de meting niet
+   * uiteenlopen tussen de twee ingangen.
+   */
+  function selectChannel(id: string, from: 'panel' | 'thread'): void {
+    const resolved = resolveChannel(cfg, id);
+    if (!resolved) return;
+    if (resolved.kind === 'phone') {
+      pushChannelClick('phone');
+      if (from === 'panel') {
+        // De kanaalknop is zelf de tel:-link; met call tracking meet het
+        // gesprek de conversie, anders is de klik het signaal.
+        if (!cfg.callTracking) pushConversion('phone', {});
+        return;
+      }
+      const display = (cfg.callTracking ? getDynamicNumber(cfg.callTracking.prefix, cfg.callTracking.swapGroup)?.display : null) || cfg.phone || '';
+      withTyping(() => ({
+        ...thread,
+        messages: [...thread.messages, { from: 'user', text: cfg.texts.callTitle }, { from: 'bot', text: display, button: { label: display, url: 'tel:' + display.replace(/[\s-]/g, '') } }],
+        chips: [{ id: 'restart', label: cfg.texts.threadRestart, style: 'quiet' }],
+        typing: false,
+        entered: false,
+      }));
+      return;
+    }
+    if (resolved.kind === 'whatsapp') {
+      pushChannelClick('whatsapp');
+      returnTo = from === 'thread' ? 'thread' : 'panel';
+      view = 'whatsapp';
+      wa.step = 'compose';
+      wa.entered = false;
+      render();
+      return;
+    }
+    if (resolved.kind === 'link') {
+      pushChannelClick(id);
+      // In het paneel navigeert de <a> zelf; in een gesprek verschijnt de
+      // kaart als bericht met een knop eronder.
+      if (from === 'panel') return;
+      const def = resolved.def;
+      withTyping(() => ({
+        ...thread,
+        messages: [...thread.messages, { from: 'user', text: def.title }, { from: 'bot', text: def.message || def.title, button: def.button }],
+        chips: [{ id: 'restart', label: cfg.texts.threadRestart, style: 'quiet' }],
+        typing: false,
+        entered: false,
+      }));
+      return;
+    }
+    if (resolved.kind === 'faq') {
+      pushChannelClick(id);
+      const def = resolved.def;
+      returnTo = from === 'thread' ? 'thread' : 'panel';
+      if (from === 'panel') {
+        thread = openFaq(cfg, def);
+        view = 'thread';
+        render();
+        thread = { ...thread, entered: true };
+        return;
+      }
+      withTyping(() => openFaq(cfg, def));
+      return;
+    }
+    returnTo = from === 'thread' ? 'thread' : 'panel';
+    openForm(id);
   }
 
   async function submitForm(): Promise<void> {
@@ -291,24 +387,17 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
         render();
         break;
       case 'back':
-        view = 'panel';
+        view = returnTo;
         wa.error = null;
         form.errors = {};
         form.sendFailed = false;
         render();
         break;
       case 'channel-phone':
-        pushChannelClick('phone');
-        // With call tracking the real call is measured — a click-conversion
-        // would double count. Without it, the click is the conversion signal.
-        if (!cfg.callTracking) pushConversion('phone', {});
+        selectChannel('phone', 'panel');
         break; // native tel: navigation continues
       case 'channel-whatsapp':
-        pushChannelClick('whatsapp');
-        view = 'whatsapp';
-        wa.step = 'compose';
-        wa.entered = false;
-        render();
+        selectChannel('whatsapp', 'panel');
         break;
       case 'wa-send':
         readWaInputs();
@@ -327,19 +416,46 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
       case 'wa-phone-send':
         void submitWhatsApp();
         break;
-      default:
+      default: {
         if (action.slice(0, 8) === 'channel-') {
-          const id = action.slice(8);
-          const resolved = resolveChannel(cfg, id);
-          if (!resolved) break;
-          if (resolved.kind === 'link') {
-            // Een infokaart is een doorverwijzing: wel meten dat het kanaal
-            // gekozen is, geen lead en geen conversie. De <a> navigeert zelf.
-            pushChannelClick(id);
-            break;
-          }
-          openForm(id);
+          selectChannel(action.slice(8), 'panel');
+          break;
         }
+        if (action.slice(0, 5) !== 'chip-') break;
+        const chip = action.slice(5);
+        if (chip === 'restart') {
+          // Terug naar waar het gesprek begon: het menu in gespreksmodus, de
+          // vragenlijst als de thread een FAQ is.
+          const faq = thread.channel ? cfg.faqs[thread.channel] : null;
+          if (faq) withTyping(() => openFaq(cfg, faq));
+          else if (returnTo === 'panel') {
+            view = 'panel';
+            render();
+          }
+          break;
+        }
+        if (chip.slice(0, 1) === 'q' && /^q\d+$/.test(chip)) {
+          const faq = thread.channel ? cfg.faqs[thread.channel] : null;
+          if (!faq) break;
+          const index = Number(chip.slice(1));
+          const question = faq.questions[index];
+          if (!question) break;
+          // De vraag verschijnt meteen als bericht van de bezoeker; het
+          // antwoord komt na de typ-indicator.
+          thread = {
+            ...thread,
+            messages: [...thread.messages, { from: 'user', text: question.q }],
+            chips: [],
+            entered: false,
+          };
+          withTyping(() => {
+            const next = answerQuestion(cfg, faq, { ...thread, messages: thread.messages.slice(0, -1) }, index);
+            return next;
+          });
+          break;
+        }
+        selectChannel(chip, 'thread');
+      }
     }
   });
 

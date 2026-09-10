@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isValidEmail, normalizePhone } from '../src/validate';
+import { isValidEmail, isValidNumber, normalizePhone } from '../src/validate';
 
 describe('normalizePhone', () => {
   it('converts NL national formats to E.164', () => {
@@ -29,5 +29,22 @@ describe('isValidEmail', () => {
     expect(isValidEmail('jan@bedrijf')).toBe(false);
     expect(isValidEmail('jan @bedrijf.nl')).toBe(false);
     expect(isValidEmail('')).toBe(false);
+  });
+});
+
+describe('isValidNumber', () => {
+  it('accepts whole and decimal numbers, with a comma or a period', () => {
+    expect(isValidNumber('250')).toBe(true);
+    expect(isValidNumber('2.5')).toBe(true);
+    expect(isValidNumber('2,5')).toBe(true);
+    expect(isValidNumber('-3')).toBe(true);
+    expect(isValidNumber(' 12 ')).toBe(true);
+  });
+
+  it('rejects anything that is not a number', () => {
+    expect(isValidNumber('veel')).toBe(false);
+    expect(isValidNumber('')).toBe(false);
+    expect(isValidNumber('12stuks')).toBe(false);
+    expect(isValidNumber('1.2.3')).toBe(false);
   });
 });

@@ -631,3 +631,70 @@ describe('configured forms', () => {
     expect(JSON.parse(fetchMock.mock.calls[0][1].body).formData.formFields).not.toHaveProperty('message');
   });
 });
+
+describe('veldtypes number en date', () => {
+  beforeEach(() => {
+    document.getElementById('lt-leadbot-host')?.remove();
+  });
+
+  function offerteForm() {
+    const { root } = freshMount({
+      channels: ['offerte'],
+      forms: {
+        offerte: {
+          title: 'Offerte',
+          fields: [
+            { key: 'aantal', label: 'Aantal', type: 'number', min: 1, max: 5000, required: true },
+            { key: 'leverdatum', label: 'Leverdatum', type: 'date' },
+          ],
+        },
+      },
+    });
+    click(root, 'open');
+    click(root, 'channel-offerte');
+    return root;
+  }
+
+  const submit = (root: ShadowRoot) =>
+    (q(root, 'form') as HTMLFormElement).dispatchEvent(new Event('submit', { bubbles: true }));
+
+  it('renders the bounds and a numeric keyboard on a number field', () => {
+    const input = offerteForm().querySelector('[name="aantal"]') as HTMLInputElement;
+    expect(input.getAttribute('type')).toBe('number');
+    expect(input.getAttribute('min')).toBe('1');
+    expect(input.getAttribute('max')).toBe('5000');
+    expect(input.getAttribute('inputmode')).toBe('decimal');
+  });
+
+  it('renders a date field as a native date picker', () => {
+    const input = offerteForm().querySelector('[name="leverdatum"]') as HTMLInputElement;
+    expect(input.getAttribute('type')).toBe('date');
+    expect(input.getAttribute('min')).toBeNull();
+  });
+
+  it('refuses a number below the configured minimum', () => {
+    const root = offerteForm();
+    (root.querySelector('[name="aantal"]') as HTMLInputElement).value = '0';
+    submit(root);
+    expect(root.textContent).toContain('buiten het bereik');
+  });
+
+  // Een native number-input weigert tekst zelf al: `.value` blijft leeg. De
+  // bezoeker ziet daarom de verplicht-melding, niet de getalmelding. De
+  // getalcontrole in submitForm blijft als vangnet staan voor een browser die
+  // niet opschoont; die is los getest in validate.test.ts.
+  it('treats text typed into a number field as an empty field', () => {
+    const root = offerteForm();
+    (root.querySelector('[name="aantal"]') as HTMLInputElement).value = 'veel';
+    submit(root);
+    expect(root.textContent).toContain('Dit veld is verplicht');
+  });
+
+  it('accepts a number inside the bounds', () => {
+    const root = offerteForm();
+    (root.querySelector('[name="aantal"]') as HTMLInputElement).value = '250';
+    submit(root);
+    expect(root.textContent).not.toContain('buiten het bereik');
+    expect(root.textContent).not.toContain('geldig getal');
+  });
+});

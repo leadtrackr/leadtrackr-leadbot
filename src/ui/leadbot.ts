@@ -4,7 +4,7 @@ import { getCountries, type Country } from '../countries';
 import { pushChannelClick, pushConversion, pushOpen } from '../datalayer';
 import { buildLeadPayload } from '../payload';
 import { sendLead } from '../transport';
-import { isValidEmail, normalizePhone } from '../validate';
+import { isValidEmail, isValidNumber, normalizePhone } from '../validate';
 import { buildStyles } from './styles';
 import { trackVisualViewport } from './viewport';
 import type { FormDef } from '../forms';
@@ -140,6 +140,19 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
       if (f.type === 'email' && !isValidEmail(raw)) {
         form.errors[f.key] = t.errorEmail;
         continue;
+      }
+      if (f.type === 'number') {
+        // Vangnet: een native number-input schoont tekst zelf al op, dus dit
+        // slaat alleen aan bij een browser die dat niet doet.
+        if (!isValidNumber(raw)) {
+          form.errors[f.key] = t.errorNumber;
+          continue;
+        }
+        const n = Number(raw.replace(',', '.'));
+        if ((f.min !== undefined && n < f.min) || (f.max !== undefined && n > f.max)) {
+          form.errors[f.key] = t.errorRange;
+          continue;
+        }
       }
       if (f.type === 'tel') {
         const normalized = normalizePhone(raw, (form.countries[f.key] || defaultCountry).dial);

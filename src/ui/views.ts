@@ -159,7 +159,11 @@ function formControl(f: FormField, s: FormState, cfg: LeadBotConfig, countries: 
       <input class="ltb-tel" id="${id}" name="${name}" type="tel" autocomplete="tel-national" placeholder="${ph}" value="${value}">
     </div>`;
   }
-  return `<input class="ltb-input" id="${id}" name="${name}" type="${f.type}" placeholder="${ph}" value="${value}">`;
+  const bounds =
+    f.type === 'number'
+      ? `${f.min !== undefined ? ` min="${f.min}"` : ''}${f.max !== undefined ? ` max="${f.max}"` : ''} inputmode="decimal"`
+      : '';
+  return `<input class="ltb-input" id="${id}" name="${name}" type="${f.type}" placeholder="${ph}" value="${value}"${bounds}>`;
 }
 
 export function formView(cfg: LeadBotConfig, s: FormState, countries: Country[]): string {

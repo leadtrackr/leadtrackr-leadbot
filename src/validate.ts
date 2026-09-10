@@ -9,3 +9,9 @@ export function normalizePhone(raw: string, dial: string): string | null {
 export function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
 }
+
+/** Een getal met punt of komma als decimaalteken; de komma wint van de locale. */
+export function isValidNumber(value: string): boolean {
+  const v = value.trim().replace(',', '.');
+  return v !== '' && /^-?\d+(\.\d+)?$/.test(v);
+}

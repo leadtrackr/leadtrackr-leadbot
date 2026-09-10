@@ -60,7 +60,7 @@ describe('normalizeForms', () => {
   });
 
   it('falls back to a text input for an unsupported field type', () => {
-    const [field] = forms({ f: { fields: [{ key: 'x', type: 'date' as never }] } }).f.fields;
+    const [field] = forms({ f: { fields: [{ key: 'x', type: 'kleur' as never }] } }).f.fields;
     expect(field.type).toBe('text');
   });
 
@@ -81,5 +81,30 @@ describe('normalizeForms', () => {
 
   it('reserves exactly the four keys that carry user data', () => {
     expect([...RESERVED_KEYS]).toEqual(['name', 'email', 'phone', 'message']);
+  });
+});
+
+describe('veldtypes number en date', () => {
+  it('accepts number and date fields, with optional bounds on number', () => {
+    const f = forms({
+      offerte: {
+        fields: [
+          { key: 'aantal', label: 'Aantal', type: 'number', min: 1, max: 5000 },
+          { key: 'leverdatum', label: 'Leverdatum', type: 'date' },
+        ],
+      },
+    }).offerte.fields;
+    expect(f[0].type).toBe('number');
+    expect(f[0].min).toBe(1);
+    expect(f[0].max).toBe(5000);
+    expect(f[1].type).toBe('date');
+    expect(f[1].min).toBeUndefined();
+  });
+
+  it('ignores bounds on a type that has no range', () => {
+    const f = forms({
+      offerte: { fields: [{ key: 'naam', label: 'Naam', type: 'text', min: 1 }] },
+    }).offerte.fields;
+    expect(f[0].min).toBeUndefined();
   });
 });

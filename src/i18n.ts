@@ -45,6 +45,8 @@ export interface LeadBotTexts {
   errorRequired: string;
   errorEmail: string;
   errorPhone: string;
+  errorNumber: string;
+  errorRange: string;
   errorSend: string;
   errorBlocked: string;
 }
@@ -117,6 +119,8 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     errorRequired: 'This field is required',
     errorEmail: 'Enter a valid email address',
     errorPhone: 'Enter a valid phone number',
+    errorNumber: 'Enter a valid number',
+    errorRange: 'This value is out of range',
     errorSend: 'Sending failed. Please try again.',
     errorBlocked: 'Sending is currently unavailable.',
   },
@@ -158,6 +162,8 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     errorRequired: 'Dit veld is verplicht',
     errorEmail: 'Vul een geldig e-mailadres in',
     errorPhone: 'Vul een geldig telefoonnummer in',
+    errorNumber: 'Vul een geldig getal in',
+    errorRange: 'Deze waarde valt buiten het bereik',
     errorSend: 'Versturen mislukt. Probeer het opnieuw.',
     errorBlocked: 'Versturen is op dit moment niet mogelijk.',
   },
@@ -199,6 +205,8 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     errorRequired: 'Dieses Feld ist erforderlich',
     errorEmail: 'Geben Sie eine gültige E-Mail-Adresse ein',
     errorPhone: 'Geben Sie eine gültige Telefonnummer ein',
+    errorNumber: 'Geben Sie eine gültige Zahl ein',
+    errorRange: 'Dieser Wert liegt außerhalb des zulässigen Bereichs',
     errorSend: 'Senden fehlgeschlagen. Bitte versuchen Sie es erneut.',
     errorBlocked: 'Das Senden ist derzeit nicht möglich.',
   },

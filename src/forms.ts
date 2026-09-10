@@ -7,8 +7,8 @@ import type { LeadBotTexts } from './i18n';
  * terugbelverzoek naast een e-mailaanvraag.
  */
 
-export type FieldType = 'text' | 'email' | 'tel' | 'textarea';
-const FIELD_TYPES: FieldType[] = ['text', 'email', 'tel', 'textarea'];
+export type FieldType = 'text' | 'email' | 'tel' | 'textarea' | 'number' | 'date';
+const FIELD_TYPES: FieldType[] = ['text', 'email', 'tel', 'textarea', 'number', 'date'];
 
 export type FormIcon = 'chat' | 'phone' | 'mail' | 'whatsapp';
 const FORM_ICONS: FormIcon[] = ['chat', 'phone', 'mail', 'whatsapp'];
@@ -31,6 +31,9 @@ export interface FormField {
   type: FieldType;
   required: boolean;
   placeholder: string;
+  /** Alleen op `number`: onder- en bovengrens van de toegestane waarde. */
+  min?: number;
+  max?: number;
 }
 
 export interface FormDef {
@@ -55,6 +58,8 @@ export interface UserFormField {
   type?: FieldType;
   required?: boolean;
   placeholder?: string;
+  min?: number;
+  max?: number;
 }
 
 export type UserFormDef = Partial<Omit<FormDef, 'id' | 'fields'>> & { fields?: UserFormField[] };
@@ -78,12 +83,17 @@ function normalizeField(u: UserFormField, t: LeadBotTexts): FormField | null {
     ? reservedDefaults(key, t)
     : { label: key, type: 'text' as FieldType, placeholder: '' };
   const type = u.type && FIELD_TYPES.includes(u.type) ? u.type : base.type;
+  // Grenzen slaan alleen ergens op bij een getal; op een tekstveld zouden ze
+  // stil niets doen, en dan is weglaten eerlijker dan bewaren.
+  const bounded = type === 'number';
   return {
     key,
     label: u.label || base.label,
     type,
     required: u.required === true,
     placeholder: u.placeholder !== undefined ? u.placeholder : base.placeholder,
+    ...(bounded && typeof u.min === 'number' ? { min: u.min } : {}),
+    ...(bounded && typeof u.max === 'number' ? { max: u.max } : {}),
   };
 }
 

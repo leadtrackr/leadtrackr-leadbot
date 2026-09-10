@@ -1120,3 +1120,57 @@ describe('geen herhaalde openings-animatie', () => {
     expect(q(root, '.ltb-root')!.className).not.toContain('ltb-instant');
   });
 });
+
+describe('telefoonkanaal in een gesprek', () => {
+  beforeEach(() => {
+    document.getElementById('lt-leadbot-host')?.remove();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function conversationWithPhone(extra: Record<string, unknown> = {}) {
+    const { root } = freshMount({ conversational: true, channels: ['phone', 'contact_form'], ...extra });
+    click(root, 'open');
+    click(root, 'chip-phone');
+    vi.advanceTimersByTime(700);
+    return root;
+  }
+
+  it('shows a phone card, not a button with the number on it', () => {
+    const root = conversationWithPhone();
+    const card = q(root, '.ltb-phonecard') as HTMLAnchorElement;
+    expect(card).toBeTruthy();
+    expect(card.textContent).toContain('Telefonisch contact');
+    expect(card.textContent).toContain('+31 20 123 4567');
+    expect(q(root, '.ltb-cardbtn')).toBeNull();
+  });
+
+  it('strips the spaces from the tel: link', () => {
+    const card = q(conversationWithPhone(), '.ltb-phonecard') as HTMLAnchorElement;
+    expect(card.getAttribute('href')).toBe('tel:+31201234567');
+  });
+
+  it('counts the conversion on the click, not on showing the number', () => {
+    const root = conversationWithPhone();
+    expect((window.dataLayer || []).map((e) => e.event)).toEqual([
+      'leadtrackr_leadbot_open',
+      'leadtrackr_leadbot_channel_click',
+    ]);
+    click(root, 'card-phone');
+    const dl = window.dataLayer || [];
+    expect(dl[dl.length - 1]).toEqual({
+      event: 'leadtrackr_leadbot_conversion',
+      channel: 'phone',
+      user_data: {},
+    });
+  });
+
+  it('leaves the conversion to call tracking when that is on', () => {
+    const root = conversationWithPhone({ callTracking: true });
+    click(root, 'card-phone');
+    expect((window.dataLayer || []).map((e) => e.event)).not.toContain('leadtrackr_leadbot_conversion');
+  });
+});

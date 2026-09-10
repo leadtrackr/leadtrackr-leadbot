@@ -275,6 +275,11 @@ input, textarea, select { font: inherit; color: var(--tx); }
 .ltb-opt--quiet:hover { background: #fff; border-color: var(--p); color: var(--ht); }
 .ltb-cardbtn { display: flex; width: fit-content; align-items: center; gap: 7px; margin-top: 12px; min-height: 40px; padding: 0 16px; border-radius: 8px; background: var(--p); color: #fff; font-weight: 700; font-size: 14px; text-decoration: none; transition: background .2s, transform .2s; }
 .ltb-cardbtn:hover { background: var(--ph); transform: translateY(-1px); }
+.ltb-phonecard { align-self: flex-start; max-width: 86%; background: #fff; border: 1px solid var(--bd); border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; gap: 13px; text-decoration: none; transition: border-color .18s, transform .18s; }
+.ltb-phonecard:hover { border-color: var(--p); transform: translateY(-1px); }
+.ltb-phonecard-ic { width: 40px; height: 40px; border-radius: 10px; background: var(--tint); color: var(--ph); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ltb-phonecard-lbl { display: block; font-size: 12.5px; color: var(--mut); }
+.ltb-phonecard-num { display: block; font-weight: 700; font-size: 16px; color: var(--ht); }
 /* Alleen wat nieuw is beweegt. Zonder dit speelt bij elke herrender het hele
    gesprek opnieuw af, want render() bouwt de container elke keer opnieuw op. */
 .ltb-new { animation: ltb-fade-up .25s ease-out both; }

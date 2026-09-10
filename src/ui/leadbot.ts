@@ -193,16 +193,26 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
     if (!resolved) return;
     if (resolved.kind === 'phone') {
       pushChannelClick('phone');
+      // In een gesprek volgt eerst de kaart; de conversie hangt aan de klik
+      // daarop, want het tonen van een nummer is nog geen telefoontje.
       if (from === 'panel') {
         // De kanaalknop is zelf de tel:-link; met call tracking meet het
         // gesprek de conversie, anders is de klik het signaal.
         if (!cfg.callTracking) pushConversion('phone', {});
         return;
       }
-      const display = (cfg.callTracking ? getDynamicNumber(cfg.callTracking.prefix, cfg.callTracking.swapGroup)?.display : null) || cfg.phone || '';
+      const dyn = cfg.callTracking
+        ? getDynamicNumber(cfg.callTracking.prefix, cfg.callTracking.swapGroup)
+        : null;
+      const display = dyn?.display || cfg.phone || '';
+      const href = dyn ? 'tel:+' + dyn.link.replace(/\D/g, '') : 'tel:' + display.replace(/[\s-]/g, '');
       withTyping(() => ({
         ...thread,
-        messages: [...thread.messages, { from: 'user', text: cfg.texts.callTitle }, { from: 'bot', text: display, button: { label: display, url: 'tel:' + display.replace(/[\s-]/g, '') } }],
+        messages: [
+          ...thread.messages,
+          { from: 'user', text: cfg.texts.callTitle },
+          { from: 'bot', text: '', phone: { label: cfg.texts.phoneCardLabel, number: display, href } },
+        ],
         chips: [{ id: 'restart', label: cfg.texts.threadRestart, style: 'quiet' }],
         typing: false,
         fresh: 2,
@@ -404,6 +414,11 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
         }
         render();
         break;
+      case 'card-phone':
+        // De klik op de kaart is het belsignaal. Met call tracking meet het
+        // gesprek zelf de conversie en zou dit dubbeltellen.
+        if (!cfg.callTracking) pushConversion('phone', {});
+        break; // native tel:-navigatie gaat door
       case 'back':
         view = returnTo;
         wa.error = null;

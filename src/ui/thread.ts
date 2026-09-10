@@ -8,6 +8,8 @@ export interface ThreadMessage {
   /** Bot-tekst mag opmaak bevatten; wat de bezoeker typt nooit. */
   text: string;
   button?: { label: string; url: string };
+  /** Een telefoonnummer hoort als kaart, niet als knop met het nummer erop. */
+  phone?: { label: string; number: string; href: string };
 }
 
 export interface ThreadChip {
@@ -34,6 +36,15 @@ export interface ThreadState {
 function message(m: ThreadMessage, fresh: boolean): string {
   const cls = fresh ? ' ltb-new' : '';
   if (m.from === 'user') return `<div class="ltb-user${cls}">${esc(m.text)}</div>`;
+  if (m.phone) {
+    return `<a class="ltb-phonecard${cls}" href="${esc(m.phone.href)}" data-action="card-phone">
+      <span class="ltb-phonecard-ic">${icons.phone(20)}</span>
+      <span>
+        <span class="ltb-phonecard-lbl">${esc(m.phone.label)}</span>
+        <span class="ltb-phonecard-num">${esc(m.phone.number)}</span>
+      </span>
+    </a>`;
+  }
   const button = m.button
     ? `<a class="ltb-cardbtn" href="${esc(m.button.url)}" data-action="card-link">${esc(m.button.label)}${icons.chevronRight(16)}</a>`
     : '';

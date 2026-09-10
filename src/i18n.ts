@@ -46,6 +46,7 @@ export interface LeadBotTexts {
   threadAnotherQuestion: string;
   faqOther: string;
   faqOtherIntro: string;
+  phoneCardLabel: string;
   errorRequired: string;
   errorEmail: string;
   errorPhone: string;
@@ -127,6 +128,7 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     threadAnotherQuestion: 'Another question',
     faqOther: 'I have another question',
     faqOtherIntro: 'We are happy to help. How would you like to ask?',
+    phoneCardLabel: 'By phone',
     errorRequired: 'This field is required',
     errorEmail: 'Enter a valid email address',
     errorPhone: 'Enter a valid phone number',
@@ -174,6 +176,7 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     threadAnotherQuestion: 'Nog een vraag',
     faqOther: 'Ik heb een andere vraag',
     faqOtherIntro: 'We staan je graag te woord. Hoe wil je je vraag stellen?',
+    phoneCardLabel: 'Telefonisch contact',
     errorRequired: 'Dit veld is verplicht',
     errorEmail: 'Vul een geldig e-mailadres in',
     errorPhone: 'Vul een geldig telefoonnummer in',
@@ -221,6 +224,7 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     threadAnotherQuestion: 'Noch eine Frage',
     faqOther: 'Ich habe eine andere Frage',
     faqOtherIntro: 'Wir helfen Ihnen gerne. Wie möchten Sie Ihre Frage stellen?',
+    phoneCardLabel: 'Telefonischer Kontakt',
     errorRequired: 'Dieses Feld ist erforderlich',
     errorEmail: 'Geben Sie eine gültige E-Mail-Adresse ein',
     errorPhone: 'Geben Sie eine gültige Telefonnummer ein',

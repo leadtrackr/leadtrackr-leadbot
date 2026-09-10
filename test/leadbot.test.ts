@@ -1059,3 +1059,53 @@ describe('gespreksmodus', () => {
     expect(q(root, '.ltb-thread')).toBeNull();
   });
 });
+
+describe('geen herhaalde openings-animatie', () => {
+  beforeEach(() => {
+    document.getElementById('lt-leadbot-host')?.remove();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('plays the panel animation on opening but not on a state change within the same view', () => {
+    const { root } = freshMount({
+      conversational: true,
+      channels: ['contact_form', 'winkels'],
+      links: { winkels: { title: 'Winkels', message: 'Hoi', button: { label: 'Ga', url: '/w' } } },
+    });
+    click(root, 'open');
+    expect(q(root, '.ltb-root')!.className).not.toContain('ltb-instant');
+    click(root, 'chip-winkels');
+    // typ-indicator: zelfde view, dus het paneel mag niet opnieuw openen
+    expect(q(root, '.ltb-root')!.className).toContain('ltb-instant');
+    vi.advanceTimersByTime(700);
+    expect(q(root, '.ltb-root')!.className).toContain('ltb-instant');
+  });
+
+  it('animates only what is new in the thread', () => {
+    const { root } = freshMount({
+      conversational: true,
+      channels: ['contact_form', 'winkels'],
+      links: { winkels: { title: 'Winkels', message: 'Hoi', button: { label: 'Ga', url: '/w' } } },
+    });
+    click(root, 'open');
+    click(root, 'chip-winkels');
+    vi.advanceTimersByTime(700);
+    // begroeting stond er al, de twee nieuwe berichten niet
+    const messages = Array.from(root.querySelectorAll('.ltb-bot, .ltb-user'));
+    expect(messages).toHaveLength(3);
+    expect(messages[0].className).not.toContain('ltb-new');
+    expect(messages[1].className).toContain('ltb-new');
+    expect(messages[2].className).toContain('ltb-new');
+  });
+
+  it('plays the view animation again when the view really changes', () => {
+    const { root } = freshMount({ conversational: true, channels: ['contact_form'] });
+    click(root, 'open');
+    click(root, 'chip-contact_form');
+    expect(q(root, '.ltb-root')!.className).not.toContain('ltb-instant');
+  });
+});

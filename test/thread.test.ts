@@ -7,7 +7,7 @@ const state = (over: Partial<ThreadState> = {}): ThreadState => ({
   messages: [],
   chips: [],
   typing: false,
-  entered: true,
+  fresh: 0,
   ...over,
 });
 

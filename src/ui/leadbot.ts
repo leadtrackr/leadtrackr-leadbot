@@ -46,7 +46,7 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
   let openedAt = 0;
   // Waar 'terug' naartoe gaat vanuit een formulier of de WhatsApp-flow.
   let returnTo: View = 'panel';
-  let thread: ThreadState = { channel: null, messages: [], chips: [], typing: false, entered: true };
+  let thread: ThreadState = { channel: null, messages: [], chips: [], typing: false, fresh: 0 };
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function blankForm(def: FormDef): FormState {
@@ -74,8 +74,14 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
     }
   }
 
+  // Welke view er bij de vorige render stond; een herrender binnen dezelfde
+  // view mag de openings-animatie niet opnieuw afspelen.
+  let renderedView: View = 'closed';
+
   function render(): void {
     const sideClass = cfg.position === 'left' ? ' ltb-left' : '';
+    const instant = renderedView === view ? ' ltb-instant' : '';
+    renderedView = view;
     if (view === 'closed') {
       container.innerHTML = `<div class="ltb-root${sideClass}">${launcherView(cfg, teaserVisible())}</div>`;
       return;
@@ -93,7 +99,7 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
             : view === 'thread'
               ? threadView(cfg, thread, { back: returnTo === 'panel' })
               : successView(cfg, success);
-    container.innerHTML = `<div class="ltb-root${sideClass}"><div class="ltb-overlay" data-action="close"></div><div class="ltb-panel" role="dialog" aria-modal="true"><div class="ltb-view">${inner}</div></div></div>`;
+    container.innerHTML = `<div class="ltb-root${sideClass}${instant}"><div class="ltb-overlay" data-action="close"></div><div class="ltb-panel" role="dialog" aria-modal="true"><div class="ltb-view">${inner}</div></div></div>`;
     const msg = container.querySelector<HTMLTextAreaElement>('textarea[data-wa="message"]');
     if (msg) autoGrowMessage(msg);
     // Nieuwste bubbel (bijv. de nummer-vraag) altijd in beeld
@@ -115,7 +121,7 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
       openedAt = Date.now();
       pushOpen();
       render();
-      thread = { ...thread, entered: true };
+      thread = { ...thread, fresh: 0 };
       return;
     }
     openedAt = Date.now();
@@ -165,13 +171,13 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
 
   /** Laat de bot even typen en toon daarna de volgende toestand. */
   function withTyping(next: () => ThreadState): void {
-    thread = { ...thread, typing: true, entered: true };
+    thread = { ...thread, typing: true, fresh: 0 };
     render();
     const show = (): void => {
       thread = next();
       render();
       // Vanaf de volgende render staat alles stil; de animatie speelt één keer.
-      thread = { ...thread, entered: true };
+      thread = { ...thread, fresh: 0 };
     };
     if (reducedMotion) show();
     else setTimeout(show, TYPING_MS);
@@ -199,7 +205,7 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
         messages: [...thread.messages, { from: 'user', text: cfg.texts.callTitle }, { from: 'bot', text: display, button: { label: display, url: 'tel:' + display.replace(/[\s-]/g, '') } }],
         chips: [{ id: 'restart', label: cfg.texts.threadRestart, style: 'quiet' }],
         typing: false,
-        entered: false,
+        fresh: 2,
       }));
       return;
     }
@@ -223,7 +229,7 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
         messages: [...thread.messages, { from: 'user', text: def.title }, { from: 'bot', text: def.message || def.title, button: def.button }],
         chips: [{ id: 'restart', label: cfg.texts.threadRestart, style: 'quiet' }],
         typing: false,
-        entered: false,
+        fresh: 2,
       }));
       return;
     }
@@ -235,7 +241,7 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
         thread = openFaq(cfg, def);
         view = 'thread';
         render();
-        thread = { ...thread, entered: true };
+        thread = { ...thread, fresh: 0 };
         return;
       }
       withTyping(() => openFaq(cfg, def));
@@ -460,7 +466,7 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
             ...thread,
             messages: [...thread.messages, { from: 'user', text: question.q }],
             chips: [],
-            entered: false,
+            fresh: 1,
           };
           withTyping(() => {
             const next = answerQuestion(cfg, faq, { ...thread, messages: thread.messages.slice(0, -1) }, index);

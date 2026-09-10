@@ -35,7 +35,7 @@ export function menuThread(cfg: LeadBotConfig): ThreadState {
     messages: [{ from: 'bot', text: cfg.greeting }],
     chips: menuChips(cfg),
     typing: false,
-    entered: false,
+    fresh: 1,
   };
 }
 
@@ -45,7 +45,7 @@ export function menuThread(cfg: LeadBotConfig): ThreadState {
  * eigen vragen en antwoorden afnemen.
  */
 export function backToMenu(cfg: LeadBotConfig, state: ThreadState): ThreadState {
-  return { ...state, channel: null, chips: menuChips(cfg), typing: false, entered: false };
+  return { ...state, channel: null, chips: menuChips(cfg), typing: false, fresh: 0 };
 }
 
 export function openFaq(cfg: LeadBotConfig, def: FaqDef): ThreadState {
@@ -54,7 +54,7 @@ export function openFaq(cfg: LeadBotConfig, def: FaqDef): ThreadState {
     messages: [{ from: 'bot', text: def.intro }],
     chips: def.questions.map((q, i) => ({ id: 'q' + i, label: q.q })),
     typing: false,
-    entered: false,
+    fresh: 1,
   };
 }
 
@@ -89,6 +89,7 @@ export function answerQuestion(
     ],
     chips: [...remaining, ...followUp, { id: 'restart', label: cfg.texts.threadRestart, style: 'quiet' }],
     typing: false,
-    entered: false,
+    // alleen het antwoord is nieuw; de vraag stond er al
+    fresh: 1,
   };
 }

@@ -252,29 +252,38 @@ input, textarea, select { font: inherit; color: var(--tx); }
   .ltb-panel:has(.ltb-wa-chat) .ltb-wa-chat { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 }
 
-/* ── Thread: het gesprek zelf ────────────────────────────────────────────── */
-.ltb-thread { display: flex; flex-direction: column; gap: 10px; padding: 16px 14px 18px; overflow-y: auto; flex: 1 1 auto; min-height: 180px; max-height: min(460px, 60dvh); background: var(--bg); }
-.ltb-bot, .ltb-user { max-width: 85%; font-size: 14.5px; line-height: 1.5; overflow-wrap: break-word; animation: ltb-msg .32s ease-out both; }
-.ltb-bot { align-self: flex-start; background: var(--tint); color: var(--tx); border-radius: 14px 14px 14px 4px; padding: 11px 14px; }
-.ltb-user { align-self: flex-end; background: var(--p); color: #fff; border-radius: 14px 14px 4px 14px; padding: 11px 14px; }
+/* ── Thread: het gesprek zelf. Waarden 1-op-1 uit de goedgekeurde demo. ──── */
+.ltb-thread { flex: 1; min-height: 0; max-height: min(420px, 60dvh); overflow-y: auto; padding: 4px 20px 16px; display: flex; flex-direction: column; gap: 10px; }
+.ltb-bot { align-self: flex-start; max-width: 86%; background: #F3F4F6; border-radius: 4px 14px 14px 14px; padding: 12px 16px; font-size: 14.5px; line-height: 1.55; color: var(--tx); }
+.ltb-bot strong { color: var(--ht); font-weight: 700; }
 .ltb-bot p { margin: 0; }
-.ltb-bot p + p { margin-top: 8px; }
-.ltb-bot strong { font-weight: 700; }
-.ltb-cardbtn { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; margin-top: 11px; padding: 10px 13px; border: 1px solid var(--bd); border-radius: 10px; background: #fff; color: var(--ht); font-size: 13.5px; font-weight: 600; text-decoration: none; cursor: pointer; }
-.ltb-cardbtn:hover { border-color: var(--p); color: var(--p); }
-.ltb-typing { align-self: flex-start; display: flex; gap: 4px; align-items: center; background: var(--tint); border-radius: 14px 14px 14px 4px; padding: 13px 15px; }
-.ltb-typing span { width: 6px; height: 6px; border-radius: 999px; background: var(--mut); animation: ltb-dot 1s ease-in-out infinite; }
+.ltb-bot p + p { margin-top: 9px; }
+.ltb-bot + .ltb-bot { border-radius: 14px; }
+.ltb-user { align-self: flex-end; max-width: 86%; background: var(--p); color: #fff; border-radius: 14px 14px 4px 14px; padding: 10px 15px; font-size: 14.5px; line-height: 1.5; font-weight: 600; }
+.ltb-typing { align-self: flex-start; display: flex; gap: 4px; align-items: center; padding: 13px 15px; background: #F3F4F6; border-radius: 4px 14px 14px 14px; animation: ltb-fade-up .2s ease-out both; }
+.ltb-typing span { width: 6px; height: 6px; border-radius: 999px; background: #B6BEC4; animation: ltb-dot 1s ease-in-out infinite; }
 .ltb-typing span:nth-child(2) { animation-delay: .15s; }
 .ltb-typing span:nth-child(3) { animation-delay: .3s; }
-.ltb-opts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-top: 2px; }
-.ltb-opt { border: 1px solid var(--bd); border-radius: 999px; padding: 8px 15px; background: #fff; color: var(--ht); font-size: 13.5px; font-weight: 600; cursor: pointer; animation: ltb-msg .32s ease-out both; }
-.ltb-opt:hover { background: var(--tint); border-color: var(--p); color: var(--p); }
+@keyframes ltb-dot { 0%, 60%, 100% { transform: translateY(0); opacity: .5; } 30% { transform: translateY(-3px); opacity: 1; } }
+.ltb-opts { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; padding-top: 2px; }
+.ltb-opt { max-width: 100%; text-align: center; border: 1.5px solid var(--bd); border-radius: 999px; background: #fff; color: var(--ht); font-weight: 600; font-size: 14px; line-height: 1.3; padding: 9px 16px; transition: border-color .18s, background .18s, color .18s, transform .18s; }
+.ltb-opt:hover { border-color: var(--p); background: var(--tint); transform: translateY(-1px); }
+.ltb-opt:focus-visible { outline: 2px solid var(--p); outline-offset: 2px; }
 .ltb-opt--featured { background: var(--p); border-color: var(--p); color: #fff; }
 .ltb-opt--featured:hover { background: var(--ph); border-color: var(--ph); color: #fff; }
-.ltb-opt--quiet { border-style: dashed; color: var(--mut); font-weight: 500; }
-@keyframes ltb-msg { 0% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: none; } }
-/* Een herrender toont de eindtoestand direct in plaats van alles opnieuw af te spelen. */
-.ltb-static .ltb-bot, .ltb-static .ltb-user, .ltb-static .ltb-opt { animation: none; }
+.ltb-opt--quiet { background: #F3F4F6; border-color: #F3F4F6; color: var(--mut); }
+.ltb-opt--quiet:hover { background: #fff; border-color: var(--p); color: var(--ht); }
+.ltb-cardbtn { display: flex; width: fit-content; align-items: center; gap: 7px; margin-top: 12px; min-height: 40px; padding: 0 16px; border-radius: 8px; background: var(--p); color: #fff; font-weight: 700; font-size: 14px; text-decoration: none; transition: background .2s, transform .2s; }
+.ltb-cardbtn:hover { background: var(--ph); transform: translateY(-1px); }
+/* Alleen wat nieuw is beweegt. Zonder dit speelt bij elke herrender het hele
+   gesprek opnieuw af, want render() bouwt de container elke keer opnieuw op. */
+.ltb-new { animation: ltb-fade-up .25s ease-out both; }
+/* Een terugknop in de paneelkop, alleen in de lijstmodus. */
+.ltb-head:has(.ltb-thread-back) .ltb-header { padding-left: 28px; }
+.ltb-thread-back { position: absolute; top: 16px; left: 14px; z-index: 1; }
+/* Een herrender binnen dezelfde weergave mag het paneel niet opnieuw laten
+   openen; die animatie hoort bij het openen, niet bij elke statuswijziging. */
+.ltb-instant .ltb-panel, .ltb-instant .ltb-view { animation: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .ltb-launcher, .ltb-avatar-dot { animation: none; }
@@ -283,8 +292,8 @@ input, textarea, select { font: inherit; color: var(--tx); }
   .ltb-wa-question, .ltb-wa-tick-one, .ltb-wa-tick-two { animation: none; }
   .ltb-wa-question { opacity: 1; }
   .ltb-wa-typing { display: none; }
-  .ltb-bot, .ltb-user, .ltb-opt { animation: none; }
-  .ltb-typing span { animation: none; }
+  .ltb-new { animation: none; }
+  .ltb-typing, .ltb-typing span { animation: none; }
   .ltb-wa-tick-one { opacity: 0; }
   .ltb-wa-tick-two { opacity: 1; }
 }

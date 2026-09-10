@@ -16,7 +16,7 @@ export function avatar(cfg: LeadBotConfig, cls: string): string {
   return `<div class="${cls}">${initial}</div>`;
 }
 
-function agentLine(cfg: LeadBotConfig): string {
+export function agentLine(cfg: LeadBotConfig): string {
   const company = cfg.companyName
     ? ` <span>${esc(cfg.texts.from)} ${esc(cfg.companyName)}</span>`
     : '';

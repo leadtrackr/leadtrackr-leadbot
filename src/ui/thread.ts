@@ -1,7 +1,7 @@
 import type { LeadBotConfig } from '../config';
 import { icons } from './icons';
 import { renderText } from './richtext';
-import { avatar, brandFooter, esc } from './views';
+import { agentLine, avatar, brandFooter, esc } from './views';
 
 export interface ThreadMessage {
   from: 'bot' | 'user';
@@ -22,49 +22,57 @@ export interface ThreadState {
   messages: ThreadMessage[];
   chips: ThreadChip[];
   typing: boolean;
-  /** False bij de eerste render van een nieuwe stap, zodat een animatie één
-      keer speelt en niet opnieuw bij elke herrender — zelfde truc als de
-      WhatsApp-view met `entered`. */
-  entered: boolean;
+  /**
+   * Hoeveel berichten aan het eind nieuw zijn sinds de vorige render. Alleen
+   * die animeren; de rest staat stil. Zonder dit speelt bij elke herrender het
+   * hele gesprek opnieuw af, want `render()` bouwt de container elke keer
+   * volledig opnieuw op.
+   */
+  fresh: number;
 }
 
-function message(m: ThreadMessage): string {
-  if (m.from === 'user') return `<div class="ltb-user">${esc(m.text)}</div>`;
+function message(m: ThreadMessage, fresh: boolean): string {
+  const cls = fresh ? ' ltb-new' : '';
+  if (m.from === 'user') return `<div class="ltb-user${cls}">${esc(m.text)}</div>`;
   const button = m.button
-    ? `<a class="ltb-cardbtn" href="${esc(m.button.url)}" data-action="card-link"><span>${esc(m.button.label)}</span>${icons.chevronRight(16)}</a>`
+    ? `<a class="ltb-cardbtn" href="${esc(m.button.url)}" data-action="card-link">${esc(m.button.label)}${icons.chevronRight(16)}</a>`
     : '';
-  return `<div class="ltb-bot">${renderText(m.text)}${button}</div>`;
+  return `<div class="ltb-bot${cls}">${renderText(m.text)}${button}</div>`;
 }
 
 export function threadView(cfg: LeadBotConfig, s: ThreadState, opts: { back: boolean }): string {
   const t = cfg.texts;
-  const body = s.messages.map(message).join('');
+  const first = s.messages.length - Math.max(0, s.fresh);
+  const body = s.messages.map((m, i) => message(m, i >= first)).join('');
   const typing = s.typing
     ? '<div class="ltb-typing"><span></span><span></span><span></span></div>'
     : '';
   const chips = s.typing
     ? ''
-    : `<div class="ltb-opts">${s.chips
+    : `<div class="ltb-opts${s.fresh > 0 ? ' ltb-new' : ''}">${s.chips
         .map(
           (c) =>
             `<button type="button" class="ltb-opt${c.style ? ' ltb-opt--' + c.style : ''}" data-action="chip-${esc(c.id)}">${esc(c.label)}</button>`,
         )
         .join('')}</div>`;
   const back = opts.back
-    ? `<button class="ltb-back" data-action="back" aria-label="${esc(t.back)}">${icons.back(18)}</button>`
+    ? `<button class="ltb-back ltb-thread-back" data-action="back" aria-label="${esc(t.back)}">${icons.back(18)}</button>`
     : '';
+  // Dezelfde kop als het kanaalpaneel: een gesprek is geen WhatsApp-venster.
   return `
   <div class="ltb-handle"><span></span></div>
-  <div class="ltb-wa-head">
+  <div class="ltb-head">
     ${back}
-    ${avatar(cfg, 'ltb-avatar-fallback')}
-    <div>
-      <p class="ltb-wa-head-name">${esc(cfg.agentName || cfg.companyName)}</p>
-      <p class="ltb-wa-head-status">${esc(t.responseTime)}</p>
-    </div>
     <button class="ltb-close" data-action="close" aria-label="${esc(t.close)}">${icons.close(15)}</button>
+    <div class="ltb-header">
+      <div class="ltb-avatar">${avatar(cfg, 'ltb-avatar-fallback')}<span class="ltb-avatar-dot"></span></div>
+      <div>
+        <p class="ltb-header-name">${agentLine(cfg)}</p>
+        <p class="ltb-header-status">${esc(t.responseTime)}</p>
+      </div>
+    </div>
   </div>
-  <div class="ltb-thread${s.entered ? ' ltb-static' : ''}" role="log" aria-live="polite">
+  <div class="ltb-thread" role="log" aria-live="polite">
     ${body}${typing}${chips}
   </div>
   ${brandFooter(cfg)}`;

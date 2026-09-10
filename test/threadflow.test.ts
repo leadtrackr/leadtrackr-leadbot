@@ -68,9 +68,9 @@ describe('FAQ-gesprek', () => {
     expect(ids).toContain('whatsapp');
   });
 
-  it('marks the thread as not yet entered so the animation plays once', () => {
+  it('marks only the answer as new, so the rest of the thread stays still', () => {
     const cfg = config();
-    expect(answerQuestion(cfg, cfg.faqs.faq, openFaq(cfg, cfg.faqs.faq), 0).entered).toBe(false);
+    expect(answerQuestion(cfg, cfg.faqs.faq, openFaq(cfg, cfg.faqs.faq), 0).fresh).toBe(1);
   });
 
   it('ignores a question index that does not exist', () => {

@@ -1,4 +1,5 @@
 import { getDynamicNumber } from '../calltracking';
+import { resolveChannel } from '../channels';
 import type { LeadBotConfig } from '../config';
 import { getCountries, type Country } from '../countries';
 import { pushChannelClick, pushConversion, pushOpen } from '../datalayer';
@@ -327,8 +328,18 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
         void submitWhatsApp();
         break;
       default:
-        // Elk ander kanaal is een formulier uit de config.
-        if (action.slice(0, 8) === 'channel-') openForm(action.slice(8));
+        if (action.slice(0, 8) === 'channel-') {
+          const id = action.slice(8);
+          const resolved = resolveChannel(cfg, id);
+          if (!resolved) break;
+          if (resolved.kind === 'link') {
+            // Een infokaart is een doorverwijzing: wel meten dat het kanaal
+            // gekozen is, geen lead en geen conversie. De <a> navigeert zelf.
+            pushChannelClick(id);
+            break;
+          }
+          openForm(id);
+        }
     }
   });
 

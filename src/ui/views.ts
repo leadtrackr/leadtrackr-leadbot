@@ -85,10 +85,15 @@ export function panelView(cfg: LeadBotConfig, dynamicNumber: DynamicNumber | nul
         return channelButton('channel-phone', icons.phone(20), t.callTitle, display, href);
       }
       if (c === 'whatsapp') return channelButton('channel-whatsapp', icons.whatsapp(20), t.waTitle, t.waSub);
-      // Elk ander kanaal is een formulier uit de config.
       const form = cfg.forms[c];
-      if (!form) return '';
-      return channelButton('channel-' + c, icons[form.icon](20), form.title, form.sub);
+      if (form) return channelButton('channel-' + c, icons[form.icon](20), form.title, form.sub);
+      // In de kanalenlijst is een infokaart een knop die meteen doorstuurt; het
+      // bericht eromheen heeft alleen betekenis in een gesprek.
+      const link = cfg.links[c];
+      if (link) {
+        return channelButton('channel-' + c, icons[link.icon](20), link.title, link.sub, link.button.url);
+      }
+      return '';
     })
     .join('');
   return `

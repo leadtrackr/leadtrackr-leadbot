@@ -36,8 +36,8 @@ function normalizeOptions(list: UserFormOption[] | undefined): FormOption[] | un
   return out.length ? out : undefined;
 }
 
-export type FormIcon = 'chat' | 'phone' | 'mail' | 'whatsapp';
-const FORM_ICONS: FormIcon[] = ['chat', 'phone', 'mail', 'whatsapp'];
+export type FormIcon = 'chat' | 'phone' | 'mail' | 'whatsapp' | 'info' | 'help';
+const FORM_ICONS: FormIcon[] = ['chat', 'phone', 'mail', 'whatsapp', 'info', 'help'];
 
 /**
  * Keys met een vaste betekenis. Die gaan naar userData (LeadTrackr) en

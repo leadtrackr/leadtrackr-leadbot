@@ -806,3 +806,50 @@ describe('veldtype checkbox', () => {
     expect(after[0].checked).toBe(false);
   });
 });
+
+describe('links-kanaal in de kanalenlijst', () => {
+  beforeEach(() => {
+    document.getElementById('lt-leadbot-host')?.remove();
+  });
+
+  function withLink() {
+    const { root } = freshMount({
+      channels: ['winkels', 'contact_form'],
+      links: {
+        winkels: {
+          title: 'Winkels',
+          sub: 'Vind een winkel bij jou in de buurt',
+          icon: 'info',
+          message: '**Onze winkels**\n\nKom gerust langs.',
+          button: { label: 'Zoek een winkel', url: '/winkels' },
+        },
+      },
+    });
+    click(root, 'open');
+    return root;
+  }
+
+  it('renders the link channel as an anchor straight to the page', () => {
+    const root = withLink();
+    const a = q(root, '[data-action="channel-winkels"]') as HTMLAnchorElement;
+    expect(a.tagName).toBe('A');
+    expect(a.getAttribute('href')).toBe('/winkels');
+    expect(a.textContent).toContain('Winkels');
+    expect(a.textContent).toContain('Vind een winkel bij jou in de buurt');
+  });
+
+  it('reports the choice as a click and never as a conversion', () => {
+    const root = withLink();
+    click(root, 'channel-winkels');
+    const dl = window.dataLayer || [];
+    expect(dl.map((e) => e.event)).toEqual(['leadtrackr_leadbot_open', 'leadtrackr_leadbot_channel_click']);
+    expect(dl[dl.length - 1].channel).toBe('winkels');
+  });
+
+  it('does not open a form view for a link channel', () => {
+    const root = withLink();
+    click(root, 'channel-winkels');
+    expect(q(root, 'form')).toBeNull();
+    expect(q(root, '.ltb-channels')).toBeTruthy();
+  });
+});

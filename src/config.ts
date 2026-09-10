@@ -1,5 +1,6 @@
 import { regionFromLocale } from './countries';
 import { normalizeForms, type FormDef, type UserFormDef } from './forms';
+import { normalizeLinks, type LinkDef, type UserLinkDef } from './links';
 import { detectLanguage, PERSONAL_TEXTS, TEXTS, type Language, type LeadBotTexts } from './i18n';
 import { applyLanguageOverlay } from './overlay';
 import type { ChannelId } from './types';
@@ -49,6 +50,8 @@ export interface LeadBotConfig {
   channels: ChannelId[];
   /** Formulierkanalen op id. `contact_form` bestaat altijd. */
   forms: Record<string, FormDef>;
+  /** Infokaart-kanalen op id: een bericht met een knop, zonder lead. */
+  links: Record<string, LinkDef>;
   position: 'right' | 'left';
   offset: { bottom: number; side: number };
   teaser: boolean;
@@ -68,8 +71,9 @@ export interface LeadBotConfig {
  * Wat de site zelf mag meegeven op `window.ltLeadBotConfig`. Losser dan de
  * opgeloste config: formulieren en call tracking mogen hier onvolledig zijn.
  */
-export type UserConfig = Omit<Partial<LeadBotConfig>, 'forms' | 'callTracking'> & {
+export type UserConfig = Omit<Partial<LeadBotConfig>, 'forms' | 'links' | 'callTracking'> & {
   forms?: Record<string, UserFormDef>;
+  links?: Record<string, UserLinkDef>;
   callTracking?: boolean | { prefix?: string; swapGroup?: number };
   /** Per taal een laag over de basisconfig heen; zie `applyLanguageOverlay`. */
   byLanguage?: Record<string, LanguageOverlay>;
@@ -122,11 +126,12 @@ export function resolveConfig(projectId: string, user: UserConfig | undefined): 
     ...(u.formNames || {}),
   };
   const forms = normalizeForms(u.forms, texts, formNames.contact_form);
+  const links = normalizeLinks(u.links);
   const requested: ChannelId[] = u.channels && u.channels.length ? u.channels : ['contact_form', 'phone', 'whatsapp'];
   const channels = requested.filter((c) => {
     if (c === 'phone') return Boolean(u.phone) || Boolean(callTracking);
     if (c === 'whatsapp') return Boolean(u.whatsapp);
-    return Boolean(forms[c]);
+    return Boolean(forms[c]) || Boolean(links[c]);
   });
   return {
     projectId,
@@ -143,6 +148,7 @@ export function resolveConfig(projectId: string, user: UserConfig | undefined): 
     subscriptionCheck: u.subscriptionCheck !== false,
     channels,
     forms,
+    links,
     position: u.position === 'left' ? 'left' : 'right',
     offset: { bottom: u.offset?.bottom ?? 20, side: u.offset?.side ?? 20 },
     teaser: u.teaser !== false,

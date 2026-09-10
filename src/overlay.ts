@@ -1,5 +1,6 @@
 import type { UserConfig } from './config';
 import type { UserFormDef, UserFormField, UserFormOption } from './forms';
+import type { UserLinkDef } from './links';
 import type { Language } from './i18n';
 
 /**
@@ -78,6 +79,29 @@ function mergeForms(
   return out;
 }
 
+/**
+ * Infokaarten voegen per id samen, net als formulieren: een taallaag die alleen
+ * de titel vertaalt mag het bericht, het icoon en de knop niet stil weggooien.
+ * `button` gaat één niveau dieper mee, zodat een laag alleen het label kan
+ * vertalen en de URL kan laten staan — of andersom naar een eigen pagina kan
+ * wijzen zonder de rest te herhalen.
+ */
+function mergeLinks(
+  base: Record<string, UserLinkDef> | undefined,
+  overlay: Record<string, UserLinkDef>,
+): Record<string, UserLinkDef> {
+  if (!base) return overlay;
+  const out: Record<string, UserLinkDef> = { ...base };
+  for (const id of Object.keys(overlay)) {
+    const translated = overlay[id];
+    const original = base[id];
+    out[id] = original
+      ? { ...original, ...translated, button: { ...original.button, ...translated.button } }
+      : translated;
+  }
+  return out;
+}
+
 export function applyLanguageOverlay(
   user: UserConfig | undefined,
   language: Language,
@@ -92,6 +116,8 @@ export function applyLanguageOverlay(
     if (value === undefined) continue;
     if (key === 'forms') {
       out.forms = mergeForms(base.forms, value as Record<string, UserFormDef>);
+    } else if (key === 'links') {
+      out.links = mergeLinks(base.links, value as Record<string, UserLinkDef>);
     } else if (MERGED_KEYS.indexOf(key) !== -1) {
       out[key] = { ...((base as Record<string, unknown>)[key] as object), ...(value as object) };
     } else {

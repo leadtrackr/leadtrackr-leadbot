@@ -21,8 +21,11 @@ port van een bestaande, klant-goedgekeurde implementatie, geen nieuw ontwerp.**
 **Wel:** een gespreksmodus naast de kanalenlijst, een `links`-kanaalsoort (infokaart met knop), een
 `faqs`-kanaalsoort (vragen met antwoorden en doorloop), en een tekst-opmaaklaagje.
 
-**Niet:** de kanalenlijst vervangen of wijzigen; de formulier-, WhatsApp- en succesviews wijzigen;
-nieuwe dataLayer-events; nieuwe veldtypes (`checkbox`, `number`, `date` uit de demo — zie Open punten).
+**Ook:** drie veldtypes erbij — `checkbox`, `number` en `date` — zodat het offerteformulier uit het
+voorstel één op één te bouwen is. Zie Veldtypes.
+
+**Niet:** de kanalenlijst vervangen of wijzigen; de WhatsApp- en succesviews wijzigen; nieuwe
+dataLayer-events.
 
 ## Uitgangspunt: twee ingangen, één set views
 
@@ -102,6 +105,52 @@ bovenaan (`featured`), afsluitchips zijn `quiet`. Onder een FAQ-antwoord komen "
 "Iets anders bekijken"; onder de vragenlijst staat "Ik heb een andere vraag" met doorloop naar de
 kanalen uit `followUp`.
 
+## Veldtypes
+
+`forms.ts` kent nu `text`, `email`, `tel` en `textarea`. Daar komen `checkbox`, `number` en `date`
+bij. De harde randvoorwaarde is `formFields: Record<string, string>` in het payload-contract: alles
+wat een veld oplevert moet een string worden, want de GTM-tag schrijft hetzelfde formaat.
+
+**`checkbox`** — met `options` een keuzegroep, zonder `options` één vinkje.
+
+```js
+{ key: 'opties', label: 'Optioneel', type: 'checkbox', options: [
+    { value: 'boodschap', label: 'Met persoonlijke boodschap' },
+    { value: 'multi-adres', label: 'Verzending naar meerdere adressen' }
+]}
+{ key: 'nieuwsbrief', label: 'Houd mij op de hoogte', type: 'checkbox' }
+```
+
+Een optie is `{ value, label }`, of een kale string als die twee gelijk zijn. In LeadTrackr komen de
+**values**, gescheiden door `", "` — dus `"boodschap, multi-adres"`. Een enkel vinkje levert zijn
+`value` op als het aan staat en ontbreekt als het uit staat; zonder `value` is dat `"true"`.
+`required` betekent: minstens één aangevinkt.
+
+Die scheiding tussen `value` en `label` is er om dezelfde reden als bij kanaal-id's. Zou de Duitse
+taallaag de opties vervangen door Duitse teksten, dan sloeg een Duitse lead
+`"Mit persönlicher Botschaft"` op en een Nederlandse `"Met persoonlijke boodschap"` — voor dezelfde
+keuze, en dan is er niet meer overheen te rapporteren. Nu vertaalt de laag alleen `label` en blijft
+de opgeslagen waarde gelijk. In `overlay.ts` komt daarvoor één regel bij: **opties voegen samen op
+`value`**, precies zoals velden samenvoegen op `key`. Additief, dus geen breuk met v1.11.0.
+
+**`number`** — `<input type="number" inputmode="numeric">`, met optionele `min` en `max`. Die twee
+gaan mee omdat een aantal zonder ondergrens onzin toelaat (`-5` producten) en het drie regels
+validatie is. Ongeldige invoer geeft `errorNumber`, buiten bereik `errorRange`.
+
+**`date`** — `<input type="date">`. De browser toont de datum in de notatie van de bezoeker, maar de
+waarde die naar LeadTrackr gaat is altijd ISO (`YYYY-MM-DD`), zodat een datum uit een Duitse en een
+Nederlandse lead hetzelfde formaat heeft. Geen `min`/`max` in deze release: die wil je in de praktijk
+relatief ("niet in het verleden") en dat vraagt een begrip dat ik hier niet ga verzinnen.
+
+Alle drie krijgen dezelfde behandeling als de bestaande types: leeg en optioneel betekent dat het
+veld helemaal niet in de payload komt, niet als lege string. Raakt `forms.ts` (types + normalisatie),
+`views.ts` (renderen), `leadbot.ts` (uitlezen — een keuzegroep leest meerdere inputs in plaats van
+één `.value`), `validate.ts` en `i18n.ts` (nieuwe foutteksten in drie talen).
+
+Met deze drie types wordt het offerteformulier van Van Delft wat het voorstel liet zien: `aantal` als
+number met `min: 1`, `leverdatum` als date, en `opties` als keuzegroep — geen tekstvelden met een
+uitleg in de placeholder meer.
+
 ## dataLayer
 
 Ongewijzigd. Drie events, plat, alleen `event`, `channel` en `user_data`. Een `links`- of
@@ -145,7 +194,9 @@ kiest.
 
 ## Tests
 
-Kanaalresolutie (onbruikbare definities vallen weg); richtext (opmaak én dat `<script>` geëscapet
+Per nieuw veldtype: renderen, uitlezen, valideren en wat er in `formFields` belandt — inclusief een
+keuzegroep die op `value` samenvoegt met een taallaag, en een datum die ISO blijft. Verder:
+kanaalresolutie (onbruikbare definities vallen weg); richtext (opmaak én dat `<script>` geëscapet
 blijft); de thread-flow per stap (vraag → gebruikersbubbel → typen → antwoord → vervolgchips);
 de infokaart in beide modi; `channel_click` met het juiste id per kanaalsoort en géén conversie op
 een link; de differentiële test hierboven; en een test dat een config zonder `conversational`
@@ -153,12 +204,9 @@ byte-identiek rendert als v1.11.0.
 
 ## Open punten
 
-1. **Veldtypes.** De demo gebruikt `checkbox`, `number` en `date` in het offerteformulier; het
-   product kent alleen `text`, `email`, `tel` en `textarea`. Voorstel: `aantal` en `leverdatum`
-   worden tekstvelden en de twee opties gaan naar de placeholder van het berichtveld. Wil Lester de
-   types écht, dan is dat een aparte uitbreiding van `forms.ts` en hoort die niet in deze release.
-2. **Naamgeving `faqs`.** Map met één ingang bij Van Delft, maar een map houdt "id = kanaal-id"
+1. **Naamgeving `faqs`.** Map met één ingang bij Van Delft, maar een map houdt "id = kanaal-id"
    overeind en laat een tweede FAQ toe zonder API-breuk.
+2. **`min`/`max` op `date`.** Bewust niet in deze release, zie Veldtypes.
 
 ## Release
 

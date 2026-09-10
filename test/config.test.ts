@@ -142,3 +142,64 @@ describe('resolveConfig — forms', () => {
     expect(cfg.forms.contact_form.formName).toBe('Nieuwe naam');
   });
 });
+
+describe('resolveConfig — taal en taallaag', () => {
+  beforeEach(() => {
+    document.documentElement.lang = 'de';
+  });
+
+  it('serves the built-in German copy on a German page', () => {
+    const cfg = resolveConfig('p1', undefined);
+    expect(cfg.language).toBe('de');
+    expect(cfg.texts.submit).toBe('Nachricht senden');
+    expect(cfg.greeting).toBe('Guten Tag 👋 Wie können wir Ihnen helfen?');
+  });
+
+  it('applies the overlay of the detected language', () => {
+    const cfg = resolveConfig('p1', {
+      whatsapp: '+31620222407',
+      channels: ['offerte', 'whatsapp'],
+      forms: { offerte: { title: 'Offerte aanvragen', fields: [{ key: 'name', required: true }] } },
+      byLanguage: { de: { forms: { offerte: { title: 'Angebot anfordern' } } } },
+    });
+    expect(cfg.forms.offerte.title).toBe('Angebot anfordern');
+    expect(cfg.forms.offerte.fields[0].required).toBe(true);
+    expect(cfg.channels).toEqual(['offerte', 'whatsapp']);
+  });
+
+  it('keeps the Dutch base on a Dutch page', () => {
+    document.documentElement.lang = 'nl';
+    const cfg = resolveConfig('p1', {
+      forms: { offerte: { title: 'Offerte aanvragen', fields: [{ key: 'name' }] } },
+      byLanguage: { de: { forms: { offerte: { title: 'Angebot anfordern' } } } },
+    });
+    expect(cfg.forms.offerte.title).toBe('Offerte aanvragen');
+  });
+
+  it('translates the form name so leads stay distinguishable per language', () => {
+    const cfg = resolveConfig('p1', {
+      forms: { offerte: { formName: 'LeadBot — Offerteaanvraag', fields: [{ key: 'name' }] } },
+      byLanguage: { de: { forms: { offerte: { formName: 'LeadBot — Angebotsanfrage' } } } },
+    });
+    expect(cfg.forms.offerte.formName).toBe('LeadBot — Angebotsanfrage');
+  });
+
+  it('lets a language override the response time and the phone number', () => {
+    const cfg = resolveConfig('p1', {
+      phone: '+31 341 411 624',
+      channels: ['phone'],
+      responseTimeText: 'Gemiddelde responstijd: binnen 15 minuten',
+      byLanguage: { de: { phone: '+49 30 123456', responseTimeText: 'Antwort innerhalb von 15 Minuten' } },
+    });
+    expect(cfg.phone).toBe('+49 30 123456');
+    expect(cfg.texts.responseTime).toBe('Antwort innerhalb von 15 Minuten');
+  });
+
+  it('cannot be talked into another language by its own overlay', () => {
+    const cfg = resolveConfig('p1', {
+      byLanguage: { de: { language: 'nl' } as never },
+    });
+    expect(cfg.language).toBe('de');
+    expect(cfg.texts.submit).toBe('Nachricht senden');
+  });
+});

@@ -1,6 +1,6 @@
-export type Language = 'nl' | 'en';
+export type Language = 'nl' | 'en' | 'de';
 
-export const SUPPORTED_LANGUAGES: Language[] = ['nl', 'en'];
+export const SUPPORTED_LANGUAGES: Language[] = ['nl', 'en', 'de'];
 
 export function detectLanguage(langAttr: string | null | undefined): Language {
   const base = (langAttr || '').toLowerCase().split('-')[0];
@@ -67,6 +67,14 @@ export const PERSONAL_TEXTS: Record<Language, Partial<LeadBotTexts>> = {
     waSub: 'Chat direct met mij',
     messagePlaceholder: 'Waar kan ik je mee helpen?',
     successBody: 'Ik neem zo snel mogelijk contact met je op.',
+  },
+  de: {
+    greeting: 'Guten Tag 👋 Wie kann ich Ihnen helfen?',
+    msgSub: 'Ich melde mich schnellstmöglich',
+    callTitle: 'Rufen Sie mich an',
+    waSub: 'Chatten Sie direkt mit mir',
+    messagePlaceholder: 'Wie kann ich Ihnen helfen?',
+    successBody: 'Ich melde mich schnellstmöglich bei Ihnen.',
   },
 };
 
@@ -152,5 +160,46 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     errorPhone: 'Vul een geldig telefoonnummer in',
     errorSend: 'Versturen mislukt. Probeer het opnieuw.',
     errorBlocked: 'Versturen is op dit moment niet mogelijk.',
+  },
+  de: {
+    greeting: 'Guten Tag 👋 Wie können wir Ihnen helfen?',
+    from: 'von',
+    responseTime: 'Durchschnittliche Antwortzeit: innerhalb von 15 Minuten',
+    launcherLabel: 'Kontakt aufnehmen',
+    close: 'Schließen',
+    back: 'Zurück',
+    msgTitle: 'Nachricht senden',
+    msgSub: 'Wir melden uns schnellstmöglich',
+    callTitle: 'Rufen Sie uns an',
+    waTitle: 'WhatsApp',
+    waSub: 'Chatten Sie direkt mit uns',
+    waPlaceholder: 'Ihre Nachricht…',
+    waPhoneQuestion: 'Mit welcher Telefonnummer möchten Sie das WhatsApp-Gespräch starten?',
+    waPhonePlaceholder: '151 23456789',
+    waCountryLabel: 'Ländervorwahl',
+    waiOpening: 'WhatsApp wird geöffnet…',
+    waiReopen: 'WhatsApp erneut öffnen',
+    waiDialogLabel: 'Kontakt über WhatsApp',
+    formTitle: 'Nachricht senden',
+    nameLabel: 'Name',
+    namePlaceholder: 'Ihr Name',
+    emailLabel: 'E-Mail-Adresse',
+    emailPlaceholder: 'name@firma.de',
+    phoneLabel: 'Telefonnummer',
+    phonePlaceholder: '151 23456789',
+    messageLabel: 'Nachricht',
+    messagePlaceholder: 'Wie können wir Ihnen helfen?',
+    submit: 'Nachricht senden',
+    optional: '(optional)',
+    successTitle: 'Nachricht gesendet!',
+    successBody: 'Wir melden uns schnellstmöglich bei Ihnen.',
+    waSuccessTitle: 'WhatsApp geöffnet',
+    waSuccessBody: 'WhatsApp wurde in einem neuen Tab geöffnet. Senden Sie dort Ihre Nachricht, um das Gespräch zu starten.',
+    successBack: 'Zurück zum Start',
+    errorRequired: 'Dieses Feld ist erforderlich',
+    errorEmail: 'Geben Sie eine gültige E-Mail-Adresse ein',
+    errorPhone: 'Geben Sie eine gültige Telefonnummer ein',
+    errorSend: 'Senden fehlgeschlagen. Bitte versuchen Sie es erneut.',
+    errorBlocked: 'Das Senden ist derzeit nicht möglich.',
   },
 };

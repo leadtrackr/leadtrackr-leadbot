@@ -6,7 +6,7 @@ Lightweight leadgeneratie-bot voor klantwebsites. Eén script-tag, rechtsonder o
 - **Formulieren uit de config** — velden en kanalen stel je samen op de site zelf (bijv. een GTM Custom HTML-tag), zonder repo-wijziging
 - **Shadow DOM** — geen CSS-conflicten met de klantsite, geen iframe
 - **GTM-tag-compatibel** — zelfde `lt_channelflow`-cookie, zelfde `createLead`-payload; LeadBot en GTM-tag kunnen naast elkaar draaien
-- **Meertalig** — taal volgt automatisch het `lang`-attribuut van de pagina (`nl`/`en`, fallback `en`); alle teksten komen uit taalbestanden en zijn per key overridebaar
+- **Meertalig** — taal volgt automatisch het `lang`-attribuut van de pagina (`nl`/`en`/`de`, fallback `en`); alle teksten komen uit taalbestanden en zijn per key overridebaar, en met `byLanguage` serveert één tag meerdere talen
 - **Persoonlijke stem** — met een `agentName` spreekt de LeadBot in de ik-vorm ("Waar kan ik je mee helpen?"); zonder agent in de wij-vorm
 - **Native typografie** — neemt standaard het lettertype van de website over (`theme.font: "inherit"`); geen externe font-requests
 - **Volledige landenlijst** — telefoonlandcodes via de native systeem-selector (220+ landen, namen gelokaliseerd via `Intl.DisplayNames`)
@@ -43,6 +43,7 @@ Alle opties op `window.ltLeadBotConfig` (vóór het script-tag zetten):
 | `whatsapp` | `null` | WhatsApp-nummer (wa.me-doel); `null` verbergt het kanaal |
 | `channels` | `["contact_form","phone","whatsapp"]` | Volgorde = weergavevolgorde; elk id dat geen `phone`/`whatsapp` is moet in `forms` staan |
 | `forms` | ingebouwd `contact_form` | Eigen formulieren met eigen velden, zie hieronder |
+| `byLanguage` | `{}` | Per taal een laag over de basisconfig, zie hieronder |
 | `launcher` | `true` | `false` verbergt de LeadBot-launcher volledig (bijv. voor interceptor-only) |
 | `whatsappInterceptor` | `false` | `true` onderschept kliks op bestaande wa.me-/WhatsApp-links en opent de LeadBot-modal; zie hieronder |
 | `position` | `"right"` | `"right"` of `"left"` |
@@ -50,7 +51,7 @@ Alle opties op `window.ltLeadBotConfig` (vóór het script-tag zetten):
 | `teaser` | `true` | Teaser-bubbel; dismiss onthouden per sessie |
 | `defaultCountry` | auto | Startland van de landcode-selector; default = land uit de browser-locale (bijv. `nl-BE` → BE), fallback `NL`. Geen IP-geolocatie |
 | `callTracking` | `false` | `true` = telefoonnummer komt uit de LeadTrackr call-tracking cookie (dynamic number insertion); zie hieronder |
-| `language` | auto | Forceer `"nl"` of `"en"`; default = `lang`-attribuut van de pagina, fallback `en` |
+| `language` | auto | Forceer `"nl"`, `"en"` of `"de"`; default = `lang`-attribuut van de pagina, fallback `en` |
 | `responseTimeText` | per taal | Bijv. `"Gemiddelde responstijd: binnen 15 minuten"` — per project aanpasbaar |
 | `theme` | LeadTrackr-kleuren | Alle kleuren + radius overridebaar, zie hieronder |
 | `formNames` | `LeadBot — Contact form` / `LeadBot — WhatsApp` | `formData.formName` per kanaal |
@@ -90,6 +91,62 @@ fields: [{ key: 'name' }, { key: 'email' }, { key: 'message' }]  // = het ingebo
 ```
 
 Alles wat je weglaat valt terug op de taal van de pagina, dus `{ title, fields }` is genoeg. Wil je het ingebouwde formulier aanpassen, zet dan `contact_form` in `forms` — dan wint die definitie. Een formulier zonder bruikbaar veld krijgt geen knop.
+
+### Meertalige sites
+
+Serveert een site meerdere talen, dan hoeft de config niet per taal gedupliceerd te worden. `byLanguage` legt
+een laag over de basis heen, en de LeadBot pakt de laag van de taal die hij op de pagina detecteert — dus
+gewoon het `lang`-attribuut, er is geen extra schakelaar in GTM voor nodig.
+
+```js
+window.ltLeadBotConfig = {
+  greeting: 'Goedendag 👋 Waar kan ik je mee helpen?',
+  channels: ['offerte', 'phone'],
+  forms: {
+    offerte: {
+      title: 'Offerte aanvragen',
+      formName: 'LeadBot — Offerteaanvraag',
+      fields: [
+        { key: 'name', required: true },
+        { key: 'aantal', label: 'Aantal producten', required: true }
+      ]
+    }
+  },
+  byLanguage: {
+    de: {
+      greeting: 'Guten Tag 👋 Wie kann ich Ihnen helfen?',
+      forms: {
+        offerte: {
+          title: 'Angebot anfordern',
+          formName: 'LeadBot — Angebotsanfrage',
+          fields: [{ key: 'aantal', label: 'Anzahl Produkte' }]
+        }
+      }
+    }
+  }
+};
+```
+
+Alles wat je bovenin mag zetten, mag ook in een taallaag — ook een land-eigen `phone` of `whatsapp`. Twee
+uitzonderingen: `language` (dat bepaalt juist welke laag gekozen wordt) en een tweede `byLanguage` eronder.
+
+Wat de laag níet geeft, komt uit de basis:
+
+- **Losse teksten** (`texts`, `formNames`, `theme`, `offset`) worden per sleutel samengevoegd — je vertaalt
+  alleen de regels die je wilt vertalen.
+- **Formulieren** worden per id samengevoegd; eigenschappen die de laag weglaat (`submit`, `icon`, …) blijven
+  uit de basis staan.
+- **Velden** volgen de basis in volgorde, type en `required`; de laag hoeft alleen `label` en `placeholder`
+  te geven. Een key die de basis niet heeft, komt erachteraan — zo vraagt één land een extra veld zonder dat
+  je een tweede formulier nodig hebt.
+
+**Kanaal-id's blijven bewust gelijk over talen.** Het id is wat in `channel` in de dataLayer belandt, dus met
+dezelfde id's blijft één GA4-rapportage over alle talen kloppen. Wil je per taal apart kunnen rapporteren,
+gebruik dan een eigen `formName` per taal — die staat in LeadTrackr bij de lead.
+
+Zit een taal niet in de bot (alleen `nl`, `en` en `de` zijn ingebouwd), dan valt de UI terug op Engels. Een
+`byLanguage`-laag voor die taal wordt dan niet toegepast: de laag hoort bij de gedetecteerde taal, en die is
+in dat geval `en`.
 
 ### Theme
 

@@ -1,11 +1,11 @@
-import { resolveConfig, type LeadBotConfig } from './config';
+import { resolveConfig, type UserConfig } from './config';
 import { updateChannelFlowFromPage } from './channelflow';
 import { mountWhatsAppInterceptor } from './ui/interceptor';
 import { mountLeadBot } from './ui/leadbot';
 
 declare global {
   interface Window {
-    ltLeadBotConfig?: Partial<LeadBotConfig>;
+    ltLeadBotConfig?: UserConfig;
     __ltLeadBotLoaded?: boolean;
   }
 }

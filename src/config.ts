@@ -1,6 +1,7 @@
 import { regionFromLocale } from './countries';
 import { normalizeForms, type FormDef, type UserFormDef } from './forms';
 import { detectLanguage, PERSONAL_TEXTS, TEXTS, type Language, type LeadBotTexts } from './i18n';
+import { applyLanguageOverlay } from './overlay';
 import type { ChannelId } from './types';
 
 export interface LeadBotTheme {
@@ -70,7 +71,15 @@ export interface LeadBotConfig {
 export type UserConfig = Omit<Partial<LeadBotConfig>, 'forms' | 'callTracking'> & {
   forms?: Record<string, UserFormDef>;
   callTracking?: boolean | { prefix?: string; swapGroup?: number };
+  /** Per taal een laag over de basisconfig heen; zie `applyLanguageOverlay`. */
+  byLanguage?: Record<string, LanguageOverlay>;
 };
+
+/**
+ * Wat een taal mag overschrijven: alles wat de site zelf mag zetten, behalve
+ * de taal (dat zou circulair zijn) en een tweede laag eronder.
+ */
+export type LanguageOverlay = Omit<UserConfig, 'byLanguage' | 'language'>;
 
 export const DEFAULT_ENDPOINT = 'https://app.leadtrackr.io/api/leads/createLead';
 
@@ -91,8 +100,10 @@ const DEFAULT_THEME: LeadBotTheme = {
 };
 
 export function resolveConfig(projectId: string, user: UserConfig | undefined): LeadBotConfig {
-  const u = user || {};
-  const language = detectLanguage(u.language || document.documentElement.lang);
+  // De taal eerst bepalen: die kiest welke taallaag over de basisconfig gaat.
+  // Vandaar dat een taallaag zelf geen `language` mag zetten — dat zou circulair zijn.
+  const language = detectLanguage(user?.language || document.documentElement.lang);
+  const u = applyLanguageOverlay(user, language) || {};
   // With an agent on top, the copy speaks as "I"; without one, as "we".
   const personal = u.agentName ? PERSONAL_TEXTS[language] : {};
   const texts: LeadBotTexts = { ...TEXTS[language], ...personal, ...(u.texts || {}) };

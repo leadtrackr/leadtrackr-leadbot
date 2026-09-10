@@ -42,6 +42,8 @@ export interface LeadBotTexts {
   waSuccessTitle: string;
   waSuccessBody: string;
   successBack: string;
+  threadRestart: string;
+  threadAnotherQuestion: string;
   errorRequired: string;
   errorEmail: string;
   errorPhone: string;
@@ -116,6 +118,8 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     waSuccessTitle: 'WhatsApp opened',
     waSuccessBody: 'WhatsApp has opened in a new tab. Send your message there to start the conversation.',
     successBack: 'Back to start',
+    threadRestart: 'Something else',
+    threadAnotherQuestion: 'Another question',
     errorRequired: 'This field is required',
     errorEmail: 'Enter a valid email address',
     errorPhone: 'Enter a valid phone number',
@@ -159,6 +163,8 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     waSuccessTitle: 'WhatsApp geopend',
     waSuccessBody: 'WhatsApp is geopend in een nieuw tabblad. Verstuur daar je bericht om het gesprek te starten.',
     successBack: 'Terug naar start',
+    threadRestart: 'Iets anders bekijken',
+    threadAnotherQuestion: 'Nog een vraag',
     errorRequired: 'Dit veld is verplicht',
     errorEmail: 'Vul een geldig e-mailadres in',
     errorPhone: 'Vul een geldig telefoonnummer in',
@@ -202,6 +208,8 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     waSuccessTitle: 'WhatsApp geöffnet',
     waSuccessBody: 'WhatsApp wurde in einem neuen Tab geöffnet. Senden Sie dort Ihre Nachricht, um das Gespräch zu starten.',
     successBack: 'Zurück zum Start',
+    threadRestart: 'Etwas anderes ansehen',
+    threadAnotherQuestion: 'Noch eine Frage',
     errorRequired: 'Dieses Feld ist erforderlich',
     errorEmail: 'Geben Sie eine gültige E-Mail-Adresse ein',
     errorPhone: 'Geben Sie eine gültige Telefonnummer ein',

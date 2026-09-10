@@ -252,6 +252,30 @@ input, textarea, select { font: inherit; color: var(--tx); }
   .ltb-panel:has(.ltb-wa-chat) .ltb-wa-chat { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 }
 
+/* ── Thread: het gesprek zelf ────────────────────────────────────────────── */
+.ltb-thread { display: flex; flex-direction: column; gap: 10px; padding: 16px 14px 18px; overflow-y: auto; flex: 1 1 auto; min-height: 180px; max-height: min(460px, 60dvh); background: var(--bg); }
+.ltb-bot, .ltb-user { max-width: 85%; font-size: 14.5px; line-height: 1.5; overflow-wrap: break-word; animation: ltb-msg .32s ease-out both; }
+.ltb-bot { align-self: flex-start; background: var(--tint); color: var(--tx); border-radius: 14px 14px 14px 4px; padding: 11px 14px; }
+.ltb-user { align-self: flex-end; background: var(--p); color: #fff; border-radius: 14px 14px 4px 14px; padding: 11px 14px; }
+.ltb-bot p { margin: 0; }
+.ltb-bot p + p { margin-top: 8px; }
+.ltb-bot strong { font-weight: 700; }
+.ltb-cardbtn { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; margin-top: 11px; padding: 10px 13px; border: 1px solid var(--bd); border-radius: 10px; background: #fff; color: var(--ht); font-size: 13.5px; font-weight: 600; text-decoration: none; cursor: pointer; }
+.ltb-cardbtn:hover { border-color: var(--p); color: var(--p); }
+.ltb-typing { align-self: flex-start; display: flex; gap: 4px; align-items: center; background: var(--tint); border-radius: 14px 14px 14px 4px; padding: 13px 15px; }
+.ltb-typing span { width: 6px; height: 6px; border-radius: 999px; background: var(--mut); animation: ltb-dot 1s ease-in-out infinite; }
+.ltb-typing span:nth-child(2) { animation-delay: .15s; }
+.ltb-typing span:nth-child(3) { animation-delay: .3s; }
+.ltb-opts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-top: 2px; }
+.ltb-opt { border: 1px solid var(--bd); border-radius: 999px; padding: 8px 15px; background: #fff; color: var(--ht); font-size: 13.5px; font-weight: 600; cursor: pointer; animation: ltb-msg .32s ease-out both; }
+.ltb-opt:hover { background: var(--tint); border-color: var(--p); color: var(--p); }
+.ltb-opt--featured { background: var(--p); border-color: var(--p); color: #fff; }
+.ltb-opt--featured:hover { background: var(--ph); border-color: var(--ph); color: #fff; }
+.ltb-opt--quiet { border-style: dashed; color: var(--mut); font-weight: 500; }
+@keyframes ltb-msg { 0% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: none; } }
+/* Een herrender toont de eindtoestand direct in plaats van alles opnieuw af te spelen. */
+.ltb-static .ltb-bot, .ltb-static .ltb-user, .ltb-static .ltb-opt { animation: none; }
+
 @media (prefers-reduced-motion: reduce) {
   .ltb-launcher, .ltb-avatar-dot { animation: none; }
   .ltb-panel, .ltb-view, .ltb-teaser, .ltb-wa-sent, .ltb-success-avatar, .ltb-overlay { animation: none; }
@@ -259,6 +283,8 @@ input, textarea, select { font: inherit; color: var(--tx); }
   .ltb-wa-question, .ltb-wa-tick-one, .ltb-wa-tick-two { animation: none; }
   .ltb-wa-question { opacity: 1; }
   .ltb-wa-typing { display: none; }
+  .ltb-bot, .ltb-user, .ltb-opt { animation: none; }
+  .ltb-typing span { animation: none; }
   .ltb-wa-tick-one { opacity: 0; }
   .ltb-wa-tick-two { opacity: 1; }
 }

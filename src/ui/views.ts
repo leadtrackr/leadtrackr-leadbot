@@ -10,7 +10,7 @@ export function esc(s: string): string {
   );
 }
 
-function avatar(cfg: LeadBotConfig, cls: string): string {
+export function avatar(cfg: LeadBotConfig, cls: string): string {
   if (cfg.agentPhoto) return `<img src="${esc(cfg.agentPhoto)}" alt="">`;
   const initial = esc((cfg.agentName || cfg.companyName || 'L').charAt(0).toUpperCase());
   return `<div class="${cls}">${initial}</div>`;

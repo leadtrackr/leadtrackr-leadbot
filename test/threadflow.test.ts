@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { resolveConfig } from '../src/config';
-import { answerQuestion, channelChip, menuThread, openFaq } from '../src/ui/threadflow';
+import { answerQuestion, askFaq, channelChip, faqOther, menuThread, openFaq } from '../src/ui/threadflow';
 
 function config() {
   return resolveConfig('p1', {
@@ -26,11 +26,33 @@ function config() {
 }
 
 describe('FAQ-gesprek', () => {
-  it('opens with the intro and one chip per question', () => {
+  it('opens with the intro, a chip per question and the way out', () => {
     const cfg = config();
     const s = openFaq(cfg, cfg.faqs.faq);
     expect(s.messages).toEqual([{ from: 'bot', text: 'Waar kan ik je mee helpen?' }]);
-    expect(s.chips.map((c) => c.label)).toEqual(['Openingstijden?', 'Levertijd?']);
+    expect(s.chips.map((c) => c.label)).toEqual([
+      'Openingstijden?',
+      'Levertijd?',
+      'Ik heb een andere vraag',
+    ]);
+    expect(s.channel).toBe('faq');
+  });
+
+  it('leaves out the way out when there is nowhere to go', () => {
+    const cfg = resolveConfig('p1', {
+      language: 'nl',
+      channels: ['faq'],
+      faqs: { faq: { questions: [{ q: 'A?', a: 'B' }] } },
+    } as never);
+    expect(openFaq(cfg, cfg.faqs.faq).chips.map((c) => c.id)).toEqual(['q0']);
+  });
+
+  it('adds the question list to a running conversation instead of restarting it', () => {
+    const cfg = config();
+    const running = menuThread(cfg);
+    const s = askFaq(cfg, cfg.faqs.faq, running);
+    expect(s.messages).toHaveLength(2);
+    expect(s.messages[0]).toEqual(running.messages[0]);
     expect(s.channel).toBe('faq');
   });
 
@@ -43,29 +65,22 @@ describe('FAQ-gesprek', () => {
     expect(s.messages[2].button).toEqual({ label: 'Winkelpagina', url: '/winkels' });
   });
 
-  it('offers the remaining questions plus the follow-up channels and a quiet closer', () => {
+  it('offers exactly two quiet choices after an answer', () => {
     const cfg = config();
     const s = answerQuestion(cfg, cfg.faqs.faq, openFaq(cfg, cfg.faqs.faq), 0);
-    const ids = s.chips.map((c) => c.id);
-    expect(ids).toContain('q1');
-    expect(ids).not.toContain('q0');
-    expect(ids).toContain('whatsapp');
-    expect(ids).toContain('phone');
-    expect(s.chips[s.chips.length - 1]).toEqual({
-      id: 'restart',
-      label: 'Iets anders bekijken',
-      style: 'quiet',
-    });
+    expect(s.chips).toEqual([
+      { id: 'faq-again', label: 'Nog een vraag', style: 'quiet' },
+      { id: 'restart', label: 'Iets anders bekijken', style: 'quiet' },
+    ]);
   });
 
-  it('drops a question from the chips once it has been asked', () => {
+  it('offers the lead channels behind "another question", WhatsApp featured', () => {
     const cfg = config();
-    const first = answerQuestion(cfg, cfg.faqs.faq, openFaq(cfg, cfg.faqs.faq), 0);
-    const second = answerQuestion(cfg, cfg.faqs.faq, first, 1);
-    const ids = second.chips.map((c) => c.id);
-    expect(ids).not.toContain('q0');
-    expect(ids).not.toContain('q1');
-    expect(ids).toContain('whatsapp');
+    const s = faqOther(cfg, cfg.faqs.faq, openFaq(cfg, cfg.faqs.faq));
+    expect(s.messages[s.messages.length - 2]).toEqual({ from: 'user', text: 'Ik heb een andere vraag' });
+    expect(s.messages[s.messages.length - 1].text).toContain('Hoe wil je je vraag stellen?');
+    expect(s.chips.map((c) => c.id)).toEqual(['whatsapp', 'phone']);
+    expect(s.chips[0].style).toBe('featured');
   });
 
   it('marks only the answer as new, so the rest of the thread stays still', () => {

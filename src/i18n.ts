@@ -43,6 +43,9 @@ export interface LeadBotTexts {
   waSuccessBody: string;
   successBack: string;
   threadRestart: string;
+  threadAnotherQuestion: string;
+  faqOther: string;
+  faqOtherIntro: string;
   errorRequired: string;
   errorEmail: string;
   errorPhone: string;
@@ -62,6 +65,7 @@ export const PERSONAL_TEXTS: Record<Language, Partial<LeadBotTexts>> = {
     waSub: 'Chat with me directly',
     messagePlaceholder: 'How can I help?',
     successBody: "I'll get back to you as soon as possible.",
+    faqOtherIntro: "I'm happy to help. How would you like to ask?",
   },
   nl: {
     greeting: 'Goedendag 👋 Waar kan ik je mee helpen?',
@@ -70,6 +74,7 @@ export const PERSONAL_TEXTS: Record<Language, Partial<LeadBotTexts>> = {
     waSub: 'Chat direct met mij',
     messagePlaceholder: 'Waar kan ik je mee helpen?',
     successBody: 'Ik neem zo snel mogelijk contact met je op.',
+    faqOtherIntro: 'Ik sta je graag te woord. Hoe wil je je vraag stellen?',
   },
   de: {
     greeting: 'Guten Tag 👋 Wie kann ich Ihnen helfen?',
@@ -78,6 +83,7 @@ export const PERSONAL_TEXTS: Record<Language, Partial<LeadBotTexts>> = {
     waSub: 'Chatten Sie direkt mit mir',
     messagePlaceholder: 'Wie kann ich Ihnen helfen?',
     successBody: 'Ich melde mich schnellstmöglich bei Ihnen.',
+    faqOtherIntro: 'Ich helfe Ihnen gerne. Wie möchten Sie Ihre Frage stellen?',
   },
 };
 
@@ -118,6 +124,9 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     waSuccessBody: 'WhatsApp has opened in a new tab. Send your message there to start the conversation.',
     successBack: 'Back to start',
     threadRestart: 'Something else',
+    threadAnotherQuestion: 'Another question',
+    faqOther: 'I have another question',
+    faqOtherIntro: 'We are happy to help. How would you like to ask?',
     errorRequired: 'This field is required',
     errorEmail: 'Enter a valid email address',
     errorPhone: 'Enter a valid phone number',
@@ -162,6 +171,9 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     waSuccessBody: 'WhatsApp is geopend in een nieuw tabblad. Verstuur daar je bericht om het gesprek te starten.',
     successBack: 'Terug naar start',
     threadRestart: 'Iets anders bekijken',
+    threadAnotherQuestion: 'Nog een vraag',
+    faqOther: 'Ik heb een andere vraag',
+    faqOtherIntro: 'We staan je graag te woord. Hoe wil je je vraag stellen?',
     errorRequired: 'Dit veld is verplicht',
     errorEmail: 'Vul een geldig e-mailadres in',
     errorPhone: 'Vul een geldig telefoonnummer in',
@@ -206,6 +218,9 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     waSuccessBody: 'WhatsApp wurde in einem neuen Tab geöffnet. Senden Sie dort Ihre Nachricht, um das Gespräch zu starten.',
     successBack: 'Zurück zum Start',
     threadRestart: 'Etwas anderes ansehen',
+    threadAnotherQuestion: 'Noch eine Frage',
+    faqOther: 'Ich habe eine andere Frage',
+    faqOtherIntro: 'Wir helfen Ihnen gerne. Wie möchten Sie Ihre Frage stellen?',
     errorRequired: 'Dieses Feld ist erforderlich',
     errorEmail: 'Geben Sie eine gültige E-Mail-Adresse ein',
     errorPhone: 'Geben Sie eine gültige Telefonnummer ein',

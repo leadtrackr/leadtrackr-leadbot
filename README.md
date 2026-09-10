@@ -4,6 +4,7 @@ Lightweight leadgeneratie-bot voor klantwebsites. Eén script-tag, rechtsonder o
 
 - **Geen dependencies** — één IIFE-bundle van ±20 KB gzip
 - **Formulieren uit de config** — velden en kanalen stel je samen op de site zelf (bijv. een GTM Custom HTML-tag), zonder repo-wijziging
+- **Lijst of gesprek** — standaard een kanalenlijst; met `conversational: true` opent de launcher een gesprek met keuzechips, infokaarten en een FAQ
 - **Shadow DOM** — geen CSS-conflicten met de klantsite, geen iframe
 - **GTM-tag-compatibel** — zelfde `lt_channelflow`-cookie, zelfde `createLead`-payload; LeadBot en GTM-tag kunnen naast elkaar draaien
 - **Meertalig** — taal volgt automatisch het `lang`-attribuut van de pagina (`nl`/`en`/`de`, fallback `en`); alle teksten komen uit taalbestanden en zijn per key overridebaar, en met `byLanguage` serveert één tag meerdere talen
@@ -43,6 +44,9 @@ Alle opties op `window.ltLeadBotConfig` (vóór het script-tag zetten):
 | `whatsapp` | `null` | WhatsApp-nummer (wa.me-doel); `null` verbergt het kanaal |
 | `channels` | `["contact_form","phone","whatsapp"]` | Volgorde = weergavevolgorde; elk id dat geen `phone`/`whatsapp` is moet in `forms` staan |
 | `forms` | ingebouwd `contact_form` | Eigen formulieren met eigen velden, zie hieronder |
+| `links` | `{}` | Infokaarten: een bericht met een knop naar een pagina, zie hieronder |
+| `faqs` | `{}` | Veelgestelde vragen met doorloop naar andere kanalen, zie hieronder |
+| `conversational` | `false` | `true` opent een gesprek in plaats van een kanalenlijst |
 | `byLanguage` | `{}` | Per taal een laag over de basisconfig, zie hieronder |
 | `launcher` | `true` | `false` verbergt de LeadBot-launcher volledig (bijv. voor interceptor-only) |
 | `whatsappInterceptor` | `false` | `true` onderschept kliks op bestaande wa.me-/WhatsApp-links en opent de LeadBot-modal; zie hieronder |
@@ -82,7 +86,29 @@ forms: {
 }
 ```
 
-Een veld is `{ key, label, type, required, placeholder }`; alleen `key` is verplicht. Keys mogen letters, cijfers, `_` en `-` bevatten — een veld met een andere key wordt overgeslagen. Types: `text` (default), `email`, `tel` en `textarea`. Een `tel`-veld krijgt dezelfde native landcode-selector als de WhatsApp-flow en levert een E.164-nummer op; `email` wordt gevalideerd. Velden zonder `required: true` zijn optioneel en krijgen dat er zichtbaar bij.
+Een veld is `{ key, label, type, required, placeholder }`; alleen `key` is verplicht. Keys mogen letters, cijfers, `_` en `-` bevatten — een veld met een andere key wordt overgeslagen. Velden zonder `required: true` zijn optioneel en krijgen dat er zichtbaar bij.
+
+Types: `text` (default), `email`, `tel`, `textarea`, `number`, `date` en `checkbox`.
+
+- **`tel`** krijgt dezelfde native landcode-selector als de WhatsApp-flow en levert een E.164-nummer op.
+- **`email`** wordt gevalideerd.
+- **`number`** neemt optioneel `min` en `max`; een waarde daarbuiten wordt geweigerd.
+- **`date`** is een native datumkiezer. De bezoeker ziet zijn eigen notatie, maar wat naar LeadTrackr gaat is altijd ISO (`YYYY-MM-DD`), zodat een datum uit elke taal hetzelfde formaat heeft.
+- **`checkbox`** is met `options` een keuzegroep en zonder `options` één vinkje.
+
+```js
+{ key: 'aantal', label: 'Aantal', type: 'number', min: 1, max: 5000, required: true },
+{ key: 'leverdatum', label: 'Gewenste leverdatum', type: 'date' },
+{ key: 'opties', label: 'Optioneel', type: 'checkbox', options: [
+    { value: 'boodschap', label: 'Met persoonlijke boodschap' },
+    { value: 'multi-adres', label: 'Verzending naar meerdere adressen' }
+]},
+{ key: 'nieuwsbrief', label: 'Houd mij op de hoogte', type: 'checkbox' }
+```
+
+Een optie is `{ value, label }`, of een kale string als die twee gelijk zijn. In LeadTrackr komen de **values**, gescheiden door `", "` — dus `"boodschap, multi-adres"`. Een enkel vinkje levert zijn value op als het aan staat en ontbreekt als het uit staat; zonder eigen value is dat `"true"`. `required` betekent: minstens één aangevinkt.
+
+Dat onderscheid tussen `value` en `label` bestaat om dezelfde reden als bij kanaal-id's. Zou een taallaag de opties vervangen door vertaalde teksten, dan sloeg een Duitse lead een andere waarde op dan een Nederlandse voor dezelfde keuze, en dan valt er niet meer overheen te rapporteren. Nu vertaalt de laag alleen `label`.
 
 **Gereserveerde keys.** `name`, `email`, `phone` en `message` hebben een vaste betekenis: die gaan naar `userData` (LeadTrackr) en `user_data` (Enhanced Conversions). Elke andere key gaat als vrij veld mee in `formFields`. Voor die vier hoef je verder niets in te vullen — label, type en placeholder komen uit het taalbestand:
 
@@ -134,8 +160,10 @@ Wat de laag níet geeft, komt uit de basis:
 
 - **Losse teksten** (`texts`, `formNames`, `theme`, `offset`) worden per sleutel samengevoegd — je vertaalt
   alleen de regels die je wilt vertalen.
-- **Formulieren** worden per id samengevoegd; eigenschappen die de laag weglaat (`submit`, `icon`, …) blijven
-  uit de basis staan.
+- **Formulieren, infokaarten en FAQ's** worden per id samengevoegd; eigenschappen die de laag weglaat
+  (`submit`, `icon`, `button.url`, …) blijven uit de basis staan.
+- **Keuze-opties** voegen samen op `value`, zodat een laag alleen het label vertaalt en de opgeslagen
+  waarde in elke taal gelijk blijft.
 - **Velden** volgen de basis in volgorde, type en `required`; de laag hoeft alleen `label` en `placeholder`
   te geven. Een key die de basis niet heeft, komt erachteraan — zo vraagt één land een extra veld zonder dat
   je een tweede formulier nodig hebt.
@@ -147,6 +175,78 @@ gebruik dan een eigen `formName` per taal — die staat in LeadTrackr bij de lea
 Zit een taal niet in de bot (alleen `nl`, `en` en `de` zijn ingebouwd), dan valt de UI terug op Engels. Een
 `byLanguage`-laag voor die taal wordt dan niet toegepast: de laag hoort bij de gedetecteerde taal, en die is
 in dat geval `en`.
+
+### Infokaarten
+
+Niet elke keuze hoeft een lead op te leveren. Een `links`-kanaal is een doorverwijzing: in de
+kanalenlijst een knop die meteen naar de pagina gaat, in een gesprek een bericht met een knop eronder.
+
+```js
+channels: ['winkels', 'contact_form'],
+links: {
+  winkels: {
+    title: 'Winkels',
+    sub: 'Vind een winkel bij jou in de buurt',
+    icon: 'info',
+    message: '**Onze winkels**\n\nWist je dat je **gratis** kunt proeven?',
+    button: { label: 'Zoek een winkel', url: '/winkels' }
+  }
+}
+```
+
+Een infokaart levert `leadtrackr_leadbot_channel_click` met zijn eigen id, en nooit een lead of een
+conversie. Zonder `button.url` verschijnt het kanaal niet — dan liever geen knop dan een dode knop.
+
+### Veelgestelde vragen
+
+Een `faqs`-kanaal beantwoordt vragen in het gesprek en biedt daarna een doorloop naar de kanalen waar
+wél een lead uit komt.
+
+```js
+channels: ['faq', 'whatsapp', 'contact_form'],
+faqs: {
+  faq: {
+    title: 'Veelgestelde vragen',
+    sub: 'Direct antwoord op de meeste vragen',
+    icon: 'help',
+    intro: 'Waar kan ik je mee helpen?',
+    questions: [
+      { q: 'Wat zijn jullie openingstijden?',
+        a: 'Die vind je op onze **winkelpagina**.',
+        button: { label: 'Winkelpagina', url: '/winkels' } },
+      { q: 'Wat is de levertijd?', a: 'Voor 23:00 besteld, morgen in huis.' }
+    ],
+    followUp: ['whatsapp', 'phone', 'contact_form']
+  }
+}
+```
+
+De bezoeker kiest een vraag, die verschijnt als zijn eigen bericht, en na een korte typ-indicator
+volgt het antwoord — met de knop erbij als de vraag er een heeft. Een beantwoorde vraag verdwijnt uit
+de keuzes; wat overblijft staat er nog, met de doorloopkanalen eronder en één rustige afsluiter.
+
+Een doorloopkanaal hoeft **niet** in `channels` te staan: bellen is een prima vervolg op een antwoord
+zonder dat het een menukeuze is. Alleen kanalen die helemaal niet bestaan vallen weg.
+
+### Gespreksmodus
+
+Met `conversational: true` opent de launcher meteen een gesprek: de begroeting als bericht en elk
+kanaal uit `channels` als keuzechip, met WhatsApp uitgelicht. Formulieren en de WhatsApp-flow openen
+daar bovenop met een terugknop die in hetzelfde gesprek uitkomt — het gesprek blijft staan zoals het
+was.
+
+```js
+window.ltLeadBotConfig = {
+  conversational: true,
+  greeting: 'Goedendag 👋 Waar kan ik je mee helpen?',
+  channels: ['whatsapp', 'offerte', 'winkels', 'faq'],
+  // forms, links en faqs zoals hierboven
+};
+```
+
+De config is in beide modi dezelfde; alleen de presentatie verschilt. Zet je `conversational` weer
+uit, dan staat de kanalenlijst er weer, met exact dezelfde kanalen.
+
 
 ### Theme
 
@@ -188,7 +288,7 @@ window.dataLayer.push({
 });
 ```
 
-Kanaalnamen zijn overal identiek (config, code en dataLayer) — het id dat je een formulier in `forms` geeft, is precies het id dat in `channel` terechtkomt. Zo kun je in GTM apart op een terugbelverzoek triggeren. Een klik op het bel-kanaal geeft een `channel_click` met `channel: "phone"` plus een conversie-event met lege `user_data` — **behalve** wanneer `callTracking: true` aan staat: dan meet call tracking het daadwerkelijke gesprek en wordt de klik-conversie onderdrukt om dubbeltelling te voorkomen.
+Kanaalnamen zijn overal identiek (config, code en dataLayer) — het id dat je een formulier in `forms`, `links` of `faqs` geeft, is precies het id dat in `channel` terechtkomt. Een infokaart en een FAQ geven alleen een `channel_click`; die leveren geen lead en dus geen conversie op. Zo kun je in GTM apart op een terugbelverzoek triggeren. Een klik op het bel-kanaal geeft een `channel_click` met `channel: "phone"` plus een conversie-event met lege `user_data` — **behalve** wanneer `callTracking: true` aan staat: dan meet call tracking het daadwerkelijke gesprek en wordt de klik-conversie onderdrukt om dubbeltelling te voorkomen.
 
 ## Call tracking (dynamic number insertion)
 

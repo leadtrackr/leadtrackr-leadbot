@@ -48,11 +48,45 @@ export function backToMenu(cfg: LeadBotConfig, state: ThreadState): ThreadState 
   return { ...state, channel: null, chips: menuChips(cfg), typing: false, fresh: 0 };
 }
 
-export function openFaq(cfg: LeadBotConfig, def: FaqDef): ThreadState {
+/**
+ * De vragenlijst tonen binnen een lopend gesprek. Onderaan staat de doorloop
+ * als eigen keuze — niet onder elk antwoord, want dan verdrinkt het antwoord
+ * onder de knoppen.
+ */
+export function askFaq(cfg: LeadBotConfig, def: FaqDef, state: ThreadState): ThreadState {
+  const chips: ThreadChip[] = def.questions.map((q, i) => ({ id: 'q' + i, label: q.q }));
+  if (def.followUp.length) chips.push({ id: 'faq-other', label: cfg.texts.faqOther });
   return {
+    ...state,
     channel: def.id,
-    messages: [{ from: 'bot', text: def.intro }],
-    chips: def.questions.map((q, i) => ({ id: 'q' + i, label: q.q })),
+    messages: [...state.messages, { from: 'bot', text: def.intro }],
+    chips,
+    typing: false,
+    fresh: 1,
+  };
+}
+
+/** De FAQ als eigen gesprek, zoals wanneer je hem vanuit de kanalenlijst opent. */
+export function openFaq(cfg: LeadBotConfig, def: FaqDef): ThreadState {
+  return askFaq(cfg, def, { channel: def.id, messages: [], chips: [], typing: false, fresh: 0 });
+}
+
+/**
+ * "Ik heb een andere vraag": de bot biedt de kanalen aan waar wél een lead uit
+ * komt. WhatsApp uitgelicht, net als in het menu.
+ */
+export function faqOther(cfg: LeadBotConfig, def: FaqDef, state: ThreadState): ThreadState {
+  return {
+    ...state,
+    messages: [
+      ...state.messages,
+      { from: 'user', text: cfg.texts.faqOther },
+      { from: 'bot', text: cfg.texts.faqOtherIntro },
+    ],
+    chips: def.followUp
+      .map((id) => channelChip(cfg, id))
+      .filter((c): c is ThreadChip => c !== null)
+      .map((c) => (c.id === 'whatsapp' ? { ...c, style: 'featured' as const } : c)),
     typing: false,
     fresh: 1,
   };
@@ -66,20 +100,8 @@ export function answerQuestion(
 ): ThreadState {
   const q = def.questions[index];
   if (!q) return state;
-  const asked = state.messages
-    .filter((m) => m.from === 'user')
-    .map((m) => m.text)
-    .concat(q.q);
-  // Een gestelde vraag komt niet terug in de chips; wat overblijft wel, met de
-  // doorloopkanalen eronder en één rustige afsluiter. Het hele menu opnieuw
-  // tonen werd te druk.
-  const remaining = def.questions
-    .map((question, i) => ({ question, i }))
-    .filter(({ question }) => asked.indexOf(question.q) === -1)
-    .map(({ question, i }) => ({ id: 'q' + i, label: question.q }));
-  const followUp = def.followUp
-    .map((id) => channelChip(cfg, id))
-    .filter((c): c is ThreadChip => c !== null);
+  // Na een antwoord alleen twee rustige keuzes: nog een vraag, of iets anders.
+  // De hele vragenlijst er weer onder plakken maakt het antwoord onleesbaar.
   return {
     ...state,
     messages: [
@@ -87,7 +109,10 @@ export function answerQuestion(
       { from: 'user', text: q.q },
       { from: 'bot', text: q.a, ...(q.button ? { button: q.button } : {}) },
     ],
-    chips: [...remaining, ...followUp, { id: 'restart', label: cfg.texts.threadRestart, style: 'quiet' }],
+    chips: [
+      { id: 'faq-again', label: cfg.texts.threadAnotherQuestion, style: 'quiet' },
+      { id: 'restart', label: cfg.texts.threadRestart, style: 'quiet' },
+    ],
     typing: false,
     // alleen het antwoord is nieuw; de vraag stond er al
     fresh: 1,

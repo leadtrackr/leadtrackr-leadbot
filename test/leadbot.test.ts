@@ -914,21 +914,43 @@ describe('faqs-kanaal in het gesprek', () => {
     expect(card.getAttribute('href')).toBe('/winkels');
   });
 
-  it('drops an answered question from the chips and offers the follow-up channel', () => {
+  it('offers only "another question" and "something else" after an answer', () => {
     const root = withFaq();
     click(root, 'channel-faq');
     click(root, 'chip-q0');
     vi.advanceTimersByTime(700);
     expect(q(root, '[data-action="chip-q0"]')).toBeNull();
-    expect(q(root, '[data-action="chip-q1"]')).toBeTruthy();
-    expect(q(root, '[data-action="chip-whatsapp"]')).toBeTruthy();
+    expect(q(root, '[data-action="chip-q1"]')).toBeNull();
+    expect(q(root, '[data-action="chip-faq-again"]')).toBeTruthy();
     expect(q(root, '[data-action="chip-restart"]')).toBeTruthy();
+  });
+
+  it('brings the whole question list back on "another question"', () => {
+    const root = withFaq();
+    click(root, 'channel-faq');
+    click(root, 'chip-q0');
+    vi.advanceTimersByTime(700);
+    click(root, 'chip-faq-again');
+    vi.advanceTimersByTime(700);
+    expect(q(root, '[data-action="chip-q0"]')).toBeTruthy();
+    expect(q(root, '[data-action="chip-q1"]')).toBeTruthy();
+    // het antwoord van net blijft in het gesprek staan
+    expect(root.textContent).toContain('Openingstijden?');
+  });
+
+  it('offers the lead channels behind "I have another question"', () => {
+    const root = withFaq();
+    click(root, 'channel-faq');
+    click(root, 'chip-faq-other');
+    vi.advanceTimersByTime(700);
+    expect(root.textContent).toContain('Hoe wil je je vraag stellen?');
+    expect(q(root, '[data-action="chip-whatsapp"]')).toBeTruthy();
   });
 
   it('routes a follow-up chip through the same path as a channel button', () => {
     const root = withFaq();
     click(root, 'channel-faq');
-    click(root, 'chip-q0');
+    click(root, 'chip-faq-other');
     vi.advanceTimersByTime(700);
     window.dataLayer = [];
     click(root, 'chip-whatsapp');
@@ -939,23 +961,12 @@ describe('faqs-kanaal in het gesprek', () => {
   it('comes back to the conversation from a follow-up channel', () => {
     const root = withFaq();
     click(root, 'channel-faq');
-    click(root, 'chip-q0');
+    click(root, 'chip-faq-other');
     vi.advanceTimersByTime(700);
     click(root, 'chip-whatsapp');
     click(root, 'back');
     expect(q(root, '.ltb-thread')).toBeTruthy();
-    expect(root.textContent).toContain('Openingstijden?');
-  });
-
-  it('restarts the question list on the quiet closing chip', () => {
-    const root = withFaq();
-    click(root, 'channel-faq');
-    click(root, 'chip-q0');
-    vi.advanceTimersByTime(700);
-    click(root, 'chip-restart');
-    vi.advanceTimersByTime(700);
-    expect(q(root, '[data-action="chip-q0"]')).toBeTruthy();
-    expect(q(root, '[data-action="chip-q1"]')).toBeTruthy();
+    expect(root.textContent).toContain('Hoe wil je je vraag stellen?');
   });
 
   it('goes back to the channel list from the faq thread', () => {

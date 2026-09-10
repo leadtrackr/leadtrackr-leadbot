@@ -12,7 +12,7 @@ import type { FormDef } from '../forms';
 import type { FormState, WaState } from './views';
 import { autoGrowMessage, formView, launcherView, panelView, successView, whatsappView } from './views';
 import { threadView, type ThreadState } from './thread';
-import { answerQuestion, backToMenu, menuThread, openFaq } from './threadflow';
+import { answerQuestion, askFaq, backToMenu, faqOther, menuThread, openFaq } from './threadflow';
 
 type View = 'closed' | 'panel' | 'form' | 'whatsapp' | 'success' | 'thread';
 
@@ -244,7 +244,7 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
         thread = { ...thread, fresh: 0 };
         return;
       }
-      withTyping(() => openFaq(cfg, def));
+      withTyping(() => askFaq(cfg, def, thread));
       return;
     }
     returnTo = from === 'thread' ? 'thread' : 'panel';
@@ -441,6 +441,13 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
         }
         if (action.slice(0, 5) !== 'chip-') break;
         const chip = action.slice(5);
+        if (chip === 'faq-again' || chip === 'faq-other') {
+          const faq = thread.channel ? cfg.faqs[thread.channel] : null;
+          if (!faq) break;
+          if (chip === 'faq-again') withTyping(() => askFaq(cfg, faq, thread));
+          else withTyping(() => faqOther(cfg, faq, thread));
+          break;
+        }
         if (chip === 'restart') {
           // Terug naar waar het gesprek begon. In gespreksmodus is dat het
           // menu; in lijstmodus bestaat dat menu niet in de thread, dus daar

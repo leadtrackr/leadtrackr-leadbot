@@ -61,6 +61,9 @@ export interface LeadBotConfig {
   position: 'right' | 'left';
   offset: { bottom: number; side: number };
   teaser: boolean;
+  // Seconden waarna de teaser vanzelf verdwijnt, per apparaatsoort; false =
+  // blijft staan tot de bezoeker op × klikt. Verdwijnen telt als dismiss.
+  teaserAutoHide: { mobile: number | false; desktop: number | false };
   defaultCountry: string;
   language: Language;
   responseTimeText: string | null;
@@ -77,11 +80,15 @@ export interface LeadBotConfig {
  * Wat de site zelf mag meegeven op `window.ltLeadBotConfig`. Losser dan de
  * opgeloste config: formulieren en call tracking mogen hier onvolledig zijn.
  */
-export type UserConfig = Omit<Partial<LeadBotConfig>, 'forms' | 'links' | 'faqs' | 'callTracking'> & {
+export type UserConfig = Omit<
+  Partial<LeadBotConfig>,
+  'forms' | 'links' | 'faqs' | 'callTracking' | 'teaserAutoHide'
+> & {
   forms?: Record<string, UserFormDef>;
   links?: Record<string, UserLinkDef>;
   faqs?: Record<string, UserFaqDef>;
   callTracking?: boolean | { prefix?: string; swapGroup?: number };
+  teaserAutoHide?: false | { mobile?: number | false; desktop?: number | false };
   /** Per taal een laag over de basisconfig heen; zie `applyLanguageOverlay`. */
   byLanguage?: Record<string, LanguageOverlay>;
 };
@@ -109,6 +116,17 @@ const DEFAULT_THEME: LeadBotTheme = {
   error: '#FF6A6A',
   radius: 16,
 };
+
+/**
+ * Optioneel: zonder instelling blijft de teaser staan tot de bezoeker op ×
+ * klikt. Handig op mobiel, waar hij over de content en pop-ups van de site valt.
+ */
+function resolveAutoHide(input: UserConfig['teaserAutoHide']): LeadBotConfig['teaserAutoHide'] {
+  if (input === false) return { mobile: false, desktop: false };
+  const seconds = (v: unknown, fallback: number | false): number | false =>
+    v === false ? false : typeof v === 'number' && v > 0 ? v : fallback;
+  return { mobile: seconds(input?.mobile, false), desktop: seconds(input?.desktop, false) };
+}
 
 export function resolveConfig(projectId: string, user: UserConfig | undefined): LeadBotConfig {
   // De taal eerst bepalen: die kiest welke taallaag over de basisconfig gaat.
@@ -171,6 +189,7 @@ export function resolveConfig(projectId: string, user: UserConfig | undefined): 
     position: u.position === 'left' ? 'left' : 'right',
     offset: { bottom: u.offset?.bottom ?? 20, side: u.offset?.side ?? 20 },
     teaser: u.teaser !== false,
+    teaserAutoHide: resolveAutoHide(u.teaserAutoHide),
     // Zonder expliciete keuze: land uit de browser-locale (nl-BE → BE), geen
     // IP-geolocatie — de LeadBot doet bewust nul externe calls.
     defaultCountry: u.defaultCountry || regionFromLocale(navigator.language) || 'NL',

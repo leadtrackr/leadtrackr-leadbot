@@ -22,6 +22,7 @@ const TYPING_MS = 620;
 
 const TEASER_KEY = 'ltb_teaser_dismissed';
 const MIN_OPEN_MS = 2000;
+const TEASER_OUT_MS = 250;
 
 export function mountLeadBot(cfg: LeadBotConfig): void {
   if (document.getElementById('lt-leadbot-host')) return;
@@ -65,6 +66,14 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
     error: null,
     sending: false,
   };
+
+  function dismissTeaser(): void {
+    try {
+      sessionStorage.setItem(TEASER_KEY, '1');
+    } catch {
+      /* private mode */
+    }
+  }
 
   function teaserVisible(): boolean {
     try {
@@ -407,11 +416,7 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
         close();
         break;
       case 'teaser-close':
-        try {
-          sessionStorage.setItem(TEASER_KEY, '1');
-        } catch {
-          /* private mode */
-        }
+        dismissTeaser();
         render();
         break;
       case 'card-phone':
@@ -573,4 +578,27 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
   });
 
   render();
+  scheduleTeaserAutoHide();
+
+  /**
+   * Laat de teaser na de ingestelde tijd vanzelf verdwijnen en onthoudt dat
+   * voor de sessie, zodat hij niet op elke volgende pagina terugkomt. Staat
+   * het paneel open als de tijd om is, dan blijft hij na het sluiten weg.
+   */
+  function scheduleTeaserAutoHide(): void {
+    if (!teaserVisible()) return;
+    const seconds = coarsePointer ? cfg.teaserAutoHide.mobile : cfg.teaserAutoHide.desktop;
+    if (seconds === false) return;
+    setTimeout(() => {
+      if (!teaserVisible()) return;
+      dismissTeaser();
+      if (view !== 'closed') return;
+      const teaser = container.querySelector<HTMLElement>('.ltb-teaser');
+      if (!teaser || reducedMotion) return render();
+      teaser.classList.add('ltb-teaser-out');
+      setTimeout(() => {
+        if (view === 'closed') render();
+      }, TEASER_OUT_MS);
+    }, seconds * 1000);
+  }
 }

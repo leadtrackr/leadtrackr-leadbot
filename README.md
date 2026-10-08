@@ -53,6 +53,7 @@ Alle opties op `window.ltLeadBotConfig` (vóór het script-tag zetten):
 | `position` | `"right"` | `"right"` of `"left"` |
 | `offset` | `{ bottom: 20, side: 20 }` | Afstand tot de hoek in px |
 | `teaser` | `true` | Teaser-bubbel; dismiss onthouden per sessie |
+| `teaserAutoHide` | `false` | Optioneel: seconden waarna de teaser vanzelf verdwijnt, per apparaat, bijv. `{ mobile: 6 }`. Telt als dismiss voor de sessie. Niet ingesteld = blijft staan tot ×. Mobiel = touchscherm |
 | `defaultCountry` | auto | Startland van de landcode-selector; default = land uit de browser-locale (bijv. `nl-BE` → BE), fallback `NL`. Geen IP-geolocatie |
 | `callTracking` | `false` | `true` = telefoonnummer komt uit de LeadTrackr call-tracking cookie (dynamic number insertion); zie hieronder |
 | `language` | auto | Forceer `"nl"`, `"en"` of `"de"`; default = `lang`-attribuut van de pagina, fallback `en` |

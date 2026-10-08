@@ -52,6 +52,65 @@ describe('mount + launcher + panel', () => {
     expect(sessionStorage.getItem('ltb_teaser_dismissed')).toBe('1');
   });
 
+  describe('teaserAutoHide', () => {
+    // happy-dom kent geen touchscherm; `pointer: coarse` zetten we per test.
+    function asTouch(touch: boolean) {
+      vi.spyOn(window, 'matchMedia').mockImplementation(
+        (query: string) => ({ matches: touch && query.includes('coarse'), media: query }) as MediaQueryList,
+      );
+    }
+
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => {
+      vi.useRealTimers();
+      vi.restoreAllMocks();
+    });
+
+    it('keeps the teaser by default, also on mobile', () => {
+      asTouch(true);
+      const { root } = freshMount();
+      vi.advanceTimersByTime(60_000);
+      expect(q(root, '.ltb-teaser')).toBeTruthy();
+      expect(sessionStorage.getItem('ltb_teaser_dismissed')).toBeNull();
+    });
+
+    it('hides the teaser after the configured seconds on mobile and remembers it', () => {
+      asTouch(true);
+      const { root } = freshMount({ teaserAutoHide: { mobile: 6 } });
+      vi.advanceTimersByTime(5900);
+      expect(q(root, '.ltb-teaser')).toBeTruthy();
+      vi.advanceTimersByTime(100);
+      expect(sessionStorage.getItem('ltb_teaser_dismissed')).toBe('1');
+      vi.advanceTimersByTime(300);
+      expect(q(root, '.ltb-teaser')).toBeNull();
+    });
+
+    it('keeps the teaser on desktop when only mobile is set', () => {
+      asTouch(false);
+      const { root } = freshMount({ teaserAutoHide: { mobile: 6 } });
+      vi.advanceTimersByTime(60_000);
+      expect(q(root, '.ltb-teaser')).toBeTruthy();
+      expect(sessionStorage.getItem('ltb_teaser_dismissed')).toBeNull();
+    });
+
+    it('uses the configured seconds per device', () => {
+      asTouch(false);
+      const { root } = freshMount({ teaserAutoHide: { desktop: 2 } });
+      vi.advanceTimersByTime(2300);
+      expect(q(root, '.ltb-teaser')).toBeNull();
+    });
+
+    it('leaves an open panel alone and keeps the teaser away after closing', () => {
+      asTouch(true);
+      const { root } = freshMount({ teaserAutoHide: { mobile: 6 } });
+      click(root, 'open');
+      vi.advanceTimersByTime(7000);
+      expect(q(root, '.ltb-panel')).toBeTruthy();
+      click(root, 'close');
+      expect(q(root, '.ltb-teaser')).toBeNull();
+    });
+  });
+
   it('opens the panel and pushes leadtrackr_leadbot_open (flat), without loading external fonts', () => {
     const { root } = freshMount();
     click(root, 'open');

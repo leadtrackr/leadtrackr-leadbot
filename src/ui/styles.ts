@@ -33,6 +33,7 @@ input, textarea, select { font: inherit; color: var(--tx); }
 @keyframes ltb-pop { 0% { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
 @keyframes ltb-fade-up { 0% { transform: translateY(8px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
 @keyframes ltb-fade { 0% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes ltb-fade-down { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(8px); opacity: 0; } }
 /* View switches must stay inside the panel bounds: a translate would poke past
    the scroll container and flash a scrollbar. Scale (≤1) never overflows. */
 @keyframes ltb-view-in { 0% { opacity: 0; transform: scale(.985); } 100% { opacity: 1; transform: scale(1); } }
@@ -45,6 +46,7 @@ input, textarea, select { font: inherit; color: var(--tx); }
 
 /* ── Launcher + teaser ── */
 .ltb-teaser { position: relative; max-width: 280px; background: #fff; border: 1px solid var(--bd); border-radius: 14px 14px 4px 14px; padding: 14px 38px 14px 16px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.06); animation: ltb-fade-up .4s ease-out both; }
+.ltb-teaser.ltb-teaser-out { animation: ltb-fade-down .25s ease-in both; pointer-events: none; }
 .ltb-root.ltb-left .ltb-teaser { border-radius: 14px 14px 14px 4px; }
 .ltb-teaser-name { font-weight: 700; font-size: 13.5px; color: var(--ht); margin-bottom: 3px; }
 .ltb-teaser-name span { font-weight: 400; color: var(--mut); }

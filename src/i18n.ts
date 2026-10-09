@@ -29,6 +29,8 @@ export interface LeadBotTexts {
   formTitle: string;
   nameLabel: string;
   namePlaceholder: string;
+  companyLabel: string;
+  companyPlaceholder: string;
   emailLabel: string;
   phoneLabel: string;
   phonePlaceholder: string;
@@ -111,6 +113,8 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     formTitle: 'Send a message',
     nameLabel: 'Name',
     namePlaceholder: 'Your name',
+    companyLabel: 'Company',
+    companyPlaceholder: 'Your company name',
     emailLabel: 'Email address',
     emailPlaceholder: 'name@company.com',
     phoneLabel: 'Phone number',
@@ -159,6 +163,8 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     formTitle: 'Stuur een bericht',
     nameLabel: 'Naam',
     namePlaceholder: 'Je naam',
+    companyLabel: 'Bedrijfsnaam',
+    companyPlaceholder: 'Je bedrijfsnaam',
     emailLabel: 'E-mailadres',
     emailPlaceholder: 'naam@bedrijf.nl',
     phoneLabel: 'Telefoonnummer',
@@ -207,6 +213,8 @@ export const TEXTS: Record<Language, LeadBotTexts> = {
     formTitle: 'Nachricht senden',
     nameLabel: 'Name',
     namePlaceholder: 'Ihr Name',
+    companyLabel: 'Firma',
+    companyPlaceholder: 'Name Ihrer Firma',
     emailLabel: 'E-Mail-Adresse',
     emailPlaceholder: 'name@firma.de',
     phoneLabel: 'Telefonnummer',

@@ -684,6 +684,7 @@ describe('configured forms', () => {
       firstName: 'Jessica',
       lastName: 'de Vries',
       phone: '+31612345678',
+      companyName: 'Diks Process Support',
     });
     expect(body.formData.formFields.company).toBe('Diks Process Support');
     expect(body.formData.formFields.message).toBe('Graag terugbellen');

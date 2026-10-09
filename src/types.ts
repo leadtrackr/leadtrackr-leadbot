@@ -56,6 +56,7 @@ export interface LeadUserData {
   lastName?: string;
   phone?: string;
   email?: string;
+  companyName?: string;
 }
 
 export interface LeadPayload {

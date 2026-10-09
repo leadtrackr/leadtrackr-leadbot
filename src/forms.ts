@@ -41,10 +41,11 @@ const FORM_ICONS: FormIcon[] = ['chat', 'phone', 'mail', 'whatsapp', 'info', 'he
 
 /**
  * Keys met een vaste betekenis. Die gaan naar userData (LeadTrackr) en
- * user_data (Enhanced Conversions); elke andere key gaat als vrij veld mee in
- * formFields. Zo hoeft de config nergens een mapping te herhalen.
+ * user_data (Enhanced Conversions); `company` alleen naar userData, want
+ * Enhanced Conversions kent geen bedrijfsnaam. Elke andere key gaat als vrij
+ * veld mee in formFields. Zo hoeft de config nergens een mapping te herhalen.
  */
-export const RESERVED_KEYS = ['name', 'email', 'phone', 'message'] as const;
+export const RESERVED_KEYS = ['name', 'email', 'phone', 'message', 'company'] as const;
 export type ReservedKey = (typeof RESERVED_KEYS)[number];
 
 export function isReservedKey(key: string): key is ReservedKey {
@@ -97,6 +98,7 @@ export type UserFormDef = Partial<Omit<FormDef, 'id' | 'fields'>> & { fields?: U
 function reservedDefaults(key: ReservedKey, t: LeadBotTexts): Omit<FormField, 'key' | 'required'> {
   if (key === 'email') return { label: t.emailLabel, type: 'email', placeholder: t.emailPlaceholder };
   if (key === 'phone') return { label: t.phoneLabel, type: 'tel', placeholder: t.phonePlaceholder };
+  if (key === 'company') return { label: t.companyLabel, type: 'text', placeholder: t.companyPlaceholder };
   if (key === 'message') return { label: t.messageLabel, type: 'textarea', placeholder: t.messagePlaceholder };
   return { label: t.nameLabel, type: 'text', placeholder: t.namePlaceholder };
 }

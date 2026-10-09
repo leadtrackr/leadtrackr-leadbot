@@ -60,15 +60,20 @@ describe('buildLeadPayload', () => {
       onderwerp: 'ISO 9001',
       message: 'Graag terugbellen',
     });
-    expect(p.userData).toEqual({ firstName: 'Jessica', lastName: 'de Vries', phone: '+31858330088' });
+    expect(p.userData).toEqual({
+      firstName: 'Jessica',
+      lastName: 'de Vries',
+      phone: '+31858330088',
+      companyName: 'Diks Process Support',
+    });
     expect(p.formData.formName).toBe('LeadBot — Terugbelverzoek');
     expect(p.formData.formFields).toMatchObject({
       company: 'Diks Process Support',
       onderwerp: 'ISO 9001',
       message: 'Graag terugbellen',
     });
-    expect(p.formData.formFields.company).toBeDefined();
-    expect(p.userData).not.toHaveProperty('company');
+    // company gaat naar userData.companyName én blijft een vrij veld
+    expect(p.formData.formFields.company).toBe('Diks Process Support');
   });
 
   it('leaves out empty values instead of sending blanks', () => {

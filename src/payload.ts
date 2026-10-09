@@ -28,11 +28,13 @@ export function buildLeadPayload(
   const userData: LeadUserData = { ...splitName(value('name')) };
   if (value('email')) userData.email = value('email');
   if (value('phone')) userData.phone = value('phone');
+  if (value('company')) userData.companyName = value('company');
 
   const formFields: Record<string, string> = {};
   if (value('message')) formFields.message = value('message');
   for (const key of Object.keys(fields)) {
-    if (isReservedKey(key)) continue;
+    // `company` blijft óók een vrij veld: bestaande koppelingen lezen hem daar.
+    if (isReservedKey(key) && key !== 'company') continue;
     if (value(key)) formFields[key] = value(key);
   }
   formFields.page_url = location.href;

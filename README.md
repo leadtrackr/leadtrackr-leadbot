@@ -112,7 +112,7 @@ Een optie is `{ value, label }`, of een kale string als die twee gelijk zijn. In
 
 Dat onderscheid tussen `value` en `label` bestaat om dezelfde reden als bij kanaal-id's. Zou een taallaag de opties vervangen door vertaalde teksten, dan sloeg een Duitse lead een andere waarde op dan een Nederlandse voor dezelfde keuze, en dan valt er niet meer overheen te rapporteren. Nu vertaalt de laag alleen `label`.
 
-**Gereserveerde keys.** `name`, `email`, `phone` en `message` hebben een vaste betekenis: die gaan naar `userData` (LeadTrackr) en `user_data` (Enhanced Conversions). Elke andere key gaat als vrij veld mee in `formFields`. Voor die vier hoef je verder niets in te vullen — label, type en placeholder komen uit het taalbestand:
+**Gereserveerde keys.** `name`, `email`, `phone` en `message` hebben een vaste betekenis: die gaan naar `userData` (LeadTrackr) en `user_data` (Enhanced Conversions). `company` gaat naar `userData.companyName`, zodat LeadTrackr de bedrijfsnaam als bedrijfsnaam toont; hij blijft daarnaast als vrij veld in `formFields` staan (Enhanced Conversions kent geen bedrijfsnaam). Elke andere key gaat als vrij veld mee in `formFields`. Voor deze vijf hoef je verder niets in te vullen — label, type en placeholder komen uit het taalbestand:
 
 ```js
 fields: [{ key: 'name' }, { key: 'email' }, { key: 'message' }]  // = het ingebouwde formulier
@@ -326,7 +326,7 @@ window.ltLeadBotConfig = {
 
 ## Payload-contract
 
-POST naar `https://app.leadtrackr.io/api/leads/createLead` met exact de GTM-tag-structuur: `projectId`, `formData` (`formName`, `uniqueEventId`, vrije `formFields` incl. `message`, `page_url`, `page_title`), `userData` (`firstName`/`lastName`/`email`/`phone`, E.164), `channelFlow` (uit de gedeelde `lt_channelflow`-cookie, 395 dagen) en `attributionData` (`gclid`, `wbraid`, `fbc`, `fbp`, `cid`) — inclusief alle cookie-fallbacks van de GTM-tag. Bij WhatsApp wordt de lead **eerst** opgeslagen en opent daarna pas `wa.me`.
+POST naar `https://app.leadtrackr.io/api/leads/createLead` met exact de GTM-tag-structuur: `projectId`, `formData` (`formName`, `uniqueEventId`, vrije `formFields` incl. `message`, `page_url`, `page_title`), `userData` (`firstName`/`lastName`/`email`/`phone` in E.164, `companyName`), `channelFlow` (uit de gedeelde `lt_channelflow`-cookie, 395 dagen) en `attributionData` (`gclid`, `wbraid`, `fbc`, `fbp`, `cid`) — inclusief alle cookie-fallbacks van de GTM-tag. Bij WhatsApp wordt de lead **eerst** opgeslagen en opent daarna pas `wa.me`.
 
 Spam-bescherming client-side: honeypot-veld + minimale invultijd (2 s).
 

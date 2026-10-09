@@ -46,9 +46,14 @@ describe('normalizeForms', () => {
     expect(message).toMatchObject({ label: t.messageLabel, type: 'textarea' });
   });
 
+  it('fills the company field from the language file', () => {
+    const [company] = forms({ f: { fields: [{ key: 'company' }] } }).f.fields;
+    expect(company).toMatchObject({ label: t.companyLabel, type: 'text', placeholder: t.companyPlaceholder });
+  });
+
   it('defaults an unknown field to an optional text input labelled by its key', () => {
-    const [field] = forms({ f: { fields: [{ key: 'company' }] } }).f.fields;
-    expect(field).toEqual({ key: 'company', label: 'company', type: 'text', required: false, placeholder: '' });
+    const [field] = forms({ f: { fields: [{ key: 'onderwerp' }] } }).f.fields;
+    expect(field).toEqual({ key: 'onderwerp', label: 'onderwerp', type: 'text', required: false, placeholder: '' });
   });
 
   it('drops fields without a key and forms without usable fields', () => {
@@ -79,8 +84,8 @@ describe('normalizeForms', () => {
     );
   });
 
-  it('reserves exactly the four keys that carry user data', () => {
-    expect([...RESERVED_KEYS]).toEqual(['name', 'email', 'phone', 'message']);
+  it('reserves exactly the five keys that carry user data', () => {
+    expect([...RESERVED_KEYS]).toEqual(['name', 'email', 'phone', 'message', 'company']);
   });
 });
 

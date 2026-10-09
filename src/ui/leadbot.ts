@@ -371,27 +371,31 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
       render();
       return;
     }
-    wa.sending = true;
-    render();
-    const res = await sendLead(
-      buildLeadPayload(cfg, cfg.formNames.whatsapp, { phone: normalized || undefined, message: wa.message }),
-      cfg.endpoint,
-    );
-    wa.sending = false;
-    // 404 = project niet gevonden, 403 = abonnement inactief: bewust blokkeren
-    // (betaal-check). Elke andere fout mag de bezoeker nooit in de weg zitten:
-    // WhatsApp opent gewoon en het conversie-event gaat mee.
-    if (res.status === 404 || res.status === 403) {
-      // De warn blijft altijd staan, ook bij een vrijgestelde klant: in de
-      // console moet zichtbaar zijn wat de API zei.
-      console.warn(
-        '[LeadTrackr LeadBot] Lead geblokkeerd: ' +
-          (res.status === 403 ? 'abonnement inactief (403)' : 'project niet gevonden (404)'),
+    // Zonder lead in LeadTrackr gaat de bezoeker direct door; de conversie
+    // in de dataLayer blijft, zodat Ads, GA4 en Meta hem nog steeds zien.
+    if (cfg.whatsappLead) {
+      wa.sending = true;
+      render();
+      const res = await sendLead(
+        buildLeadPayload(cfg, cfg.formNames.whatsapp, { phone: normalized || undefined, message: wa.message }),
+        cfg.endpoint,
       );
-      if (cfg.subscriptionCheck) {
-        wa.error = cfg.texts.errorBlocked;
-        render();
-        return;
+      wa.sending = false;
+      // 404 = project niet gevonden, 403 = abonnement inactief: bewust blokkeren
+      // (betaal-check). Elke andere fout mag de bezoeker nooit in de weg zitten:
+      // WhatsApp opent gewoon en het conversie-event gaat mee.
+      if (res.status === 404 || res.status === 403) {
+        // De warn blijft altijd staan, ook bij een vrijgestelde klant: in de
+        // console moet zichtbaar zijn wat de API zei.
+        console.warn(
+          '[LeadTrackr LeadBot] Lead geblokkeerd: ' +
+            (res.status === 403 ? 'abonnement inactief (403)' : 'project niet gevonden (404)'),
+        );
+        if (cfg.subscriptionCheck) {
+          wa.error = cfg.texts.errorBlocked;
+          render();
+          return;
+        }
       }
     }
     pushConversion('whatsapp', normalized ? { phone: normalized } : {});

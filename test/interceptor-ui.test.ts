@@ -215,6 +215,26 @@ describe('WhatsApp interceptor — leadflow', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it('hands off without creating a lead when whatsappLead is off', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+    const openSpy = vi.fn();
+    vi.stubGlobal('open', openSpy);
+    const { root } = freshMount({ whatsappLead: false, whatsappPhoneQuestion: false });
+    clickLink(addLink('https://wa.me/31698765432'));
+    vi.setSystemTime(1_000_000 + 5000);
+    (q(root, '[data-wa="message"]') as HTMLInputElement).value = 'Hoi';
+    q(root, '[data-action="wa-send"]')!.click();
+    await vi.waitFor(() => expect(q(root, '.ltb-wi-handoff')).toBeTruthy());
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(openSpy).toHaveBeenCalledTimes(1);
+    expect(window.dataLayer).toContainEqual({
+      event: 'leadtrackr_leadbot_conversion',
+      channel: 'whatsapp',
+      user_data: {},
+    });
+  });
+
   it('rejects an invalid phone number inline', () => {
     const { root } = freshMount();
     clickLink(addLink('https://wa.me/31698765432'));

@@ -137,27 +137,31 @@ export function mountWhatsAppInterceptor(cfg: LeadBotConfig): void {
       finish();
       return;
     }
-    s.sending = true;
-    render();
-    const res = await sendLead(
-      buildLeadPayload(cfg, cfg.formNames.whatsapp_interceptor, { phone: normalized || undefined, message: s.message }),
-      cfg.endpoint,
-    );
-    s.sending = false;
-    // 404 = project niet gevonden, 403 = abonnement inactief: bewust blokkeren
-    // (betaal-check). Elke andere fout (netwerk, 5xx, overige 4xx) mag de
-    // bezoeker nooit in de weg zitten: handoff én conversie gaan gewoon door.
-    if (res.status === 404 || res.status === 403) {
-      // De warn blijft altijd staan, ook bij een vrijgestelde klant: in de
-      // console moet zichtbaar zijn wat de API zei.
-      console.warn(
-        '[LeadTrackr LeadBot] Lead geblokkeerd: ' +
-          (res.status === 403 ? 'abonnement inactief (403)' : 'project niet gevonden (404)'),
+    // Zonder lead in LeadTrackr gaat de bezoeker direct door; de conversie
+    // in de dataLayer blijft, zodat Ads, GA4 en Meta hem nog steeds zien.
+    if (cfg.whatsappLead) {
+      s.sending = true;
+      render();
+      const res = await sendLead(
+        buildLeadPayload(cfg, cfg.formNames.whatsapp_interceptor, { phone: normalized || undefined, message: s.message }),
+        cfg.endpoint,
       );
-      if (cfg.subscriptionCheck) {
-        s.error = cfg.texts.errorBlocked;
-        render();
-        return;
+      s.sending = false;
+      // 404 = project niet gevonden, 403 = abonnement inactief: bewust blokkeren
+      // (betaal-check). Elke andere fout (netwerk, 5xx, overige 4xx) mag de
+      // bezoeker nooit in de weg zitten: handoff én conversie gaan gewoon door.
+      if (res.status === 404 || res.status === 403) {
+        // De warn blijft altijd staan, ook bij een vrijgestelde klant: in de
+        // console moet zichtbaar zijn wat de API zei.
+        console.warn(
+          '[LeadTrackr LeadBot] Lead geblokkeerd: ' +
+            (res.status === 403 ? 'abonnement inactief (403)' : 'project niet gevonden (404)'),
+        );
+        if (cfg.subscriptionCheck) {
+          s.error = cfg.texts.errorBlocked;
+          render();
+          return;
+        }
       }
     }
     pushConversion('whatsapp', normalized ? { phone: normalized } : {});

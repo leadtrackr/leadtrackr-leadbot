@@ -47,6 +47,10 @@ export interface LeadBotConfig {
   // na zijn bericht direct door naar WhatsApp en de lead gaat zonder
   // telefoonnummer naar LeadTrackr (bericht en attributie blijven behouden).
   whatsappPhoneQuestion: boolean;
+  // false maakt in beide WhatsApp-flows geen lead in LeadTrackr aan: WhatsApp
+  // opent en het conversie-event gaat gewoon de dataLayer in. Daarmee valt ook
+  // de abonnementscheck (403/404) voor WhatsApp weg, want die loopt via de POST.
+  whatsappLead: boolean;
   // Ongedocumenteerd: false laat de flow doorlopen bij een 403 (abonnement
   // inactief) of 404 (project niet gevonden) van de lead-API. Alleen voor
   // klanten met een expliciete vrijstelling — niet in de README zetten.
@@ -181,6 +185,7 @@ export function resolveConfig(projectId: string, user: UserConfig | undefined): 
     branding: u.branding !== false,
     whatsappInterceptor: u.whatsappInterceptor === true,
     whatsappPhoneQuestion: u.whatsappPhoneQuestion !== false,
+    whatsappLead: u.whatsappLead !== false,
     subscriptionCheck: u.subscriptionCheck !== false,
     channels,
     forms,

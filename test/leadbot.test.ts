@@ -551,6 +551,41 @@ describe('whatsapp flow', () => {
   });
 });
 
+describe('whatsappLead: false', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(1_000_000);
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('opens WhatsApp and pushes the conversion without creating a lead', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+    const openSpy = vi.fn();
+    vi.stubGlobal('open', openSpy);
+    const m = freshMount({ whatsappLead: false, whatsappPhoneQuestion: false });
+    click(m.root, 'open');
+    click(m.root, 'channel-whatsapp');
+    vi.setSystemTime(1_000_000 + 5000);
+    (q(m.root, '[data-wa="message"]') as HTMLInputElement).value = 'Hoi';
+    click(m.root, 'wa-send');
+    await vi.waitFor(() => expect(q(m.root, '.ltb-success')).toBeTruthy());
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(openSpy).toHaveBeenCalledTimes(1);
+    expect(window.dataLayer!.filter((e) => e.event === 'leadtrackr_leadbot_conversion')).toEqual([
+      { event: 'leadtrackr_leadbot_conversion', channel: 'whatsapp', user_data: {} },
+    ]);
+  });
+
+  it('is on unless explicitly switched off', () => {
+    expect(freshMount({ whatsappLead: false }).cfg.whatsappLead).toBe(false);
+    expect(freshMount().cfg.whatsappLead).toBe(true);
+  });
+});
+
 describe('configured forms', () => {
   const DIKS = {
     channels: ['callback', 'contact_form', 'whatsapp', 'phone'],

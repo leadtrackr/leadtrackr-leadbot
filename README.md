@@ -50,6 +50,7 @@ Alle opties op `window.ltLeadBotConfig` (vóór het script-tag zetten):
 | `byLanguage` | `{}` | Per taal een laag over de basisconfig, zie hieronder |
 | `launcher` | `true` | `false` verbergt de LeadBot-launcher volledig (bijv. voor interceptor-only) |
 | `whatsappInterceptor` | `false` | `true` onderschept kliks op bestaande wa.me-/WhatsApp-links en opent de LeadBot-modal; zie hieronder |
+| `whatsappLead` | `true` | `false` maakt voor WhatsApp geen lead in LeadTrackr aan; WhatsApp opent en de conversie gaat gewoon de dataLayer in. Zie WhatsApp-flow |
 | `position` | `"right"` | `"right"` of `"left"` |
 | `offset` | `{ bottom: 20, side: 20 }` | Afstand tot de hoek in px |
 | `teaser` | `true` | Teaser-bubbel; dismiss onthouden per sessie |
@@ -303,6 +304,7 @@ Omdat de LeadBot in een Shadow DOM zit, kan het reguliere call-tracking-script h
 Bezoeker typt een bericht → vult het telefoonnummer in waarmee die het WhatsApp-gesprek wil starten (native landcode-selector) → de lead wordt opgeslagen in LeadTrackr → WhatsApp opent in een nieuw tabblad met het bericht vooraf ingevuld. De bevestiging zegt expliciet dat het gesprek in WhatsApp nog verstuurd moet worden.
 
 - `whatsappPhoneQuestion: false` slaat de nummervraag over: de bezoeker gaat na zijn bericht direct door naar WhatsApp. De lead gaat nog steeds naar LeadTrackr — met bericht, pagina-context en attributie, alleen zonder telefoonnummer. Geldt voor zowel het WhatsApp-kanaal in het paneel als de interceptor. Afweging: meer doorstroom, maar een lead die je niet zelf kunt terugbellen.
+- `whatsappLead: false` maakt helemaal geen lead aan voor WhatsApp, in het paneel én in de interceptor. WhatsApp opent en `leadtrackr_leadbot_conversion` met `channel: "whatsapp"` gaat gewoon de dataLayer in, dus Ads, GA4 en Meta blijven de conversie zien. Er komen dan geen offline conversies voor WhatsApp uit LeadTrackr, en de abonnementscheck (403/404) loopt voor WhatsApp niet meer, want die zit in de lead-aanroep. Handig samen met `whatsappPhoneQuestion: false`: zonder nummer is zo'n lead in LeadTrackr niet te kwalificeren.
 
 ## WhatsApp Interceptor
 

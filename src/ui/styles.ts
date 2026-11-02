@@ -45,7 +45,7 @@ input, textarea, select { font: inherit; color: var(--tx); }
 }
 
 /* ── Launcher + teaser ── */
-.ltb-teaser { position: relative; max-width: 280px; background: #fff; border: 1px solid var(--bd); border-radius: 14px 14px 4px 14px; padding: 14px 38px 14px 16px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.06); animation: ltb-fade-up .4s ease-out both; }
+.ltb-teaser { position: relative; max-width: 280px; background: #fff; border: 1px solid var(--bd); border-radius: 14px 14px 4px 14px; padding: 14px 38px 14px 16px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.06); animation: ltb-fade-up .4s ease-out both; cursor: pointer; }
 .ltb-teaser.ltb-teaser-out { animation: ltb-fade-down .25s ease-in both; pointer-events: none; }
 .ltb-root.ltb-left .ltb-teaser { border-radius: 14px 14px 14px 4px; }
 .ltb-teaser-name { font-weight: 700; font-size: 13.5px; color: var(--ht); margin-bottom: 3px; }

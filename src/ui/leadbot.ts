@@ -414,6 +414,9 @@ export function mountLeadBot(cfg: LeadBotConfig): void {
     const action = target.getAttribute('data-action')!;
     switch (action) {
       case 'open':
+      // De hele teaser opent het paneel; het kruisje heeft een eigen actie en
+      // wint via closest(). Toetsenbord blijft via de launcherknop lopen.
+      case 'teaser-open':
         open();
         break;
       case 'close':

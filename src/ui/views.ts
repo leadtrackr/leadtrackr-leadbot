@@ -46,7 +46,7 @@ export function brandFooter(cfg: LeadBotConfig): string {
 
 export function launcherView(cfg: LeadBotConfig, showTeaser: boolean): string {
   const teaser = showTeaser
-    ? `<div class="ltb-teaser">
+    ? `<div class="ltb-teaser" data-action="teaser-open">
          <p class="ltb-teaser-name">${agentLine(cfg)}</p>
          <p class="ltb-teaser-text">${esc(cfg.greeting)}</p>
          <button class="ltb-teaser-close" data-action="teaser-close" aria-label="${esc(cfg.texts.close)}">${icons.close(14)}</button>

@@ -45,6 +45,19 @@ describe('mount + launcher + panel', () => {
     expect(q(root, '.ltb-teaser')!.textContent).toContain('Nick');
   });
 
+  it('opens the panel when the teaser message is clicked', () => {
+    const { root } = freshMount();
+    q(root, '.ltb-teaser-text')!.click();
+    expect(q(root, '.ltb-panel')).toBeTruthy();
+    expect(window.dataLayer!.some((e) => e.event === 'leadtrackr_leadbot_open')).toBe(true);
+  });
+
+  it('only dismisses the teaser when its close button is clicked', () => {
+    const { root } = freshMount();
+    click(root, 'teaser-close');
+    expect(q(root, '.ltb-panel')).toBeNull();
+  });
+
   it('hides the teaser after dismiss and remembers it in sessionStorage', () => {
     const { root } = freshMount();
     click(root, 'teaser-close');
